@@ -114,18 +114,23 @@ void VulkanBase::createGraphicsPipeline() {
 
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 
-	VkPipelineShaderStageCreateInfo vertShaderStageInfo = createVertexShaderInfo();
-	VkPipelineShaderStageCreateInfo fragShaderStageInfo = createFragmentShaderInfo();
+	//VkPipelineShaderStageCreateInfo vertShaderStageInfo = m_MachineShader.createVertexShaderInfo(device);
+	//VkPipelineShaderStageCreateInfo fragShaderStageInfo = m_MachineShader.createFragmentShaderInfo(device);
 
-	VkPipelineShaderStageCreateInfo shaderStages[] = {
-		vertShaderStageInfo,
-		fragShaderStageInfo
-	};
+	//VkPipelineShaderStageCreateInfo shaderStages[] = {
+	//	vertShaderStageInfo,
+	//	fragShaderStageInfo
+	//};
 
-	pipelineInfo.stageCount = 2;
-	pipelineInfo.pStages = shaderStages;
-	pipelineInfo.pVertexInputState = &createVertexInputStateInfo();
-	pipelineInfo.pInputAssemblyState = &createInputAssemblyStateInfo();
+	std::vector<VkPipelineShaderStageCreateInfo>& shaderStages{m_MachineShader.getShaderStages()};
+
+
+	pipelineInfo.stageCount = shaderStages.size();
+	pipelineInfo.pStages = shaderStages.data();
+	VkPipelineVertexInputStateCreateInfo pvisci{m_MachineShader.createVertexInputStateInfo()};
+	VkPipelineInputAssemblyStateCreateInfo piasci{ m_MachineShader.createInputAssemblyStateInfo() };
+	pipelineInfo.pVertexInputState = &pvisci;
+	pipelineInfo.pInputAssemblyState = &piasci;
 
 	pipelineInfo.pViewportState = &viewportState;
 	pipelineInfo.pRasterizationState = &rasterizer;
@@ -141,6 +146,5 @@ void VulkanBase::createGraphicsPipeline() {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	vkDestroyShaderModule(device, vertShaderStageInfo.module, nullptr);
-	vkDestroyShaderModule(device, fragShaderStageInfo.module, nullptr);
+	m_MachineShader.destroyShaderStages(device);
 }

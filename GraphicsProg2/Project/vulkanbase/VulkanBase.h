@@ -15,21 +15,18 @@
 #include <set>
 #include <limits>
 #include <algorithm>
+#include <MachineShader.h>
 
+const std::vector<const char*> validationLayers{ "VK_LAYER_KHRONOS_validation" };
+const std::vector<const char*> deviceExtensions{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
-const std::vector<const char*> validationLayers = {
-	"VK_LAYER_KHRONOS_validation"
-};
-
-const std::vector<const char*> deviceExtensions = {
-	VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
-
-struct QueueFamilyIndices {
+struct QueueFamilyIndices 
+{
 	std::optional<uint32_t> graphicsFamily;
 	std::optional<uint32_t> presentFamily;
 
-	bool isComplete() {
+	bool isComplete() 
+	{
 		return graphicsFamily.has_value() && presentFamily.has_value();
 	}
 };
@@ -40,9 +37,11 @@ struct SwapChainSupportDetails {
 	std::vector<VkPresentModeKHR> presentModes;
 };
 
-class VulkanBase {
+class VulkanBase 
+{
 public:
-	void run() {
+	void run() 
+	{
 		initWindow();
 		initVulkan();
 		mainLoop();
@@ -50,7 +49,8 @@ public:
 	}
 
 private:
-	void initVulkan() {
+	void initVulkan() 
+	{
 		// week 06
 		createInstance();
 		setupDebugMessenger();
@@ -65,6 +65,7 @@ private:
 		createImageViews();
 		
 		// week 03
+		m_MachineShader.initialize(device);
 		createRenderPass();
 		createGraphicsPipeline();
 		createFrameBuffers();
@@ -77,7 +78,8 @@ private:
 	}
 
 	void mainLoop() {
-		while (!glfwWindowShouldClose(window)) {
+		while (!glfwWindowShouldClose(window)) 
+		{
 			glfwPollEvents();
 			// week 06
 			drawFrame();
@@ -85,7 +87,8 @@ private:
 		vkDeviceWaitIdle(device);
 	}
 
-	void cleanup() {
+	void cleanup() 
+	{
 		vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
 		vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
 		vkDestroyFence(device, inFlightFence, nullptr);
@@ -116,16 +119,12 @@ private:
 		glfwTerminate();
 	}
 
-	
-
-	
-
-	void createSurface() {
+	void createSurface() 
+	{
 		if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create window surface!");
 		}
 	}
-
 	
 
 	// Week 01: 
@@ -135,14 +134,9 @@ private:
 	// with the correct internal state.
 
 	GLFWwindow* window;
+	// Important to initialize before creating the graphics pipeline
+	MachineShader m_MachineShader{"shaders/shader.vert.spv", "shaders/shader.frag.spv"};
 	void initWindow();
-
-	VkPipelineShaderStageCreateInfo createFragmentShaderInfo();
-	VkPipelineShaderStageCreateInfo createVertexShaderInfo();
-	VkPipelineVertexInputStateCreateInfo createVertexInputStateInfo();
-	VkPipelineInputAssemblyStateCreateInfo createInputAssemblyStateInfo();
-	VkShaderModule createShaderModule(const std::vector<char>& code);
-
 	void drawScene();
 
 	// Week 02
@@ -221,7 +215,14 @@ private:
 	void createSyncObjects();
 	void drawFrame();
 
-	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
+	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback
+	(
+		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, 
+		VkDebugUtilsMessageTypeFlagsEXT messageType, 
+		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, 
+		void* pUserData
+	) 
+	{
 		std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 		return VK_FALSE;
 	}

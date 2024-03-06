@@ -1,22 +1,22 @@
 #include "vulkanbase/VulkanBase.h"
 
 void VulkanBase::CreateFrameBuffers() {
-	swapChainFramebuffers.resize(swapChainImageViews.size());
-	for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+	m_SwapChainFramebuffers.resize(m_SwapChainImageViews.size());
+	for (size_t i = 0; i < m_SwapChainImageViews.size(); i++) {
 		VkImageView attachments[] = {
-			swapChainImageViews[i]
+			m_SwapChainImageViews[i]
 		};
 
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = renderPass;
+		framebufferInfo.renderPass = m_RenderPass;
 		framebufferInfo.attachmentCount = 1;
 		framebufferInfo.pAttachments = attachments;
-		framebufferInfo.width = swapChainExtent.width;
-		framebufferInfo.height = swapChainExtent.height;
+		framebufferInfo.width = m_SwapChainExtent.width;
+		framebufferInfo.height = m_SwapChainExtent.height;
 		framebufferInfo.layers = 1;
 
-		if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+		if (vkCreateFramebuffer(m_Device, &framebufferInfo, nullptr, &m_SwapChainFramebuffers[i]) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create framebuffer!");
 		}
 	}
@@ -26,7 +26,7 @@ void VulkanBase::CreateFrameBuffers() {
 
 void VulkanBase::CreateRenderPass() {
 	VkAttachmentDescription colorAttachment{};
-	colorAttachment.format = swapChainImageFormat;
+	colorAttachment.format = m_SwapChainImageFormat;
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -51,17 +51,20 @@ void VulkanBase::CreateRenderPass() {
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
 
-	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+	if (vkCreateRenderPass(m_Device, &renderPassInfo, nullptr, &m_RenderPass) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create render pass!");
 	}
 }
 
-void VulkanBase::CreateGraphicsPipeline() {
+void VulkanBase::CreateGraphicsPipeline() 
+{
+	// ViewportState
 	VkPipelineViewportStateCreateInfo viewportState{};
 	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	viewportState.viewportCount = 1;
 	viewportState.scissorCount = 1;
-
+	
+	// RasterizationState
 	VkPipelineRasterizationStateCreateInfo rasterizer{};
 	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	rasterizer.depthClampEnable = VK_FALSE;
@@ -72,11 +75,13 @@ void VulkanBase::CreateGraphicsPipeline() {
 	rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	rasterizer.depthBiasEnable = VK_FALSE;
 
+	// MultisamplingState
 	VkPipelineMultisampleStateCreateInfo multisampling{};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
+	//
 	VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	colorBlendAttachment.blendEnable = VK_FALSE;
@@ -106,7 +111,7 @@ void VulkanBase::CreateGraphicsPipeline() {
 	pipelineLayoutInfo.setLayoutCount = 0;
 	pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-	if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+	if (vkCreatePipelineLayout(m_Device, &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 
@@ -120,35 +125,36 @@ void VulkanBase::CreateGraphicsPipeline() {
 
 	pipelineInfo.stageCount = shaderStages.size();
 	pipelineInfo.pStages = shaderStages.data();
-	VkPipelineVertexInputStateCreateInfo pvisci{m_MachineShader.CreateVertexInputStateInfo()};
-	VkPipelineInputAssemblyStateCreateInfo piasci{ m_MachineShader.CreateInputAssemblyStateInfo() };
 
+
+	auto pvisi{m_MachineShader.CreateVertexInputStateInfo()};
+	auto piasi{ m_MachineShader.CreateInputAssemblyStateInfo() };
 
 	auto bindingDescription = Vertex::GetBindingDescription();
 	auto attributeDescriptions = Vertex::GetAttributeDescriptions();
 
-	pvisci.vertexBindingDescriptionCount = 1;
-	pvisci.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-	pvisci.pVertexBindingDescriptions = &bindingDescription;
-	pvisci.pVertexAttributeDescriptions = attributeDescriptions.data();
+	pvisi.vertexBindingDescriptionCount = 1;
+	pvisi.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	pvisi.pVertexBindingDescriptions = &bindingDescription;
+	pvisi.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 
-	pipelineInfo.pVertexInputState = &pvisci;
-	pipelineInfo.pInputAssemblyState = &piasci;
+	pipelineInfo.pVertexInputState = &pvisi;
+	pipelineInfo.pInputAssemblyState = &piasi;
 
 	pipelineInfo.pViewportState = &viewportState;
 	pipelineInfo.pRasterizationState = &rasterizer;
 	pipelineInfo.pMultisampleState = &multisampling;
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
-	pipelineInfo.layout = pipelineLayout;
-	pipelineInfo.renderPass = renderPass;
+	pipelineInfo.layout = m_PipelineLayout;
+	pipelineInfo.renderPass = m_RenderPass;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	m_MachineShader.DestroyShaderStages(device);
+	m_MachineShader.DestroyShaderStages(m_Device);
 }

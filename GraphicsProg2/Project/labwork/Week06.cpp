@@ -5,7 +5,7 @@ void VulkanBase::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInf
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 	createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 	createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-	createInfo.pfnUserCallback = debugCallback;
+	createInfo.pfnUserCallback = DebugCallback;
 }
 
 
@@ -15,7 +15,7 @@ void VulkanBase::SetupDebugMessenger() {
 	VkDebugUtilsMessengerCreateInfoEXT createInfo;
 	PopulateDebugMessengerCreateInfo(createInfo);
 
-	if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
+	if (CreateDebugUtilsMessengerEXT(m_Instance, &createInfo, nullptr, &m_DebugMessenger) != VK_SUCCESS) {
 		throw std::runtime_error("failed to set up debug messenger!");
 	}
 }
@@ -28,41 +28,41 @@ void VulkanBase::CreateSyncObjects() {
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-	if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
-		vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS ||
-		vkCreateFence(device, &fenceInfo, nullptr, &inFlightFence) != VK_SUCCESS) {
+	if (vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore) != VK_SUCCESS ||
+		vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore) != VK_SUCCESS ||
+		vkCreateFence(m_Device, &fenceInfo, nullptr, &m_InFlightFence) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create synchronization objects for a frame!");
 	}
 
 }
 
 void VulkanBase::DrawFrame() {
-	vkWaitForFences(device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
-	vkResetFences(device, 1, &inFlightFence);
+	vkWaitForFences(m_Device, 1, &m_InFlightFence, VK_TRUE, UINT64_MAX);
+	vkResetFences(m_Device, 1, &m_InFlightFence);
 
 	uint32_t imageIndex;
-	vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+	vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
-	vkResetCommandBuffer(commandBuffer, /*VkCommandBufferResetFlagBits*/ 0);
-	RecordCommandBuffer(commandBuffer, imageIndex);
+	vkResetCommandBuffer(m_CommandBuffer, /*VkCommandBufferResetFlagBits*/ 0);
+	RecordCommandBuffer(m_CommandBuffer, imageIndex);
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-	VkSemaphore waitSemaphores[] = { imageAvailableSemaphore };
+	VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphore };
 	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pWaitSemaphores = waitSemaphores;
 	submitInfo.pWaitDstStageMask = waitStages;
 
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffer;
+	submitInfo.pCommandBuffers = &m_CommandBuffer;
 
-	VkSemaphore signalSemaphores[] = { renderFinishedSemaphore };
+	VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphore };
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
-	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence) != VK_SUCCESS) {
+	if (vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, m_InFlightFence) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
 
@@ -72,13 +72,13 @@ void VulkanBase::DrawFrame() {
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pWaitSemaphores = signalSemaphores;
 
-	VkSwapchainKHR swapChains[] = { swapChain };
+	VkSwapchainKHR swapChains[] = { m_SwapChain };
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;
 
 	presentInfo.pImageIndices = &imageIndex;
 
-	vkQueuePresentKHR(presentQueue, &presentInfo);
+	vkQueuePresentKHR(m_PresentQueue, &presentInfo);
 }
 
 bool CheckValidationLayerSupport() {
@@ -120,12 +120,12 @@ std::vector<const char*> VulkanBase::GetRequiredExtensions() {
 	return extensions;
 }
 
-bool VulkanBase::CheckDeviceExtensionSupport(VkPhysicalDevice device) {
+bool VulkanBase::CheckDeviceExtensionSupport(VkPhysicalDevice m_Device) {
 	uint32_t extensionCount;
-	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+	vkEnumerateDeviceExtensionProperties(m_Device, nullptr, &extensionCount, nullptr);
 
 	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+	vkEnumerateDeviceExtensionProperties(m_Device, nullptr, &extensionCount, availableExtensions.data());
 
 	std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
@@ -171,7 +171,7 @@ void VulkanBase::CreateInstance() {
 		createInfo.pNext = nullptr;
 	}
 
-	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
+	if (vkCreateInstance(&createInfo, nullptr, &m_Instance) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create instance!");
 	}
 }

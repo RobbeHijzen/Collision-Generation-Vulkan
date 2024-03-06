@@ -49,9 +49,11 @@ public:
 	}
 
 private:
+
 	void InitializeVulkan() 
 	{
 		// week 06
+		
 		CreateInstance();
 		SetupDebugMessenger();
 		CreateSurface();
@@ -65,7 +67,7 @@ private:
 		CreateImageViews();
 		
 		// week 03
-		m_MachineShader.Initialize(device);
+		m_MachineShader.Initialize(m_Device);
 		CreateRenderPass();
 		CreateGraphicsPipeline();
 		CreateFrameBuffers();
@@ -78,145 +80,132 @@ private:
 	}
 
 	void MainLoop() {
-		while (!glfwWindowShouldClose(window)) 
+		while (!glfwWindowShouldClose(m_Window)) 
 		{
 			glfwPollEvents();
 			// week 06
 			DrawFrame();
 		}
-		vkDeviceWaitIdle(device);
+		vkDeviceWaitIdle(m_Device);
 	}
 
 	void Cleanup() 
 	{
-		vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
-		vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
-		vkDestroyFence(device, inFlightFence, nullptr);
+		vkDestroySemaphore(m_Device, m_RenderFinishedSemaphore, nullptr);
+		vkDestroySemaphore(m_Device, m_ImageAvailableSemaphore, nullptr);
+		vkDestroyFence(m_Device, m_InFlightFence, nullptr);
 
-		vkDestroyCommandPool(device, commandPool, nullptr);
-		for (auto framebuffer : swapChainFramebuffers) {
-			vkDestroyFramebuffer(device, framebuffer, nullptr);
+		vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
+		for (auto framebuffer : m_SwapChainFramebuffers) {
+			vkDestroyFramebuffer(m_Device, framebuffer, nullptr);
 		}
 
-		vkDestroyPipeline(device, graphicsPipeline, nullptr);
-		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-		vkDestroyRenderPass(device, renderPass, nullptr);
+		vkDestroyPipeline(m_Device, m_GraphicsPipeline, nullptr);
+		vkDestroyPipelineLayout(m_Device, m_PipelineLayout, nullptr);
+		vkDestroyRenderPass(m_Device, m_RenderPass, nullptr);
 
-		for (auto imageView : swapChainImageViews) {
-			vkDestroyImageView(device, imageView, nullptr);
+		for (auto imageView : m_SwapChainImageViews) {
+			vkDestroyImageView(m_Device, imageView, nullptr);
 		}
 
 		if (enableValidationLayers) {
-			DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+			DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
 		}
-		vkDestroySwapchainKHR(device, swapChain, nullptr);
-		vkDestroyDevice(device, nullptr);
+		vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
+		vkDestroyDevice(m_Device, nullptr);
 
-		vkDestroySurfaceKHR(instance, surface, nullptr);
-		vkDestroyInstance(instance, nullptr);
+		vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
+		vkDestroyInstance(m_Instance, nullptr);
 
-		glfwDestroyWindow(window);
+		glfwDestroyWindow(m_Window);
 		glfwTerminate();
 	}
 
 	void CreateSurface() 
 	{
-		if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) 
+		if (glfwCreateWindowSurface(m_Instance, m_Window, nullptr, &m_Surface) != VK_SUCCESS) 
 		{
 			throw std::runtime_error("failed to create window surface!");
 		}
 	}
 	
 
-	// Week 01: 
-	// Actual window
-	// simple fragment + vertex shader creation functions
-	// These 5 functions should be refactored into a separate C++ class
-	// with the correct internal state.
-
-	GLFWwindow* window;
+	
+	GLFWwindow* m_Window;
 	// Important to initialize before creating the graphics pipeline
 	MachineShader m_MachineShader{"shaders/shader.vert.spv", "shaders/shader.frag.spv"};
 	void InitializeWindow();
 	void DrawScene();
 
-	// Week 02
-	// Queue families
-	// CommandBuffer concept
+	
+	// Command Buffer
+	VkCommandPool m_CommandPool;
+	VkCommandBuffer m_CommandBuffer;
 
-	VkCommandPool commandPool;
-	VkCommandBuffer commandBuffer;
-
-	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice m_Device);
 
 	void DrawFrame(uint32_t imageIndex);
 	void CreateCommandBuffer();
 	void CreateCommandPool(); 
-	void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+	void RecordCommandBuffer(VkCommandBuffer m_CommandBuffer, uint32_t imageIndex);
 	
-	// Week 03
-	// Renderpass concept
-	// Graphics pipeline
 	
-	std::vector<VkFramebuffer> swapChainFramebuffers;
-	VkPipelineLayout pipelineLayout;
-	VkPipeline graphicsPipeline;
-	VkRenderPass renderPass;
+	// RenderPass
+	std::vector<VkFramebuffer> m_SwapChainFramebuffers;
+	VkPipelineLayout m_PipelineLayout;
+	VkPipeline m_GraphicsPipeline;
+	VkRenderPass m_RenderPass;
 
 	void CreateFrameBuffers();
 	void CreateRenderPass();
 	void CreateGraphicsPipeline();
 
-	// Week 04
-	// Swap chain and image view support
+	// SwapChain
+	VkSwapchainKHR m_SwapChain;
+	std::vector<VkImage> m_SwapChainImages;
+	VkFormat m_SwapChainImageFormat;
+	VkExtent2D m_SwapChainExtent;
 
-	VkSwapchainKHR swapChain;
-	std::vector<VkImage> swapChainImages;
-	VkFormat swapChainImageFormat;
-	VkExtent2D swapChainExtent;
+	std::vector<VkImageView> m_SwapChainImageViews;
 
-	std::vector<VkImageView> swapChainImageViews;
-
-	SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+	SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice m_Device);
 	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 	void CreateSwapChain();
 	void CreateImageViews();
 
-	// Week 05 
-	// Logical and physical device
 
-	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-	VkQueue graphicsQueue;
-	VkQueue presentQueue;
+	// Logical and Physical Devices
+	VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
+	VkQueue m_GraphicsQueue;
+	VkQueue m_PresentQueue;
 	
 	void PickPhysicalDevice();
-	bool IsDeviceSuitable(VkPhysicalDevice device);
+	bool IsDeviceSuitable(VkPhysicalDevice m_Device);
 	void CreateLogicalDevice();
 
-	// Week 06
-	// Main initialization
+	
+	// Main Initialization
+	VkInstance m_Instance;
+	VkDebugUtilsMessengerEXT m_DebugMessenger;
+	VkDevice m_Device = VK_NULL_HANDLE;
+	VkSurfaceKHR m_Surface;
 
-	VkInstance instance;
-	VkDebugUtilsMessengerEXT debugMessenger;
-	VkDevice device = VK_NULL_HANDLE;
-	VkSurfaceKHR surface;
-
-	VkSemaphore imageAvailableSemaphore;
-	VkSemaphore renderFinishedSemaphore;
-	VkFence inFlightFence;
+	VkSemaphore m_ImageAvailableSemaphore;
+	VkSemaphore m_RenderFinishedSemaphore;
+	VkFence m_InFlightFence;
 
 	void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 	void SetupDebugMessenger();
 	std::vector<const char*> GetRequiredExtensions();
-	bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
+	bool CheckDeviceExtensionSupport(VkPhysicalDevice m_Device);
 	void CreateInstance();
 
 	void CreateSyncObjects();
 	void DrawFrame();
 
-	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback
+	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback
 	(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, 
 		VkDebugUtilsMessageTypeFlagsEXT messageType, 

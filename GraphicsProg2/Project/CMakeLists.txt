@@ -38,7 +38,7 @@ set(SOURCES
  "MachineShader.h" "MachineShader.cpp")
 
 # Create the executable
-add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES} )
+add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES}  "labwork/Mesh.h" "labwork/Mesh.cpp")
 add_dependencies(${PROJECT_NAME} Shaders)
 
 # Link libraries

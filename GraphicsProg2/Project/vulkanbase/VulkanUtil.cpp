@@ -28,7 +28,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
 	}
 }
 
-std::vector<char> readFile(const std::string& filename) 
+std::vector<char> ReadFile(const std::string& filename) 
 {
 	std::ifstream file(filename, std::ios::ate | std::ios::binary);
 

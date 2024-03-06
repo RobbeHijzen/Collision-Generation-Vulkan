@@ -4,7 +4,49 @@
 #include "vulkan/vulkan_core.h"
 #include <string>
 #include <vector>
+#include <array>
 #include "vulkanbase/VulkanUtil.h"
+#include "glm/glm.hpp"
+
+
+struct Vertex
+{
+	glm::vec2 pos;
+	glm::vec3 color;
+
+	static VkVertexInputBindingDescription GetBindingDescription() 
+	{
+		VkVertexInputBindingDescription bindingDescription{};
+		bindingDescription.binding = 0;
+		bindingDescription.stride = sizeof(Vertex);
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		return bindingDescription;
+	}
+
+	static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDescriptions() 
+	{
+		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+
+		attributeDescriptions[0].binding = 0;
+		attributeDescriptions[0].location = 0;
+		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+		attributeDescriptions[0].offset = offsetof(Vertex, pos);
+
+		attributeDescriptions[1].binding = 0;
+		attributeDescriptions[1].location = 1;
+		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+		return attributeDescriptions;
+	}
+};
+const std::vector<Vertex> vertices = {
+	{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+	{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+};
+
 
 class MachineShader
 {
@@ -12,18 +54,18 @@ public:
 	explicit MachineShader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile);
 
 	// shader stages and shader modules
-	void initialize(const VkDevice& device)
+	void Initialize(const VkDevice& device)
 	{
 		m_ShaderStages.clear();
-		m_ShaderStages.emplace_back(createVertexShaderInfo(device));
-		m_ShaderStages.emplace_back(createFragmentShaderInfo(device));
+		m_ShaderStages.emplace_back(CreateVertexShaderInfo(device));
+		m_ShaderStages.emplace_back(CreateFragmentShaderInfo(device));
 	}
 
-	std::vector<VkPipelineShaderStageCreateInfo>& getShaderStages()
+	std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages()
 	{
 		return m_ShaderStages;
 	}
-	void destroyShaderStages(const VkDevice& device)
+	void DestroyShaderStages(const VkDevice& device)
 	{
 		for (auto& shaderStage : m_ShaderStages)
 		{
@@ -31,10 +73,10 @@ public:
 		}
 	}
 
-	VkPipelineShaderStageCreateInfo createFragmentShaderInfo(const VkDevice& device)
+	VkPipelineShaderStageCreateInfo CreateFragmentShaderInfo(const VkDevice& device)
 	{
-		std::vector<char> fragShaderCode = readFile("shaders/shader.frag.spv");
-		VkShaderModule fragShaderModule = createShaderModule(device, fragShaderCode);
+		std::vector<char> fragShaderCode = ReadFile("shaders/shader.frag.spv");
+		VkShaderModule fragShaderModule = CreateShaderModule(device, fragShaderCode);
 
 		VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
 		fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -45,10 +87,10 @@ public:
 		return fragShaderStageInfo;
 	}
 
-	VkPipelineShaderStageCreateInfo createVertexShaderInfo(const VkDevice& device)
+	VkPipelineShaderStageCreateInfo CreateVertexShaderInfo(const VkDevice& device)
 	{
-		std::vector<char> vertShaderCode = readFile("shaders/shader.vert.spv");
-		VkShaderModule vertShaderModule = createShaderModule(device, vertShaderCode);
+		std::vector<char> vertShaderCode = ReadFile("shaders/shader.vert.spv");
+		VkShaderModule vertShaderModule = CreateShaderModule(device, vertShaderCode);
 
 		VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
 		vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -58,7 +100,7 @@ public:
 		return vertShaderStageInfo;
 	}
 
-	VkPipelineVertexInputStateCreateInfo createVertexInputStateInfo()
+	VkPipelineVertexInputStateCreateInfo CreateVertexInputStateInfo()
 	{
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -67,7 +109,7 @@ public:
 		return vertexInputInfo;
 	}
 
-	VkPipelineInputAssemblyStateCreateInfo createInputAssemblyStateInfo()
+	VkPipelineInputAssemblyStateCreateInfo CreateInputAssemblyStateInfo()
 	{
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -76,7 +118,7 @@ public:
 		return inputAssembly;
 	}
 
-	VkShaderModule createShaderModule(const VkDevice& device, const std::vector<char>& code)
+	VkShaderModule CreateShaderModule(const VkDevice& device, const std::vector<char>& code)
 	{
 		VkShaderModuleCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

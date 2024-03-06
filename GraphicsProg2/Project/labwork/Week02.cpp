@@ -1,7 +1,7 @@
 #include "vulkanbase/VulkanBase.h"
 
-void VulkanBase::createCommandPool(){
-	QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
+void VulkanBase::CreateCommandPool(){
+	QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(physicalDevice);
 
 	VkCommandPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -14,7 +14,7 @@ void VulkanBase::createCommandPool(){
 }
 
 
-void VulkanBase::createCommandBuffer() {
+void VulkanBase::CreateCommandBuffer() {
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.commandPool = commandPool;
@@ -26,7 +26,7 @@ void VulkanBase::createCommandBuffer() {
 	}
 }
 
-void VulkanBase::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+void VulkanBase::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = 0; // Optional
@@ -35,7 +35,7 @@ void VulkanBase::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
 	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
 		throw std::runtime_error("failed to begin recording command buffer!");
 	}
-	drawFrame(imageIndex);
+	DrawFrame(imageIndex);
 
 
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
@@ -43,7 +43,7 @@ void VulkanBase::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t ima
 	}
 }
 
-void VulkanBase::drawFrame(uint32_t imageIndex) {
+void VulkanBase::DrawFrame(uint32_t imageIndex) {
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassInfo.renderPass = renderPass;
@@ -73,11 +73,11 @@ void VulkanBase::drawFrame(uint32_t imageIndex) {
 	scissor.extent = swapChainExtent;
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	drawScene();
+	DrawScene();
 	vkCmdEndRenderPass(commandBuffer);
 }
 
-QueueFamilyIndices VulkanBase::findQueueFamilies(VkPhysicalDevice device) {
+QueueFamilyIndices VulkanBase::FindQueueFamilies(VkPhysicalDevice device) {
 	QueueFamilyIndices indices;
 
 	uint32_t queueFamilyCount = 0;
@@ -99,7 +99,7 @@ QueueFamilyIndices VulkanBase::findQueueFamilies(VkPhysicalDevice device) {
 			indices.presentFamily = i;
 		}
 
-		if (indices.isComplete()) {
+		if (indices.IsComplete()) {
 			break;
 		}
 

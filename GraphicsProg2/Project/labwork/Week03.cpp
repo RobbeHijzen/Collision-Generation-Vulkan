@@ -1,6 +1,6 @@
 #include "vulkanbase/VulkanBase.h"
 
-void VulkanBase::createFrameBuffers() {
+void VulkanBase::CreateFrameBuffers() {
 	swapChainFramebuffers.resize(swapChainImageViews.size());
 	for (size_t i = 0; i < swapChainImageViews.size(); i++) {
 		VkImageView attachments[] = {
@@ -24,7 +24,7 @@ void VulkanBase::createFrameBuffers() {
 
 
 
-void VulkanBase::createRenderPass() {
+void VulkanBase::CreateRenderPass() {
 	VkAttachmentDescription colorAttachment{};
 	colorAttachment.format = swapChainImageFormat;
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -56,7 +56,7 @@ void VulkanBase::createRenderPass() {
 	}
 }
 
-void VulkanBase::createGraphicsPipeline() {
+void VulkanBase::CreateGraphicsPipeline() {
 	VkPipelineViewportStateCreateInfo viewportState{};
 	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	viewportState.viewportCount = 1;
@@ -114,21 +114,25 @@ void VulkanBase::createGraphicsPipeline() {
 
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 
-	//VkPipelineShaderStageCreateInfo vertShaderStageInfo = m_MachineShader.createVertexShaderInfo(device);
-	//VkPipelineShaderStageCreateInfo fragShaderStageInfo = m_MachineShader.createFragmentShaderInfo(device);
 
-	//VkPipelineShaderStageCreateInfo shaderStages[] = {
-	//	vertShaderStageInfo,
-	//	fragShaderStageInfo
-	//};
-
-	std::vector<VkPipelineShaderStageCreateInfo>& shaderStages{m_MachineShader.getShaderStages()};
+	std::vector<VkPipelineShaderStageCreateInfo>& shaderStages{m_MachineShader.GetShaderStages()};
 
 
 	pipelineInfo.stageCount = shaderStages.size();
 	pipelineInfo.pStages = shaderStages.data();
-	VkPipelineVertexInputStateCreateInfo pvisci{m_MachineShader.createVertexInputStateInfo()};
-	VkPipelineInputAssemblyStateCreateInfo piasci{ m_MachineShader.createInputAssemblyStateInfo() };
+	VkPipelineVertexInputStateCreateInfo pvisci{m_MachineShader.CreateVertexInputStateInfo()};
+	VkPipelineInputAssemblyStateCreateInfo piasci{ m_MachineShader.CreateInputAssemblyStateInfo() };
+
+
+	auto bindingDescription = Vertex::GetBindingDescription();
+	auto attributeDescriptions = Vertex::GetAttributeDescriptions();
+
+	pvisci.vertexBindingDescriptionCount = 1;
+	pvisci.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	pvisci.pVertexBindingDescriptions = &bindingDescription;
+	pvisci.pVertexAttributeDescriptions = attributeDescriptions.data();
+
+
 	pipelineInfo.pVertexInputState = &pvisci;
 	pipelineInfo.pInputAssemblyState = &piasci;
 
@@ -146,5 +150,5 @@ void VulkanBase::createGraphicsPipeline() {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	m_MachineShader.destroyShaderStages(device);
+	m_MachineShader.DestroyShaderStages(device);
 }

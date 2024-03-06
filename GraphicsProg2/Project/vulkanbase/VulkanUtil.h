@@ -28,4 +28,4 @@ VkResult CreateDebugUtilsMessengerEXT
 
 void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
 
-std::vector<char> readFile(const std::string& filename);
+std::vector<char> ReadFile(const std::string& filename);

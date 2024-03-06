@@ -25,7 +25,7 @@ struct QueueFamilyIndices
 	std::optional<uint32_t> graphicsFamily;
 	std::optional<uint32_t> presentFamily;
 
-	bool isComplete() 
+	bool IsComplete() 
 	{
 		return graphicsFamily.has_value() && presentFamily.has_value();
 	}
@@ -40,54 +40,54 @@ struct SwapChainSupportDetails {
 class VulkanBase 
 {
 public:
-	void run() 
+	void Run() 
 	{
-		initWindow();
-		initVulkan();
-		mainLoop();
-		cleanup();
+		InitializeWindow();
+		InitializeVulkan();
+		MainLoop();
+		Cleanup();
 	}
 
 private:
-	void initVulkan() 
+	void InitializeVulkan() 
 	{
 		// week 06
-		createInstance();
-		setupDebugMessenger();
-		createSurface();
+		CreateInstance();
+		SetupDebugMessenger();
+		CreateSurface();
 
 		// week 05
-		pickPhysicalDevice();
-		createLogicalDevice();
+		PickPhysicalDevice();
+		CreateLogicalDevice();
 
 		// week 04 
-		createSwapChain();
-		createImageViews();
+		CreateSwapChain();
+		CreateImageViews();
 		
 		// week 03
-		m_MachineShader.initialize(device);
-		createRenderPass();
-		createGraphicsPipeline();
-		createFrameBuffers();
+		m_MachineShader.Initialize(device);
+		CreateRenderPass();
+		CreateGraphicsPipeline();
+		CreateFrameBuffers();
 		// week 02
-		createCommandPool();
-		createCommandBuffer();
+		CreateCommandPool();
+		CreateCommandBuffer();
 
 		// week 06
-		createSyncObjects();
+		CreateSyncObjects();
 	}
 
-	void mainLoop() {
+	void MainLoop() {
 		while (!glfwWindowShouldClose(window)) 
 		{
 			glfwPollEvents();
 			// week 06
-			drawFrame();
+			DrawFrame();
 		}
 		vkDeviceWaitIdle(device);
 	}
 
-	void cleanup() 
+	void Cleanup() 
 	{
 		vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
 		vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
@@ -119,9 +119,10 @@ private:
 		glfwTerminate();
 	}
 
-	void createSurface() 
+	void CreateSurface() 
 	{
-		if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+		if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) 
+		{
 			throw std::runtime_error("failed to create window surface!");
 		}
 	}
@@ -136,8 +137,8 @@ private:
 	GLFWwindow* window;
 	// Important to initialize before creating the graphics pipeline
 	MachineShader m_MachineShader{"shaders/shader.vert.spv", "shaders/shader.frag.spv"};
-	void initWindow();
-	void drawScene();
+	void InitializeWindow();
+	void DrawScene();
 
 	// Week 02
 	// Queue families
@@ -146,12 +147,12 @@ private:
 	VkCommandPool commandPool;
 	VkCommandBuffer commandBuffer;
 
-	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 
-	void drawFrame(uint32_t imageIndex);
-	void createCommandBuffer();
-	void createCommandPool(); 
-	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+	void DrawFrame(uint32_t imageIndex);
+	void CreateCommandBuffer();
+	void CreateCommandPool(); 
+	void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 	
 	// Week 03
 	// Renderpass concept
@@ -162,9 +163,9 @@ private:
 	VkPipeline graphicsPipeline;
 	VkRenderPass renderPass;
 
-	void createFrameBuffers();
-	void createRenderPass();
-	void createGraphicsPipeline();
+	void CreateFrameBuffers();
+	void CreateRenderPass();
+	void CreateGraphicsPipeline();
 
 	// Week 04
 	// Swap chain and image view support
@@ -176,12 +177,12 @@ private:
 
 	std::vector<VkImageView> swapChainImageViews;
 
-	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
-	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-	void createSwapChain();
-	void createImageViews();
+	SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+	void CreateSwapChain();
+	void CreateImageViews();
 
 	// Week 05 
 	// Logical and physical device
@@ -190,9 +191,9 @@ private:
 	VkQueue graphicsQueue;
 	VkQueue presentQueue;
 	
-	void pickPhysicalDevice();
-	bool isDeviceSuitable(VkPhysicalDevice device);
-	void createLogicalDevice();
+	void PickPhysicalDevice();
+	bool IsDeviceSuitable(VkPhysicalDevice device);
+	void CreateLogicalDevice();
 
 	// Week 06
 	// Main initialization
@@ -206,14 +207,14 @@ private:
 	VkSemaphore renderFinishedSemaphore;
 	VkFence inFlightFence;
 
-	void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-	void setupDebugMessenger();
-	std::vector<const char*> getRequiredExtensions();
-	bool checkDeviceExtensionSupport(VkPhysicalDevice device);
-	void createInstance();
+	void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+	void SetupDebugMessenger();
+	std::vector<const char*> GetRequiredExtensions();
+	bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
+	void CreateInstance();
 
-	void createSyncObjects();
-	void drawFrame();
+	void CreateSyncObjects();
+	void DrawFrame();
 
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback
 	(

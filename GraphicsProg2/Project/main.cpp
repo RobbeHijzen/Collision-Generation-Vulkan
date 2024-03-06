@@ -9,7 +9,7 @@ int main() {
 
 	try 
 	{
-		vulkanApp.run();
+		vulkanApp.Run();
 	}
 	catch (const std::exception& execption) 
 	{

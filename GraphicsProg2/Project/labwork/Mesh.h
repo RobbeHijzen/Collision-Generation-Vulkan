@@ -3,6 +3,7 @@
 #include "vulkan/vulkan_core.h"
 #include "glm/glm.hpp"
 #include <array>
+#include <vector>
 
 
 struct Vertex
@@ -10,7 +11,7 @@ struct Vertex
 	glm::vec2 pos;
 	glm::vec3 color;
 
-	static VkVertexInputBindingDescription GetBindingDescription()
+	static auto GetBindingDescription()
 	{
 		VkVertexInputBindingDescription bindingDescription{};
 		bindingDescription.binding = 0;
@@ -20,7 +21,7 @@ struct Vertex
 		return bindingDescription;
 	}
 
-	static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDescriptions()
+	static auto GetAttributeDescriptions()
 	{
 		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
 
@@ -41,7 +42,21 @@ struct Vertex
 class Mesh
 {
 public:
+	Mesh() = default;
+
+	void Draw(VkCommandBuffer buffer);
+
+	const std::vector<Vertex>& GetVertices() { return m_Vertices; };
 
 private:
+
+	const std::vector<Vertex> m_Vertices
+	{
+	{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{0.5f, 0.5f},  {0.0f, 1.0f, 0.0f}},
+	{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+	};
+
+
 
 };

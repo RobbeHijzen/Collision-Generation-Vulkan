@@ -1,6 +1,7 @@
 #include "vulkanbase/VulkanBase.h"
 
-SwapChainSupportDetails VulkanBase::QuerySwapChainSupport(VkPhysicalDevice m_Device) {
+SwapChainSupportDetails VulkanBase::QuerySwapChainSupport(VkPhysicalDevice m_Device) 
+{
 	SwapChainSupportDetails details;
 
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_Device, m_Surface, &details.capabilities);
@@ -8,7 +9,8 @@ SwapChainSupportDetails VulkanBase::QuerySwapChainSupport(VkPhysicalDevice m_Dev
 	uint32_t formatCount;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(m_Device, m_Surface, &formatCount, nullptr);
 
-	if (formatCount != 0) {
+	if (formatCount != 0) 
+	{
 		details.formats.resize(formatCount);
 		vkGetPhysicalDeviceSurfaceFormatsKHR(m_Device, m_Surface, &formatCount, details.formats.data());
 	}
@@ -16,7 +18,8 @@ SwapChainSupportDetails VulkanBase::QuerySwapChainSupport(VkPhysicalDevice m_Dev
 	uint32_t presentModeCount;
 	vkGetPhysicalDeviceSurfacePresentModesKHR(m_Device, m_Surface, &presentModeCount, nullptr);
 
-	if (presentModeCount != 0) {
+	if (presentModeCount != 0) 
+	{
 		details.presentModes.resize(presentModeCount);
 		vkGetPhysicalDeviceSurfacePresentModesKHR(m_Device, m_Surface, &presentModeCount, details.presentModes.data());
 	}
@@ -24,8 +27,10 @@ SwapChainSupportDetails VulkanBase::QuerySwapChainSupport(VkPhysicalDevice m_Dev
 	return details;
 }
 
-VkSurfaceFormatKHR VulkanBase::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
-	for (const auto& availableFormat : availableFormats) {
+VkSurfaceFormatKHR VulkanBase::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) 
+{
+	for (const auto& availableFormat : availableFormats) 
+	{
 		if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
 			return availableFormat;
 		}
@@ -34,9 +39,12 @@ VkSurfaceFormatKHR VulkanBase::ChooseSwapSurfaceFormat(const std::vector<VkSurfa
 	return availableFormats[0];
 }
 
-VkPresentModeKHR VulkanBase::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
-	for (const auto& availablePresentMode : availablePresentModes) {
-		if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+VkPresentModeKHR VulkanBase::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) 
+{
+	for (const auto& availablePresentMode : availablePresentModes) 
+	{
+		if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) 
+		{
 			return availablePresentMode;
 		}
 	}
@@ -44,8 +52,10 @@ VkPresentModeKHR VulkanBase::ChooseSwapPresentMode(const std::vector<VkPresentMo
 	return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D VulkanBase::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
-	if (capabilities.currentExtent.width != (std::numeric_limits<uint32_t>::max)()) {
+VkExtent2D VulkanBase::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) 
+{
+	if (capabilities.currentExtent.width != (std::numeric_limits<uint32_t>::max)()) 
+	{
 		return capabilities.currentExtent;
 	}
 	else {
@@ -64,7 +74,8 @@ VkExtent2D VulkanBase::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabili
 	}
 }
 
-void VulkanBase::CreateSwapChain() {
+void VulkanBase::CreateSwapChain() 
+{
 	SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(m_PhysicalDevice);
 
 	VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -119,10 +130,12 @@ void VulkanBase::CreateSwapChain() {
 	m_SwapChainExtent = extent;
 }
 
-void VulkanBase::CreateImageViews() {
+void VulkanBase::CreateImageViews() 
+{
 	m_SwapChainImageViews.resize(m_SwapChainImages.size());
 
-	for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
+	for (size_t i = 0; i < m_SwapChainImages.size(); i++) 
+	{
 		VkImageViewCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		createInfo.image = m_SwapChainImages[i];
@@ -138,7 +151,8 @@ void VulkanBase::CreateImageViews() {
 		createInfo.subresourceRange.baseArrayLayer = 0;
 		createInfo.subresourceRange.layerCount = 1;
 
-		if (vkCreateImageView(m_Device, &createInfo, nullptr, &m_SwapChainImageViews[i]) != VK_SUCCESS) {
+		if (vkCreateImageView(m_Device, &createInfo, nullptr, &m_SwapChainImageViews[i]) != VK_SUCCESS) 
+		{
 			throw std::runtime_error("failed to create image views!");
 		}
 	}

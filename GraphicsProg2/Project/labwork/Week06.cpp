@@ -36,7 +36,8 @@ void VulkanBase::CreateSyncObjects() {
 
 }
 
-void VulkanBase::DrawFrame() {
+void VulkanBase::DrawFrame()
+{
 	vkWaitForFences(m_Device, 1, &m_InFlightFence, VK_TRUE, UINT64_MAX);
 	vkResetFences(m_Device, 1, &m_InFlightFence);
 

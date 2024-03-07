@@ -1,6 +1,7 @@
 #include "vulkanbase/VulkanBase.h"
 
-void VulkanBase::PickPhysicalDevice() {
+void VulkanBase::PickPhysicalDevice() 
+{
 	uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(m_Instance, &deviceCount, nullptr);
 
@@ -27,14 +28,16 @@ void VulkanBase::PickPhysicalDevice() {
 	}
 }
 
-bool VulkanBase::IsDeviceSuitable(VkPhysicalDevice m_Device) {
+bool VulkanBase::IsDeviceSuitable(VkPhysicalDevice m_Device) 
+{
 	QueueFamilyIndices indices = FindQueueFamilies(m_Device);
 	bool extensionsSupported = CheckDeviceExtensionSupport(m_Device);
 	return indices.IsComplete() && extensionsSupported;
 
 }
 
-void VulkanBase::CreateLogicalDevice() {
+void VulkanBase::CreateLogicalDevice() 
+{
 	QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -76,7 +79,8 @@ void VulkanBase::CreateLogicalDevice() {
 		createInfo.enabledLayerCount = 0;
 	}
 
-	if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS) {
+	if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS) 
+	{
 		throw std::runtime_error("failed to create logical device!");
 	}
 

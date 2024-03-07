@@ -50,6 +50,11 @@ public:
 
 private:
 
+	Mesh m_Mesh{};
+	VkBuffer m_VertexBuffer{};
+	VkDeviceMemory m_VertexBufferMemory{};
+
+
 	void InitializeVulkan() 
 	{
 		// week 06
@@ -73,13 +78,15 @@ private:
 		CreateFrameBuffers();
 		// week 02
 		CreateCommandPool();
+		CreateVertexBuffer();
 		CreateCommandBuffer();
 
 		// week 06
 		CreateSyncObjects();
 	}
 
-	void MainLoop() {
+	void MainLoop() 
+	{
 		while (!glfwWindowShouldClose(m_Window)) 
 		{
 			glfwPollEvents();
@@ -112,6 +119,10 @@ private:
 			DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
 		}
 		vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
+
+		vkDestroyBuffer(m_Device, m_VertexBuffer, nullptr);
+		vkFreeMemory(m_Device, m_VertexBufferMemory, nullptr);
+
 		vkDestroyDevice(m_Device, nullptr);
 
 		vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
@@ -128,7 +139,6 @@ private:
 			throw std::runtime_error("failed to create window surface!");
 		}
 	}
-	
 
 	
 	GLFWwindow* m_Window;
@@ -149,6 +159,8 @@ private:
 	void CreateCommandPool(); 
 	void RecordCommandBuffer(VkCommandBuffer m_CommandBuffer, uint32_t imageIndex);
 	
+	void CreateVertexBuffer();
+	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	
 	// RenderPass
 	std::vector<VkFramebuffer> m_SwapChainFramebuffers;

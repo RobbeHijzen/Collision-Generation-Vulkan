@@ -51,7 +51,7 @@ void VulkanBase::RecordCommandBuffer(VkCommandBuffer m_CommandBuffer, uint32_t i
 
 void VulkanBase::CreateVertexBuffer()
 {
-	auto vertices{m_Mesh.GetVertices()};
+	auto vertices{m_Meshes[0].GetVertices()};
 
 	VkBufferCreateInfo bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;

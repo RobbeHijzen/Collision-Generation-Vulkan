@@ -44,7 +44,7 @@ class Mesh
 public:
 	Mesh() = default;
 
-	void Draw(VkCommandBuffer buffer);
+	void Draw(VkCommandBuffer buffer) const;
 
 	const std::vector<Vertex>& GetVertices() { return m_Vertices; };
 

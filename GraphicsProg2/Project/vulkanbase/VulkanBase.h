@@ -50,7 +50,7 @@ public:
 
 private:
 
-	Mesh m_Mesh{};
+	std::vector<Mesh> m_Meshes{ Mesh{} };
 	VkBuffer m_VertexBuffer{};
 	VkDeviceMemory m_VertexBufferMemory{};
 

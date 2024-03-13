@@ -12,5 +12,8 @@ void VulkanBase::InitializeWindow()
 
 void VulkanBase::DrawScene() 
 {
-	vkCmdDraw(m_CommandBuffer, 6, 1, 0, 0);
+	for (const auto& mesh : m_Meshes)
+	{
+		mesh.Draw(m_CommandBuffer);
+	}
 }

@@ -2,5 +2,5 @@
 
 void Mesh::Draw(VkCommandBuffer buffer) const
 {
-	vkCmdDraw(buffer, static_cast<uint32_t>(m_Vertices.size()), 1, 0, 0);
+	vkCmdDrawIndexed(buffer, static_cast<uint32_t>(m_Indices.size()), 1, 0, 0, 0);
 }

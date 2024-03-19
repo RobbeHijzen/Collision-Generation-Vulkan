@@ -47,16 +47,18 @@ public:
 	void Draw(VkCommandBuffer buffer) const;
 
 	const std::vector<Vertex>& GetVertices() { return m_Vertices; };
+	const std::vector<uint16_t>& GetIndices() { return m_Indices; };
 
 private:
 
 	const std::vector<Vertex> m_Vertices
 	{
-	{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-	{{0.5f, 0.5f},  {0.0f, 1.0f, 0.0f}},
-	{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
 	};
 
-
+	const std::vector<uint16_t> m_Indices { 0, 1, 2, 2, 3, 0 };
 
 };

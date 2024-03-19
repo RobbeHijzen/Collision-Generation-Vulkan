@@ -53,7 +53,8 @@ private:
 	std::vector<Mesh> m_Meshes{ Mesh{} };
 	VkBuffer m_VertexBuffer{};
 	VkDeviceMemory m_VertexBufferMemory{};
-
+	VkBuffer m_IndexBuffer{};
+	VkDeviceMemory m_IndexBufferMemory{};
 
 	void InitializeVulkan() 
 	{
@@ -76,9 +77,11 @@ private:
 		CreateRenderPass();
 		CreateGraphicsPipeline();
 		CreateFrameBuffers();
-		// week 02
+
+		// week 02 (and a bit of Week 3 (Index Buffer))
 		CreateCommandPool();
 		CreateVertexBuffer();
+		CreateIndexBuffer();
 		CreateCommandBuffer();
 
 		// week 06
@@ -120,8 +123,13 @@ private:
 		}
 		vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
 
+		// Destroy Vertex and Index buffers
+		vkDestroyBuffer(m_Device, m_IndexBuffer, nullptr);
+		vkFreeMemory(m_Device, m_IndexBufferMemory, nullptr);
+
 		vkDestroyBuffer(m_Device, m_VertexBuffer, nullptr);
 		vkFreeMemory(m_Device, m_VertexBufferMemory, nullptr);
+		//---------------------------------
 
 		vkDestroyDevice(m_Device, nullptr);
 
@@ -159,7 +167,14 @@ private:
 	void CreateCommandPool(); 
 	void RecordCommandBuffer(VkCommandBuffer m_CommandBuffer, uint32_t imageIndex);
 	
+	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+	
 	void CreateVertexBuffer();
+	void CreateIndexBuffer();
+
+
+	
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	
 	// RenderPass

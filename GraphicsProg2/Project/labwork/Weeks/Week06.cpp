@@ -44,6 +44,8 @@ void VulkanBase::DrawFrame()
 	uint32_t imageIndex;
 	vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
+	UpdateUniformBuffer(imageIndex);
+
 	vkResetCommandBuffer(m_CommandBuffer, /*VkCommandBufferResetFlagBits*/ 0);
 	RecordCommandBuffer(m_CommandBuffer, imageIndex);
 

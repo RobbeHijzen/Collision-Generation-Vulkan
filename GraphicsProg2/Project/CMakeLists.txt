@@ -29,16 +29,16 @@ set(SOURCES
     "vulkanbase/VulkanUtil.h"
     "vulkanbase/VulkanUtil.cpp"
     # Add other source files here
-    "labwork/Week01.cpp"
-    "labwork/Week02.cpp"
-    "labwork/Week03.cpp"
-    "labwork/Week04.cpp"
-    "labwork/Week05.cpp"
-    "labwork/Week06.cpp"
+    "labwork/Weeks/Week01.cpp"
+    "labwork/Weeks/Week02.cpp"
+    "labwork/Weeks/Week03.cpp"
+    "labwork/Weeks/Week04.cpp"
+    "labwork/Weeks/Week05.cpp"
+    "labwork/Weeks/Week06.cpp"
  "MachineShader.h" "MachineShader.cpp")
 
 # Create the executable
-add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES}  "labwork/Mesh.h" "labwork/Mesh.cpp")
+add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES}  "labwork/Mesh.h" "labwork/Mesh.cpp" "labwork/Camera.h")
 add_dependencies(${PROJECT_NAME} Shaders)
 
 # Link libraries

@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 #include "VulkanUtil.h"
+#include "labwork/Camera.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -16,6 +17,8 @@
 #include <limits>
 #include <algorithm>
 #include <MachineShader.h>
+#include <chrono>
+#include <glm/gtc/matrix_transform.hpp>
 
 const std::vector<const char*> validationLayers{ "VK_LAYER_KHRONOS_validation" };
 const std::vector<const char*> deviceExtensions{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
@@ -50,11 +53,25 @@ public:
 
 private:
 
+	float m_DeltaTime{};
+
 	std::vector<Mesh> m_Meshes{ Mesh{} };
+
 	VkBuffer m_VertexBuffer{};
 	VkDeviceMemory m_VertexBufferMemory{};
+
 	VkBuffer m_IndexBuffer{};
 	VkDeviceMemory m_IndexBufferMemory{};
+
+	std::vector<VkBuffer> m_UniformBuffers;
+	std::vector<VkDeviceMemory> m_UniformBuffersMemory;
+	std::vector<void*> m_UniformBuffersMapped;
+	VkDescriptorPool m_DescriptorPool;
+	std::vector<VkDescriptorSet> m_DescriptorSets;
+
+	uint32_t m_CurrentFrame = 0;
+
+	Camera m_Camera{ glm::vec3{2.f, 2.f, 2.f}, 90.f };
 
 	void InitializeVulkan() 
 	{
@@ -75,6 +92,7 @@ private:
 		// week 03
 		m_MachineShader.Initialize(m_Device);
 		CreateRenderPass();
+		CreateDescriptorSetLayout();
 		CreateGraphicsPipeline();
 		CreateFrameBuffers();
 
@@ -82,6 +100,10 @@ private:
 		CreateCommandPool();
 		CreateVertexBuffer();
 		CreateIndexBuffer();
+		CreateUnfiformBuffers();
+		CreateDescriptorPool();
+		CreateDescriptorSets();
+
 		CreateCommandBuffer();
 
 		// week 06
@@ -92,36 +114,45 @@ private:
 	{
 		while (!glfwWindowShouldClose(m_Window)) 
 		{
+			static auto startTime = std::chrono::high_resolution_clock::now();
+
 			glfwPollEvents();
 			// week 06
 			DrawFrame();
+
+			auto currentTime = std::chrono::high_resolution_clock::now();
+			m_DeltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 		}
 		vkDeviceWaitIdle(m_Device);
 	}
 
 	void Cleanup() 
 	{
-		vkDestroySemaphore(m_Device, m_RenderFinishedSemaphore, nullptr);
-		vkDestroySemaphore(m_Device, m_ImageAvailableSemaphore, nullptr);
-		vkDestroyFence(m_Device, m_InFlightFence, nullptr);
-
-		vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
-		for (auto framebuffer : m_SwapChainFramebuffers) {
+		// SwapChain cleanup
+		for (auto framebuffer : m_SwapChainFramebuffers) 
+		{
 			vkDestroyFramebuffer(m_Device, framebuffer, nullptr);
 		}
+		for (auto imageView : m_SwapChainImageViews) 
+		{
+			vkDestroyImageView(m_Device, imageView, nullptr);
+		}
+		vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
 
+		// Pipeline cleanup
 		vkDestroyPipeline(m_Device, m_GraphicsPipeline, nullptr);
 		vkDestroyPipelineLayout(m_Device, m_PipelineLayout, nullptr);
 		vkDestroyRenderPass(m_Device, m_RenderPass, nullptr);
 
-		for (auto imageView : m_SwapChainImageViews) {
-			vkDestroyImageView(m_Device, imageView, nullptr);
+		// Uniform buffers cleanup
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			vkDestroyBuffer(m_Device, m_UniformBuffers[i], nullptr);
+			vkFreeMemory(m_Device, m_UniformBuffersMemory[i], nullptr);
 		}
 
-		if (enableValidationLayers) {
-			DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
-		}
-		vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
+		vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
+		vkDestroyDescriptorSetLayout(m_Device, m_DescriptorSetLayout, nullptr);
 
 		// Destroy Vertex and Index buffers
 		vkDestroyBuffer(m_Device, m_IndexBuffer, nullptr);
@@ -131,7 +162,19 @@ private:
 		vkFreeMemory(m_Device, m_VertexBufferMemory, nullptr);
 		//---------------------------------
 
+		vkDestroySemaphore(m_Device, m_RenderFinishedSemaphore, nullptr);
+		vkDestroySemaphore(m_Device, m_ImageAvailableSemaphore, nullptr);
+		vkDestroyFence(m_Device, m_InFlightFence, nullptr);
+
+		vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
+		
 		vkDestroyDevice(m_Device, nullptr);
+
+
+		if (enableValidationLayers) 
+		{
+			DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
+		}
 
 		vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
 		vkDestroyInstance(m_Instance, nullptr);
@@ -154,6 +197,9 @@ private:
 	MachineShader m_MachineShader{"shaders/shader.vert.spv", "shaders/shader.frag.spv"};
 	void InitializeWindow();
 	void DrawScene();
+	
+
+	void CreateDescriptorSetLayout();
 
 	
 	// Command Buffer
@@ -173,12 +219,17 @@ private:
 	void CreateVertexBuffer();
 	void CreateIndexBuffer();
 
+	void CreateUnfiformBuffers();
+	void UpdateUniformBuffer(uint32_t currentImage);
+	void CreateDescriptorPool();
+	void CreateDescriptorSets();
 
 	
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	
 	// RenderPass
 	std::vector<VkFramebuffer> m_SwapChainFramebuffers;
+	VkDescriptorSetLayout m_DescriptorSetLayout;
 	VkPipelineLayout m_PipelineLayout;
 	VkPipeline m_GraphicsPipeline;
 	VkRenderPass m_RenderPass;

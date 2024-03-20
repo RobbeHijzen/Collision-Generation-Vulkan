@@ -132,6 +132,8 @@ void VulkanBase::DrawFrame(uint32_t imageIndex)
 	vkCmdBindIndexBuffer(m_CommandBuffer, m_IndexBuffer, 0, VK_INDEX_TYPE_UINT16);
 	//-------------------------------
 
+	vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSets[m_CurrentFrame], 0, nullptr);
+
 	DrawScene();
 	vkCmdEndRenderPass(m_CommandBuffer);
 }

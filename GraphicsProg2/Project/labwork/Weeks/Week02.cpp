@@ -66,7 +66,6 @@ void VulkanBase::CreateVertexBuffer()
 	vkUnmapMemory(m_Device, stagingBufferMemory);
 
 
-
 	CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
 				 m_VertexBuffer, m_VertexBufferMemory);
 
@@ -129,7 +128,7 @@ void VulkanBase::DrawFrame(uint32_t imageIndex)
 	VkDeviceSize offsets[] = { 0 };
 	vkCmdBindVertexBuffers(m_CommandBuffer, 0, 1, vertexBuffers, offsets);
 
-	vkCmdBindIndexBuffer(m_CommandBuffer, m_IndexBuffer, 0, VK_INDEX_TYPE_UINT16);
+	vkCmdBindIndexBuffer(m_CommandBuffer, m_IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 	//-------------------------------
 
 	vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSets[m_CurrentFrame], 0, nullptr);

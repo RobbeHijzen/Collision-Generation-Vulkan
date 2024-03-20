@@ -4,7 +4,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-//#include <SDL2/SDL.h>
+#include <SDL2/SDL.h>
 
 struct Camera
 {
@@ -22,7 +22,7 @@ struct Camera
 	float fovAngle;
 	float fov;
 	
-	glm::mat4 unitMatrix{ glm::mat4{{1.f, 0.f, 0.f, 0.f}, {0.f, 1.f, 0.f, 0.f}, {0.f, 0.f, 1.f, 0.f}, {0.f, 0.f, 0.f, 1.f}} };
+	glm::mat4 unitMatrix{ glm::mat4{1.f} };
 
 	glm::vec3 forward{ 0.f, 0.f, 1.f };
 	glm::vec3 up{ 0.f, 1.f, 0.f };
@@ -65,21 +65,6 @@ struct Camera
 
 		projectionMatrix = glm::perspective(fov, width / height, nearDistance, farDistance);
 	}
-
-	/*glm::vec3 TransformVector(const glm::vec3& v, glm::mat4 m) const
-	{
-		return TransformVector(v.x, v.y, v.z, m);
-	}
-
-	glm::vec3 TransformVector(float x, float y, float z, glm::mat4 m) const
-	{
-		return glm::vec3{
-			m[0].x * x + m[1].x * y + m[2].x * z,
-			m[0].y * x + m[1].y * y + m[2].y * z,
-			m[0].z * x + m[1].z * y + m[2].z * z
-		};
-	}*/
-
 
 
 	void Update(float deltaTime)

@@ -8,10 +8,6 @@ file(GLOB_RECURSE GLSL_SOURCE_FILES
     "${SHADER_SOURCE_DIR}/*.vert"
 )
 
-#file(GLOB_RECURSE OBJ_SOURCE_FILES
-#    "${RESOURCE_SOURCE_DIR}/*.obj"
-#)
-
 foreach(GLSL ${GLSL_SOURCE_FILES})
     get_filename_component(FILE_NAME ${GLSL} NAME)
     set(SPIRV "${SHADER_BINARY_DIR}/${FILE_NAME}.spv")
@@ -27,7 +23,6 @@ add_custom_target(
     Shaders 
     DEPENDS ${SPIRV_BINARY_FILES}
 )
-#find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
 
 set(SOURCES
     "main.cpp"
@@ -43,21 +38,14 @@ set(SOURCES
     "labwork/Weeks/Week06.cpp"
  "MachineShader.h" "MachineShader.cpp")
 
+
 # Create the executable
 add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES}  "labwork/Mesh.h" "labwork/Mesh.cpp" "labwork/Camera.h" "labwork/Utils.h")
 add_dependencies(${PROJECT_NAME} Shaders)
 
+
+
 # Link libraries
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES} glfw)
-#target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2)
 
-
-#add_custom_command(TARGET W01_VulkanLab POST_BUILD
-#    COMMAND ${CMAKE_COMMAND} -E copy
-#            ${CMAKE_SOURCE_DIR}/Resources/tuktuk.obj
-#            ${CMAKE_CURRENT_BINARY_DIR}/Resources/tuktuk.obj
-#)
-#
-## Include the Resources directory so it's accessible in the build
-#target_include_directories(W01_VulkanLab PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/Resources)

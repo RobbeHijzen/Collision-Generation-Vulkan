@@ -38,6 +38,10 @@ set(SOURCES
  "MachineShader.h" "MachineShader.cpp" 
 )
 
+
+set(SDL2_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/Project/SDL2/include")
+include_directories(${SDL2_INCLUDE_DIR})
+
 set(OBJ_FILE "${CMAKE_SOURCE_DIR}/Project/resources/lowpoly_bunny.obj")
 add_custom_target(BunnyObj SOURCES ${OBJ_FILE})
 
@@ -48,4 +52,5 @@ add_dependencies(${PROJECT_NAME} Shaders BunnyObj)
 # Link libraries
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES} glfw)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/Project/SDL2/lib/x64/SDL2.lib)
 

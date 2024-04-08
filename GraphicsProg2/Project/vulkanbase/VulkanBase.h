@@ -112,16 +112,17 @@ private:
 
 	void MainLoop() 
 	{
+		static auto startTime = std::chrono::high_resolution_clock::now();
+
 		while (!glfwWindowShouldClose(m_Window)) 
 		{
-			static auto startTime = std::chrono::high_resolution_clock::now();
-
 			glfwPollEvents();
 			// week 06
 			DrawFrame();
 
 			auto currentTime = std::chrono::high_resolution_clock::now();
 			m_DeltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+			startTime = currentTime;
 		}
 		vkDeviceWaitIdle(m_Device);
 	}

@@ -138,8 +138,8 @@ void VulkanBase::UpdateUniformBuffer(uint32_t currentImage)
 	ubo.model = glm::rotate(glm::mat4(1.0f), m_DeltaTime * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	ubo.view = m_Camera.viewMatrix;
 	ubo.proj = m_Camera.projectionMatrix;
-	//ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	//ubo.proj = glm::perspective(glm::radians(45.0f), WIDTH / (float)HEIGHT, 0.1f, 10.0f);
+	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.proj = glm::perspective(glm::radians(45.0f), WIDTH / (float)HEIGHT, 0.1f, 10.0f);
 	ubo.proj[1][1] *= -1; // y-axis is flipped inside vulkan
 
 	memcpy(m_UniformBuffersMapped[currentImage], &ubo, sizeof(ubo));

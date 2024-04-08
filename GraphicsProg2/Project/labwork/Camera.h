@@ -29,7 +29,6 @@ struct Camera
 	glm::vec3 right{ 1.f, 0.f, 0.f };
 
 	float totalPitch{0.f};
-	//float totalYaw{3.14159265f / 2.f};
 	float totalYaw{0.f};
 
 	glm::mat4 invViewMatrix{};
@@ -46,8 +45,8 @@ struct Camera
 
 	void CalculateViewMatrix()
 	{
-		const glm::mat4 finalRotation{ glm::rotate(unitMatrix, totalPitch, glm::vec3{1.f, 0.f, 0.f})
-									  * glm::rotate(unitMatrix, totalYaw, glm::vec3{0.f, 1.f, 0.f}) };
+		const glm::mat4 finalRotation{ glm::rotate(unitMatrix, glm::radians(totalPitch), glm::vec3{1.f, 0.f, 0.f})
+									  * glm::rotate(unitMatrix,  glm::radians(totalYaw), glm::vec3{0.f, 1.f, 0.f}) };
 
 		glm::vec4 forwardVec4{ finalRotation * glm::vec4{ 0.f, 0.f, 1.f, 0.f} };
 		forward = { forwardVec4.x, forwardVec4.y, forwardVec4.z};
@@ -55,7 +54,7 @@ struct Camera
 		up = (glm::cross(forward, right));
 		
 		
-		viewMatrix = glm::lookAt(origin, forward - origin, up);
+		viewMatrix = glm::lookAt(origin, forward + origin, up);
 	}
 
 	void CalculateProjectionMatrix()

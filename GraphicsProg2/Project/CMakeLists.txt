@@ -1,6 +1,5 @@
 # Source files
 set(SHADER_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shaders")
-#set(RESOURCE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Resources")
 set(SHADER_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders")
 
 file(GLOB_RECURSE GLSL_SOURCE_FILES
@@ -36,14 +35,15 @@ set(SOURCES
     "labwork/Weeks/Week04.cpp"
     "labwork/Weeks/Week05.cpp"
     "labwork/Weeks/Week06.cpp"
- "MachineShader.h" "MachineShader.cpp")
+ "MachineShader.h" "MachineShader.cpp" 
+)
 
+set(OBJ_FILE "${CMAKE_SOURCE_DIR}/Project/resources/lowpoly_bunny.obj")
+add_custom_target(BunnyObj SOURCES ${OBJ_FILE})
 
-# Create the executable
+# Create the execut
 add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES}  "labwork/Mesh.h" "labwork/Mesh.cpp" "labwork/Camera.h" "labwork/Utils.h")
-add_dependencies(${PROJECT_NAME} Shaders)
-
-
+add_dependencies(${PROJECT_NAME} Shaders BunnyObj)
 
 # Link libraries
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

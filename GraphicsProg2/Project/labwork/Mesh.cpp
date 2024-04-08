@@ -3,13 +3,13 @@
 
 Mesh::Mesh()
 {
-	//bool succeeded = Utils::ParseOBJ("Resources/tuktuk.obj", m_Vertices, m_Indices);
-	//assert(succeeded);
-	//
-	//for (auto& vertex : m_Vertices)
-	//{
-	//	vertex.color = { 1.f, 1.f, 1.f };
-	//}
+	bool succeeded = Utils::ParseOBJ("resources/lowpoly_bunny.obj", m_Vertices, m_Indices);
+	assert(succeeded);
+
+	for (auto& vertex : m_Vertices)
+	{
+		vertex.color = { 1.f, 1.f, 1.f };
+	}
 }
 
 void Mesh::Draw(VkCommandBuffer buffer) const

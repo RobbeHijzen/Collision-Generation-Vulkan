@@ -71,7 +71,7 @@ private:
 
 	uint32_t m_CurrentFrame = 0;
 
-	Camera m_Camera{ glm::vec3{2.f, 2.f, 2.f}, 90.f };
+	Camera m_Camera{ glm::vec3{0.f, 0.f, 1.f}, 90.f };
 
 	void InitializeVulkan() 
 	{

@@ -2,8 +2,12 @@
 #include <cassert>
 #include "vulkanbase/VulkanUtil.h"
 
+#include <algorithm>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
+
+constexpr auto PI = 3.14159265358979323846f;
 
 struct Camera
 {
@@ -36,27 +40,33 @@ struct Camera
 	glm::mat4 projectionMatrix{};
 
 	const float nearDistance{ 0.1f };
-	const float farDistance{ 10.f };
+	const float farDistance{ 100.f };
 
 	const float m_MoveSpeed{ 10.f };
 	const float m_MouseMoveMultiplier{ 10.f };
-	const float m_PanSpeed{ 0.45f };
+	const float m_PanSpeed{ 1.f / 180.f };
 
 	int m_LastMouseX = 0;
 	int m_LastMouseY = 0;
 
 	void CalculateViewMatrix()
 	{
-		const glm::mat4 finalRotation{ glm::rotate(unitMatrix, glm::radians(totalPitch), glm::vec3{1.f, 0.f, 0.f})
-									  * glm::rotate(unitMatrix,  glm::radians(totalYaw), glm::vec3{0.f, 1.f, 0.f}) };
+		totalPitch = std::clamp(totalPitch, -PI / 2.f, PI / 2.f);
+
+		const glm::mat4 finalRotation{ glm::rotate(unitMatrix, totalPitch, glm::vec3{1.f, 0.f, 0.f})
+									  * glm::rotate(unitMatrix,  totalYaw, glm::vec3{0.f, 1.f, 0.f}) };
+
+		std::cout << "Current Origin: " << origin.x << ", " << origin.y << ", " << origin.z << "\n";
+
+		const glm::mat4 finalTranslation{ glm::translate(unitMatrix, origin) };
 
 		glm::vec4 forwardVec4{ finalRotation * glm::vec4{ 0.f, 0.f, 1.f, 0.f} };
-		forward = { forwardVec4.x, forwardVec4.y, forwardVec4.z};
-		right = (glm::cross({ 0.f, 1.f, 0.f }, -forward));
-		up = (glm::cross(-forward, right));
+		forward = { -forwardVec4.x, forwardVec4.y, forwardVec4.z};
+		right = glm::normalize(glm::cross({ 0.f, 1.f, 0.f }, forward));
+		up = glm::normalize(glm::cross(forward, right));
 		
-		
-		viewMatrix = glm::lookAt(origin, forward + origin, up);
+
+		viewMatrix = finalRotation * finalTranslation;
 	}
 
 	void CalculateProjectionMatrix()
@@ -65,6 +75,7 @@ struct Camera
 		float height{ HEIGHT };
 
 		projectionMatrix = glm::perspective(fov, width / height, nearDistance, farDistance);
+		projectionMatrix[1][1] *= -1;
 	}
 
 
@@ -79,27 +90,27 @@ struct Camera
 		// Keyboard input
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) 
 		{
-			origin += m_MoveSpeed * deltaTime * forward;
+			origin += m_MoveSpeed * deltaTime * glm::vec3{ forward.x, forward.y, forward.z };
 		}
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) 
 		{
-			origin -= m_MoveSpeed * deltaTime * right;
+			origin += m_MoveSpeed * deltaTime * right;
 		}
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) 
 		{
-			origin -= m_MoveSpeed * deltaTime * forward;
+			origin -= m_MoveSpeed * deltaTime * glm::vec3{ forward.x, forward.y, forward.z };
 		}
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) 
 		{
-			origin += m_MoveSpeed * deltaTime * right;
+			origin -= m_MoveSpeed * deltaTime * right;
 		}
 		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) 
 		{
-			origin.y += m_MoveSpeed * deltaTime;
+			origin.y -= m_MoveSpeed * deltaTime;
 		}
 		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) 
 		{
-			origin.y -= m_MoveSpeed * deltaTime;
+			origin.y += m_MoveSpeed * deltaTime;
 		}
 
 		// Mouse Input
@@ -122,13 +133,13 @@ struct Camera
 		else if (LMBState == GLFW_PRESS) 
 		{
 			origin += -mouseY * deltaTime * forward * m_MouseMoveMultiplier;
-			totalYaw -= mouseX * m_PanSpeed;
+			totalYaw += mouseX * m_PanSpeed;
 		}
 		// Right MouseButton
 		else if (RMBState == GLFW_PRESS)
 		{
-			totalYaw -= mouseX * m_PanSpeed;
-			totalPitch -= mouseY * m_PanSpeed;
+			totalYaw += mouseX * m_PanSpeed;
+			totalPitch += mouseY * m_PanSpeed;
 		}
 	}
 };

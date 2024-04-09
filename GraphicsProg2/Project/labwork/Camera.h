@@ -32,7 +32,7 @@ struct Camera
 	glm::vec3 right{ 1.f, 0.f, 0.f };
 
 	float totalPitch{0.f};
-	float totalYaw{0.f};
+	float totalYaw{};
 
 	glm::mat4 invViewMatrix{};
 	glm::mat4 viewMatrix{};
@@ -51,17 +51,15 @@ struct Camera
 
 	void CalculateViewMatrix()
 	{
-		totalPitch = std::clamp(totalPitch, -PI / 2.f, PI / 2.f);
 
 		const glm::mat4 finalRotation{ glm::rotate(unitMatrix, totalPitch, glm::vec3{1.f, 0.f, 0.f})
 									  * glm::rotate(unitMatrix,  totalYaw, glm::vec3{0.f, 1.f, 0.f}) };
 
-		std::cout << "Current Origin: " << origin.x << ", " << origin.y << ", " << origin.z << "\n";
-
-		const glm::mat4 finalTranslation{ glm::translate(unitMatrix, origin) };
+		// X and Y axis are reversed inside Vulkan
+		const glm::mat4 finalTranslation{ glm::translate(unitMatrix, glm::vec3{-origin.x, -origin.y, origin.z}) };
 
 		glm::vec4 forwardVec4{ finalRotation * glm::vec4{ 0.f, 0.f, 1.f, 0.f} };
-		forward = { -forwardVec4.x, forwardVec4.y, forwardVec4.z};
+		forward = { forwardVec4.x, forwardVec4.y, forwardVec4.z};
 		right = glm::normalize(glm::cross({ 0.f, 1.f, 0.f }, forward));
 		up = glm::normalize(glm::cross(forward, right));
 		
@@ -94,7 +92,7 @@ struct Camera
 		}
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) 
 		{
-			origin += m_MoveSpeed * deltaTime * right;
+			origin -= m_MoveSpeed * deltaTime * right;
 		}
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) 
 		{
@@ -102,15 +100,15 @@ struct Camera
 		}
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) 
 		{
-			origin -= m_MoveSpeed * deltaTime * right;
+			origin += m_MoveSpeed * deltaTime * right;
 		}
 		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) 
 		{
-			origin.y -= m_MoveSpeed * deltaTime;
+			origin.y += m_MoveSpeed * deltaTime;
 		}
 		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) 
 		{
-			origin.y += m_MoveSpeed * deltaTime;
+			origin.y -= m_MoveSpeed * deltaTime;
 		}
 
 		// Mouse Input
@@ -141,6 +139,8 @@ struct Camera
 			totalYaw += mouseX * m_PanSpeed;
 			totalPitch += mouseY * m_PanSpeed;
 		}
+
+		totalPitch = std::clamp(totalPitch, -PI / 2.f, PI / 2.f);
 	}
 };
 

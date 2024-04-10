@@ -48,3 +48,6 @@ add_dependencies(${PROJECT_NAME} Shaders BunnyObj)
 # Link libraries
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES} glfw)
+
+
+configure_file(${CMAKE_SOURCE_DIR}/Project/resources/lowpoly_bunny.obj ${CMAKE_CURRENT_BINARY_DIR}/resources/lowpoly_bunny.obj COPYONLY)

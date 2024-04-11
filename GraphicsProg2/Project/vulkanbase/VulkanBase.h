@@ -3,8 +3,14 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
-#include "VulkanUtil.h"
-#include "labwork/Camera.h"
+#include "VulkanUtil/VulkanUtil.h"
+#include "Abstraction/Camera.h"
+#include "Abstraction/VertexInfo.h"
+#include "Abstraction/Scene/Scenemanager.h"
+#include "Abstraction/Shaders/Shader.h"
+
+#include "Abstraction/Shaders/ShaderManager.h"
+#include "Abstraction/Shaders/DerivedShaders/MachineShader.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -16,7 +22,6 @@
 #include <set>
 #include <limits>
 #include <algorithm>
-#include <MachineShader.h>
 #include <chrono>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -28,17 +33,26 @@ struct QueueFamilyIndices
 	std::optional<uint32_t> graphicsFamily;
 	std::optional<uint32_t> presentFamily;
 
-	bool IsComplete() 
+	bool IsComplete() const
 	{
 		return graphicsFamily.has_value() && presentFamily.has_value();
 	}
 };
 
-struct SwapChainSupportDetails {
+struct SwapChainSupportDetails 
+{
 	VkSurfaceCapabilitiesKHR capabilities;
 	std::vector<VkSurfaceFormatKHR> formats;
 	std::vector<VkPresentModeKHR> presentModes;
 };
+
+//void MyLoad()
+//{
+//	auto scene{ SceneManager::GetInstance().CreateScene() };
+//
+//	
+//}
+
 
 class VulkanBase 
 {
@@ -53,47 +67,40 @@ public:
 
 private:
 
-	float m_DeltaTime{};
+	std::vector<Mesh> m_Meshes{ Mesh{"Resources/lowpoly_bunny.obj", nullptr} };
 
-	std::vector<Mesh> m_Meshes{ Mesh{} };
-
-	VkBuffer m_VertexBuffer{};
-	VkDeviceMemory m_VertexBufferMemory{};
-
-	VkBuffer m_IndexBuffer{};
-	VkDeviceMemory m_IndexBufferMemory{};
-
-	std::vector<VkBuffer> m_UniformBuffers;
-	std::vector<VkDeviceMemory> m_UniformBuffersMemory;
-	std::vector<void*> m_UniformBuffersMapped;
-	VkDescriptorPool m_DescriptorPool;
-	std::vector<VkDescriptorSet> m_DescriptorSets;
-
-	uint32_t m_CurrentFrame = 0;
-
-	Camera m_Camera{ glm::vec3{0.f, 1.f, -3.f}, 90.f };
-
-	void InitializeVulkan() 
+	void InitializeWindow()
 	{
-		// week 06
-		
+		glfwInit();
+
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+		m_Window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+	}
+	void InitializeVulkan()
+	{
+		// Instance and Validation Layer setup
+
 		CreateInstance();
 		SetupDebugMessenger();
+
+		// Surface setup
 		CreateSurface();
 
-		// week 05
+		// Physical device, Logical device and queue Families setup
 		PickPhysicalDevice();
 		CreateLogicalDevice();
 
-		// week 04 
+		// SwapChain setup
 		CreateSwapChain();
 		CreateImageViews();
-		
-		// week 03
+
+		// GraphicsPipeline setup
 		m_MachineShader.Initialize(m_Device);
 		CreateRenderPass();
 		CreateDescriptorSetLayout();
-		CreateGraphicsPipeline();
+		CreateGraphicsPipelines();
 		CreateFrameBuffers();
 
 		// week 02 (and a bit of Week 3 (Index Buffer))
@@ -104,20 +111,19 @@ private:
 		CreateDescriptorPool();
 		CreateDescriptorSets();
 
-		CreateCommandBuffer();
+		CreateCommandBuffers();
 
-		// week 06
+		// Semaphore and Fence setup
 		CreateSyncObjects();
 	}
-
-	void MainLoop() 
+	void MainLoop()
 	{
 		static auto startTime = std::chrono::high_resolution_clock::now();
 
-		while (!glfwWindowShouldClose(m_Window)) 
+		while (!glfwWindowShouldClose(m_Window))
 		{
 			glfwPollEvents();
-			// week 06
+
 			DrawFrame();
 
 			auto currentTime = std::chrono::high_resolution_clock::now();
@@ -126,15 +132,14 @@ private:
 		}
 		vkDeviceWaitIdle(m_Device);
 	}
-
-	void Cleanup() 
+	void Cleanup()
 	{
 		// SwapChain cleanup
-		for (auto framebuffer : m_SwapChainFramebuffers) 
+		for (auto framebuffer : m_SwapChainFramebuffers)
 		{
 			vkDestroyFramebuffer(m_Device, framebuffer, nullptr);
 		}
-		for (auto imageView : m_SwapChainImageViews) 
+		for (auto imageView : m_SwapChainImageViews)
 		{
 			vkDestroyImageView(m_Device, imageView, nullptr);
 		}
@@ -145,12 +150,11 @@ private:
 		vkDestroyPipelineLayout(m_Device, m_PipelineLayout, nullptr);
 		vkDestroyRenderPass(m_Device, m_RenderPass, nullptr);
 
-		// Uniform buffers cleanup
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			vkDestroyBuffer(m_Device, m_UniformBuffers[i], nullptr);
-			vkFreeMemory(m_Device, m_UniformBuffersMemory[i], nullptr);
-		}
+		// Uniform buffer cleanup
+		
+		vkDestroyBuffer(m_Device, m_UniformBuffer, nullptr);
+		vkFreeMemory(m_Device, m_UniformBufferMemory, nullptr);
+
 
 		vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
 		vkDestroyDescriptorSetLayout(m_Device, m_DescriptorSetLayout, nullptr);
@@ -161,58 +165,157 @@ private:
 
 		vkDestroyBuffer(m_Device, m_VertexBuffer, nullptr);
 		vkFreeMemory(m_Device, m_VertexBufferMemory, nullptr);
-		//---------------------------------
 
+		// Semaphore and Fence cleanup
+		
 		vkDestroySemaphore(m_Device, m_RenderFinishedSemaphore, nullptr);
 		vkDestroySemaphore(m_Device, m_ImageAvailableSemaphore, nullptr);
 		vkDestroyFence(m_Device, m_InFlightFence, nullptr);
-
-		vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
 		
+		// CommandPool cleanup
+		vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
+
+		// Logical device and Surface cleanup
 		vkDestroyDevice(m_Device, nullptr);
-
-
-		if (enableValidationLayers) 
-		{
-			DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
-		}
-
 		vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
+
+		// Validation layers and Instance cleanup
+		if (enableValidationLayers) DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
 		vkDestroyInstance(m_Instance, nullptr);
 
+		// GLFW Window cleanup
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();
 	}
 
-	void CreateSurface() 
+
+	// Window / Surface setup
+
+	GLFWwindow* m_Window;
+	VkSurfaceKHR m_Surface;
+
+	void CreateSurface()
 	{
-		if (glfwCreateWindowSurface(m_Instance, m_Window, nullptr, &m_Surface) != VK_SUCCESS) 
+		if (glfwCreateWindowSurface(m_Instance, m_Window, nullptr, &m_Surface) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create window surface!");
 		}
 	}
 
-	
-	GLFWwindow* m_Window;
-	// Important to initialize before creating the graphics pipeline
-	MachineShader m_MachineShader{"shaders/shader.vert.spv", "shaders/shader.frag.spv"};
-	void InitializeWindow();
-	void DrawScene();
-	
+	// Instance and Validation Layer setup
 
+	VkInstance m_Instance;
+	VkDebugUtilsMessengerEXT m_DebugMessenger;
+
+	void CreateInstance();
+	std::vector<const char*> GetRequiredExtensions();
+	void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+
+	void SetupDebugMessenger();
+
+
+	// Physical Device setup
+
+	VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
+
+	void PickPhysicalDevice();
+	bool IsDeviceSuitable(VkPhysicalDevice device);
+
+	bool CheckDeviceExtensionSupport(VkPhysicalDevice m_Device);
+
+	
+	// Logical device and queue Families setup
+
+	VkDevice m_Device = VK_NULL_HANDLE;
+	VkQueue m_GraphicsQueue;
+	VkQueue m_PresentQueue;
+
+	void CreateLogicalDevice();
+
+	// Swap Chain setup
+
+	VkSwapchainKHR m_SwapChain;
+	std::vector<VkImage> m_SwapChainImages;
+	VkFormat m_SwapChainImageFormat;
+	VkExtent2D m_SwapChainExtent;
+
+	std::vector<VkImageView> m_SwapChainImageViews;
+	std::vector<VkFramebuffer> m_SwapChainFramebuffers;
+
+	SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice m_Device);
+
+	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+
+	void CreateSwapChain();
+	void CreateImageViews();
+	void CreateFrameBuffers();
+
+	// GraphicsPipeline setup
+
+	VkPipeline m_GraphicsPipeline;
+	VkPipelineLayout m_PipelineLayout;
+	VkDescriptorSetLayout m_DescriptorSetLayout;
+	VkRenderPass m_RenderPass;
+
+	void CreateGraphicsPipelines();
 	void CreateDescriptorSetLayout();
+	void CreateRenderPass();
 
-	
-	// Command Buffer
+	// Command Buffer setup
+
 	VkCommandPool m_CommandPool;
 	VkCommandBuffer m_CommandBuffer;
 
-	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice m_Device);
+	void CreateCommandPool();
+	void CreateCommandBuffers();
 
-	void DrawFrame(uint32_t imageIndex);
-	void CreateCommandBuffer();
-	void CreateCommandPool(); 
+
+	// Runtime Functions
+
+	void DrawFrame();
 	void RecordCommandBuffer(VkCommandBuffer m_CommandBuffer, uint32_t imageIndex);
+	void RecordRenderPass(uint32_t imageIndex);
+	void BindPipelineInfo();
+	void BindVertexBuffers();
+	void DrawScene();
+
+	// Semaphores and Fences
+
+	VkSemaphore m_ImageAvailableSemaphore;
+	VkSemaphore m_RenderFinishedSemaphore;
+	VkFence m_InFlightFence;
+
+	void CreateSyncObjects();
+
+
+
+
+
+	float m_DeltaTime{};
+
+	VkBuffer m_VertexBuffer{};
+	VkDeviceMemory m_VertexBufferMemory{};
+
+	VkBuffer m_IndexBuffer{};
+	VkDeviceMemory m_IndexBufferMemory{};
+
+	VkBuffer m_UniformBuffer;
+	VkDeviceMemory m_UniformBufferMemory;
+	void* m_UniformBufferMapped;
+	VkDescriptorPool m_DescriptorPool;
+	VkDescriptorSet m_DescriptorSet;
+
+
+	Camera m_Camera{ glm::vec3{0.f, 1.f, -3.f}, 90.f };
+
+	
+
+	
+	MachineShader m_MachineShader{"Shaders/shader.vert.spv", "Shaders/shader.frag.spv"};
+		
+	
 	
 	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
@@ -228,61 +331,53 @@ private:
 	
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	
-	// RenderPass
-	std::vector<VkFramebuffer> m_SwapChainFramebuffers;
-	VkDescriptorSetLayout m_DescriptorSetLayout;
-	VkPipelineLayout m_PipelineLayout;
-	VkPipeline m_GraphicsPipeline;
-	VkRenderPass m_RenderPass;
 
-	void CreateFrameBuffers();
-	void CreateRenderPass();
-	void CreateGraphicsPipeline();
-
-	// SwapChain
-	VkSwapchainKHR m_SwapChain;
-	std::vector<VkImage> m_SwapChainImages;
-	VkFormat m_SwapChainImageFormat;
-	VkExtent2D m_SwapChainExtent;
-
-	std::vector<VkImageView> m_SwapChainImageViews;
-
-	SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice m_Device);
-	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-	void CreateSwapChain();
-	void CreateImageViews();
-
-
-	// Logical and Physical Devices
-	VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
-	VkQueue m_GraphicsQueue;
-	VkQueue m_PresentQueue;
-	
-	void PickPhysicalDevice();
-	bool IsDeviceSuitable(VkPhysicalDevice m_Device);
-	void CreateLogicalDevice();
 
 	
-	// Main Initialization
-	VkInstance m_Instance;
-	VkDebugUtilsMessengerEXT m_DebugMessenger;
-	VkDevice m_Device = VK_NULL_HANDLE;
-	VkSurfaceKHR m_Surface;
 
-	VkSemaphore m_ImageAvailableSemaphore;
-	VkSemaphore m_RenderFinishedSemaphore;
-	VkFence m_InFlightFence;
 
-	void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-	void SetupDebugMessenger();
-	std::vector<const char*> GetRequiredExtensions();
-	bool CheckDeviceExtensionSupport(VkPhysicalDevice m_Device);
-	void CreateInstance();
 
-	void CreateSyncObjects();
-	void DrawFrame();
+
+
+
+	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice m_Device)
+	{
+		QueueFamilyIndices indices;
+
+		uint32_t queueFamilyCount = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(m_Device, &queueFamilyCount, nullptr);
+
+		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(m_Device, &queueFamilyCount, queueFamilies.data());
+
+		int i = 0;
+		for (const auto& queueFamily : queueFamilies)
+		{
+			if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+			{
+				indices.graphicsFamily = i;
+			}
+
+			VkBool32 presentSupport = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(m_Device, i, m_Surface, &presentSupport);
+
+			if (presentSupport)
+			{
+				indices.presentFamily = i;
+			}
+
+			if (indices.IsComplete())
+			{
+				break;
+			}
+
+			i++;
+		}
+
+		return indices;
+	}
+
+
 
 	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback
 	(

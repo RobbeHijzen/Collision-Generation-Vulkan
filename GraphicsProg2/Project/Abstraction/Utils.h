@@ -3,7 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <glm/glm.hpp>
-#include "Mesh.h"
+#include "VertexInfo.h"
 
 //#define DISABLE_OBJ
 

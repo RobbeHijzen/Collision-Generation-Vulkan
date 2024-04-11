@@ -1,10 +1,5 @@
 #include "MachineShader.h"
 
-MachineShader::MachineShader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
-	: m_VertexShaderFile{vertexShaderFile}
-	, m_FragmentShaderFile{fragmentShaderFile}
-{
-}
 
 void MachineShader::Initialize(const VkDevice& m_Device)
 {
@@ -13,17 +8,9 @@ void MachineShader::Initialize(const VkDevice& m_Device)
 	m_ShaderStages.emplace_back(CreateFragmentShaderInfo(m_Device));
 }
 
-void MachineShader::DestroyShaderStages(const VkDevice& m_Device)
-{
-	for (auto& shaderStage : m_ShaderStages)
-	{
-		vkDestroyShaderModule(m_Device, shaderStage.module, nullptr);
-	}
-}
-
 VkPipelineShaderStageCreateInfo MachineShader::CreateFragmentShaderInfo(const VkDevice& m_Device)
 {
-	std::vector<char> fragShaderCode = ReadFile("shaders/shader.frag.spv");
+	std::vector<char> fragShaderCode = ReadFile(m_FragmentShaderFile);
 	VkShaderModule fragShaderModule = CreateShaderModule(m_Device, fragShaderCode);
 
 	VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
@@ -37,7 +24,7 @@ VkPipelineShaderStageCreateInfo MachineShader::CreateFragmentShaderInfo(const Vk
 
 VkPipelineShaderStageCreateInfo MachineShader::CreateVertexShaderInfo(const VkDevice& m_Device)
 {
-	std::vector<char> vertShaderCode = ReadFile("shaders/shader.vert.spv");
+	std::vector<char> vertShaderCode = ReadFile(m_VertexShaderFile);
 	VkShaderModule vertShaderModule = CreateShaderModule(m_Device, vertShaderCode);
 
 	VkPipelineShaderStageCreateInfo vertShaderStageInfo{};

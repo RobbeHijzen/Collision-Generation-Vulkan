@@ -1,17 +1,15 @@
 #pragma once
 
-#include "vulkan/vulkan_core.h"
 #include "glm/glm.hpp"
+#include "vulkan/vulkan_core.h"
 #include <array>
-#include <vector>
 
-struct UniformBufferObject 
+struct UniformBufferObject
 {
 	glm::mat4 model;
 	glm::mat4 view;
 	glm::mat4 proj;
 };
-
 
 struct Vertex
 {
@@ -46,26 +44,3 @@ struct Vertex
 	}
 };
 
-class Mesh
-{
-public:
-	Mesh();
-
-	void Draw(VkCommandBuffer buffer) const;
-
-	const std::vector<Vertex>& GetVertices() { return m_Vertices; };
-	const std::vector<uint32_t>& GetIndices() { return m_Indices; };
-
-private:
-
-	std::vector<Vertex> m_Vertices
-	{
-	{{-0.5f, -0.5f, 0.f}, {1.0f, 0.0f, 0.0f}},
-	{{0.5f, -0.5f, 0.f}, {0.0f, 1.0f, 0.0f}},
-	{{0.5f, 0.5f, 0.f}, {0.0f, 0.0f, 1.0f}},
-	{{-0.5f, 0.5f, 0.f}, {1.0f, 1.0f, 1.0f}}
-	};
-
-	std::vector<uint32_t> m_Indices { 0, 1, 2, 2, 3, 0 };
-
-};

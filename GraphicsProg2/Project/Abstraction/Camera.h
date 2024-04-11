@@ -1,6 +1,6 @@
 #pragma once
 #include <cassert>
-#include "vulkanbase/VulkanUtil.h"
+#include "VulkanUtil/VulkanUtil.h"
 
 #include <algorithm>
 #include <glm/glm.hpp>

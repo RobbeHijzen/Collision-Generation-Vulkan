@@ -25,24 +25,29 @@ add_custom_target(
 
 set(SOURCES
     "main.cpp"
-    "vulkanbase/VulkanBase.h" 
-    "vulkanbase/VulkanUtil.h"
-    "vulkanbase/VulkanUtil.cpp"
+    "VulkanBase/VulkanBase.h" 
+    "VulkanUtil/VulkanUtil.h"
+    "VulkanUtil/VulkanUtil.cpp"
     # Add other source files here
-    "labwork/Weeks/Week01.cpp"
-    "labwork/Weeks/Week02.cpp"
-    "labwork/Weeks/Week03.cpp"
-    "labwork/Weeks/Week04.cpp"
-    "labwork/Weeks/Week05.cpp"
-    "labwork/Weeks/Week06.cpp"
- "MachineShader.h" "MachineShader.cpp" 
-)
+    "Abstraction/Weeks/Week01.cpp"
+    "Abstraction/Weeks/Week02.cpp"
+    "Abstraction/Weeks/Week03.cpp"
+    
+    
+    "Abstraction/Shaders/DerivedShaders/MachineShader.h"
+    "Abstraction/Shaders/DerivedShaders/MachineShader.cpp" 
+    "VulkanBase/Implementations/Initialization/InstanceInit.cpp"
+    "VulkanBase/Implementations/Initialization/PhysicalDeviceInit.cpp" 
+    "VulkanBase/Implementations/Initialization/LogicalDeviceInit.cpp" 
+    "VulkanBase/Implementations/Initialization/SwapChainInit.cpp"
 
-set(OBJ_FILE "${CMAKE_SOURCE_DIR}/Project/resources/lowpoly_bunny.obj")
+ "Abstraction/Scene/Scene.h" "Abstraction/Scene/Scenemanager.h" "Abstraction/Scene/Scene.cpp" "Abstraction/Singleton.h" "Abstraction/Shaders/ShaderManager.h" "Abstraction/Shaders/Shader.h"  "Abstraction/VertexInfo.h" "VulkanBase/Implementations/Initialization/PipelineInit.cpp" "VulkanBase/Implementations/Initialization/CommandBufferInit.cpp" "VulkanBase/Implementations/RuntimeFunctions.cpp" "VulkanBase/Implementations/Initialization/SemaphoresFencesInit.cpp")
+
+set(OBJ_FILE "${CMAKE_SOURCE_DIR}/Project/Resources/lowpoly_bunny.obj")
 add_custom_target(BunnyObj SOURCES ${OBJ_FILE})
 
 # Create the execut
-add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES}  "labwork/Mesh.h" "labwork/Mesh.cpp" "labwork/Camera.h" "labwork/Utils.h")
+add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES}  "Abstraction/Mesh.h" "Abstraction/Mesh.cpp" "Abstraction/Camera.h" "Abstraction/Utils.h")
 add_dependencies(${PROJECT_NAME} Shaders BunnyObj)
 
 # Link libraries
@@ -50,4 +55,4 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES} glfw)
 
 
-configure_file(${CMAKE_SOURCE_DIR}/Project/resources/lowpoly_bunny.obj ${CMAKE_CURRENT_BINARY_DIR}/resources/lowpoly_bunny.obj COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/Project/Resources/lowpoly_bunny.obj ${CMAKE_CURRENT_BINARY_DIR}/Resources/lowpoly_bunny.obj COPYONLY)

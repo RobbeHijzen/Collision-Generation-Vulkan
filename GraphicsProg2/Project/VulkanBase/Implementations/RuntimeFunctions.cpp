@@ -8,7 +8,6 @@ void VulkanBase::DrawFrame()
 	uint32_t imageIndex;
 	vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
-	UpdateUniformBuffer(imageIndex);
 
 	vkResetCommandBuffer(m_CommandBuffer, 0);
 	RecordCommandBuffer(m_CommandBuffer, imageIndex);
@@ -82,20 +81,23 @@ void VulkanBase::RecordRenderPass(uint32_t imageIndex)
 
 	vkCmdBeginRenderPass(m_CommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	BindPipelineInfo();
-	BindVertexBuffers();
-	vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
+	for (Mesh* mesh : m_Scene->GetMeshes())
+	{
+		UpdateUniformBuffer(imageIndex, mesh->GetModelMatrix());
 
+		BindPipelineInfo(mesh->GetShaderIndex());
+		BindVertexIndexBuffers(mesh->GetVertexIndexBufferIndex());
+		vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
 
-	DrawScene();
-
-
+		mesh->Draw(m_CommandBuffer);
+	}
+	
 	vkCmdEndRenderPass(m_CommandBuffer);
 }
 
-void VulkanBase::BindPipelineInfo()
+void VulkanBase::BindPipelineInfo(uint32_t pipelineIndex)
 {
-	vkCmdBindPipeline(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
+	vkCmdBindPipeline(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipelines[pipelineIndex]);
 
 	VkViewport viewport{};
 	viewport.x = 0.0f;
@@ -112,12 +114,12 @@ void VulkanBase::BindPipelineInfo()
 	vkCmdSetScissor(m_CommandBuffer, 0, 1, &scissor);
 
 }
-void VulkanBase::BindVertexBuffers()
+void VulkanBase::BindVertexIndexBuffers(uint32_t buffersIndex)
 {
-	VkBuffer vertexBuffers[] = { m_VertexBuffer };
+	VkBuffer vertexBuffers[] = { m_VertexBuffers[buffersIndex]};
 	VkDeviceSize offsets[] = { 0 };
 
 	vkCmdBindVertexBuffers(m_CommandBuffer, 0, 1, vertexBuffers, offsets);
-	vkCmdBindIndexBuffer(m_CommandBuffer, m_IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+	vkCmdBindIndexBuffer(m_CommandBuffer, m_IndexBuffers[buffersIndex], 0, VK_INDEX_TYPE_UINT32);
 }
 

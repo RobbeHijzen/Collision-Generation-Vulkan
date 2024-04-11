@@ -29,19 +29,26 @@ set(SOURCES
     "VulkanUtil/VulkanUtil.h"
     "VulkanUtil/VulkanUtil.cpp"
     # Add other source files here
-    "Abstraction/Weeks/Week01.cpp"
-    "Abstraction/Weeks/Week02.cpp"
+    
     "Abstraction/Weeks/Week03.cpp"
-    
-    
+
     "Abstraction/Shaders/DerivedShaders/MachineShader.h"
     "Abstraction/Shaders/DerivedShaders/MachineShader.cpp" 
+    "Abstraction/Scene/Scene.h" 
+    "Abstraction/Scene/Scene.cpp" 
+    "Abstraction/Singleton.h" 
+    "Abstraction/Shaders/ShaderManager.h" 
+    "Abstraction/VertexInfo.h" 
     "VulkanBase/Implementations/Initialization/InstanceInit.cpp"
     "VulkanBase/Implementations/Initialization/PhysicalDeviceInit.cpp" 
     "VulkanBase/Implementations/Initialization/LogicalDeviceInit.cpp" 
     "VulkanBase/Implementations/Initialization/SwapChainInit.cpp"
-
- "Abstraction/Scene/Scene.h" "Abstraction/Scene/Scenemanager.h" "Abstraction/Scene/Scene.cpp" "Abstraction/Singleton.h" "Abstraction/Shaders/ShaderManager.h" "Abstraction/Shaders/Shader.h"  "Abstraction/VertexInfo.h" "VulkanBase/Implementations/Initialization/PipelineInit.cpp" "VulkanBase/Implementations/Initialization/CommandBufferInit.cpp" "VulkanBase/Implementations/RuntimeFunctions.cpp" "VulkanBase/Implementations/Initialization/SemaphoresFencesInit.cpp")
+    "VulkanBase/Implementations/Initialization/PipelineInit.cpp" 
+    "VulkanBase/Implementations/Initialization/CommandBufferInit.cpp" 
+    "VulkanBase/Implementations/RuntimeFunctions.cpp" 
+    "VulkanBase/Implementations/Initialization/SemaphoresFencesInit.cpp" 
+    "VulkanBase/Implementations/Initialization/VertexBufferInit.cpp" 
+    "VulkanBase/Implementations/BufferHelpers.cpp")
 
 set(OBJ_FILE "${CMAKE_SOURCE_DIR}/Project/Resources/lowpoly_bunny.obj")
 add_custom_target(BunnyObj SOURCES ${OBJ_FILE})

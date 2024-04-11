@@ -3,9 +3,10 @@
 
 #include "Shaders/ShaderManager.h"
 
-Mesh::Mesh(std::string objPath, Shader* shader)
+Mesh::Mesh(std::string objPath, uint32_t shaderIndex, glm::mat4 modelMatrix)
+	: m_ShaderIndex{shaderIndex}
+	, m_ModelMatrix{modelMatrix}
 {
-	//bool succeeded = Utils::ParseOBJ("C:/.School/.Howest/2DAE/Semester 2/GraphicsProg2/2DAE-GraphicsProgramming2/GraphicsProg2/Project/resources/lowpoly_bunny.obj", m_Vertices, m_Indices);
 	//bool succeeded = Utils::ParseOBJ("Resources/lowpoly_bunny.obj", m_Vertices, m_Indices);
 	bool succeeded = Utils::ParseOBJ(objPath, m_Vertices, m_Indices);
 	assert(succeeded);
@@ -15,7 +16,6 @@ Mesh::Mesh(std::string objPath, Shader* shader)
 		vertex.color = { 1.f, 1.f, 1.f };
 	}
 
-	//m_ShaderIndex = ShaderManager::GetInstance().AddShader(shader);
 }
 
 void Mesh::Draw(VkCommandBuffer buffer) const

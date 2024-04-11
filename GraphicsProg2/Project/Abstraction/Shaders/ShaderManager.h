@@ -12,14 +12,22 @@ class ShaderManager : public Singleton<ShaderManager>
 public:
 
 	// returns the index of the shader
-	[[nodiscard]] uint32_t AddShader(Shader* shader)
+	[[nodiscard]] uint32_t AddShader(Shader* shader, const VkDevice& device)
 	{
 		m_Shaders.emplace_back(shader);
+		shader->Initialize(device);
 		return static_cast<uint32_t>(m_Shaders.size() - 1);
 	}
 
-	Shader* GetShader(uint32_t index) const { return m_Shaders[index].get(); }
-	uint32_t GetShaderSize() const { return static_cast<uint32_t>(m_Shaders.size()); }
+	std::vector<Shader*> GetShaders()
+	{
+		std::vector<Shader*> shaders{};
+		for (auto& shader : m_Shaders)
+		{
+			shaders.emplace_back(shader.get());
+		}
+		return shaders;
+	}
 
 private:
 

@@ -64,54 +64,61 @@ void VulkanBase::CreateGraphicsPipelines()
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 
-
-
-	// VertexInputState
-	auto pvisi{ m_MachineShader.CreateVertexInputStateInfo() };
-
-	auto bindingDescription = Vertex::GetBindingDescription();
-	auto attributeDescriptions = Vertex::GetAttributeDescriptions();
-
-	pvisi.vertexBindingDescriptionCount = 1;
-	pvisi.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-	pvisi.pVertexBindingDescriptions = &bindingDescription;
-	pvisi.pVertexAttributeDescriptions = attributeDescriptions.data();
-
-	// InputAssemblyState
-	auto piasi{ m_MachineShader.CreateInputAssemblyStateInfo() };
-
-	// ShaderStages
-
-	std::vector<VkPipelineShaderStageCreateInfo>& shaderStages{ m_MachineShader.GetShaderStages() };
-
-
-	// Entire Pipeline (using variables above)
-	VkGraphicsPipelineCreateInfo pipelineInfo{};
-	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-
-	pipelineInfo.stageCount = uint32_t(shaderStages.size());
-	pipelineInfo.pStages = shaderStages.data();
-
-
-	pipelineInfo.pVertexInputState = &pvisi;
-	pipelineInfo.pInputAssemblyState = &piasi;
-
-	pipelineInfo.pViewportState = &viewportState;
-	pipelineInfo.pRasterizationState = &rasterizer;
-	pipelineInfo.pMultisampleState = &multisampling;
-	pipelineInfo.pColorBlendState = &colorBlending;
-	pipelineInfo.pDynamicState = &dynamicState;
-	pipelineInfo.layout = m_PipelineLayout;
-	pipelineInfo.renderPass = m_RenderPass;
-	pipelineInfo.subpass = 0;
-	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-
-	if (vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
+	// Loop over every shader to make a graphics pipeline for each of them.
+	for (auto& shader : ShaderManager::GetInstance().GetShaders())
 	{
-		throw std::runtime_error("failed to create graphics pipeline!");
-	}
+		// VertexInputState
+		auto pvisi{ shader->CreateVertexInputStateInfo() };
 
-	m_MachineShader.DestroyShaderStages(m_Device);
+		auto bindingDescription = Vertex::GetBindingDescription();
+		auto attributeDescriptions = Vertex::GetAttributeDescriptions();
+
+		pvisi.vertexBindingDescriptionCount = 1;
+		pvisi.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+		pvisi.pVertexBindingDescriptions = &bindingDescription;
+		pvisi.pVertexAttributeDescriptions = attributeDescriptions.data();
+
+
+
+		// InputAssemblyState
+		auto piasi{ shader->CreateInputAssemblyStateInfo() };
+
+
+		// ShaderStages
+
+		std::vector<VkPipelineShaderStageCreateInfo>& shaderStages{ shader->GetShaderStages() };
+
+
+		// Entire Pipeline (using variables above)
+		VkGraphicsPipelineCreateInfo pipelineInfo{};
+		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+
+		pipelineInfo.stageCount = uint32_t(shaderStages.size());
+		pipelineInfo.pStages = shaderStages.data();
+
+
+		pipelineInfo.pVertexInputState = &pvisi;
+		pipelineInfo.pInputAssemblyState = &piasi;
+
+		pipelineInfo.pViewportState = &viewportState;
+		pipelineInfo.pRasterizationState = &rasterizer;
+		pipelineInfo.pMultisampleState = &multisampling;
+		pipelineInfo.pColorBlendState = &colorBlending;
+		pipelineInfo.pDynamicState = &dynamicState;
+		pipelineInfo.layout = m_PipelineLayout;
+		pipelineInfo.renderPass = m_RenderPass;
+		pipelineInfo.subpass = 0;
+		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+
+		VkPipeline graphicsPipeline;
+		if (vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create graphics pipeline!");
+		}
+		m_GraphicsPipelines.emplace_back(graphicsPipeline);
+
+		shader->DestroyShaderStages(m_Device);
+	}
 }
 
 void VulkanBase::CreateDescriptorSetLayout()

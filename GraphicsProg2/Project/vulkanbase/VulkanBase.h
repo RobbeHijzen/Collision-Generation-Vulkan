@@ -76,7 +76,6 @@ private:
 	void InitializeVulkan()
 	{
 		// Instance and Validation Layer setup
-
 		CreateInstance();
 		SetupDebugMessenger();
 
@@ -100,15 +99,18 @@ private:
 		CreateGraphicsPipelines();
 		CreateFrameBuffers();
 
-		// week 02 (and a bit of Week 3 (Index Buffer))
+		// Command Buffers setup
 		CreateCommandPool();
+		CreateCommandBuffers();
+
+		// Index and Vertex buffer setup
 		CreateVertexBuffers();
 		CreateIndexBuffers();
-		CreateUnfiformBuffers();
-		CreateDescriptorPool();
-		CreateDescriptorSets();
 
-		CreateCommandBuffers();
+		// Uniform buffer setup
+		CreateUnfiformBuffer();
+		CreateDescriptorPool();
+		CreateDescriptorSet();
 
 		// Semaphore and Fence setup
 		CreateSyncObjects();
@@ -153,10 +155,8 @@ private:
 		vkDestroyRenderPass(m_Device, m_RenderPass, nullptr);
 
 		// Uniform buffer cleanup
-		
 		vkDestroyBuffer(m_Device, m_UniformBuffer, nullptr);
 		vkFreeMemory(m_Device, m_UniformBufferMemory, nullptr);
-
 
 		vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
 		vkDestroyDescriptorSetLayout(m_Device, m_DescriptorSetLayout, nullptr);
@@ -180,7 +180,6 @@ private:
 		}
 
 		// Semaphore and Fence cleanup
-		
 		vkDestroySemaphore(m_Device, m_RenderFinishedSemaphore, nullptr);
 		vkDestroySemaphore(m_Device, m_ImageAvailableSemaphore, nullptr);
 		vkDestroyFence(m_Device, m_InFlightFence, nullptr);
@@ -208,8 +207,13 @@ private:
 		m_Scene->AddMesh(new Mesh("Resources/lowpoly_bunny.obj", machineShaderIndex, glm::mat4{1.f}));
 		//m_Scene->AddMesh(new Mesh("Resources/lowpoly_bunny.obj", machineShaderIndex, glm::translate(glm::mat4{ 1.f }, glm::vec3{5.f, 0.f, 0.f})));
 	}
-	
+
+
+	// General variables
+	float m_DeltaTime{};
+
 	std::unique_ptr<Scene> m_Scene{};
+	Camera m_Camera{ glm::vec3{0.f, 1.f, -3.f}, 90.f };
 
 	// Window / Surface setup
 
@@ -318,52 +322,34 @@ private:
 	std::vector<VkBuffer> m_IndexBuffers{};
 	std::vector<VkDeviceMemory> m_IndexBuffersMemory{};
 
-	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-
 	void CreateVertexBuffers();
 	void CreateIndexBuffers();
 	void CreateVertexBuffer(std::vector<Vertex> vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory);
 	void CreateIndexBuffer(std::vector<uint32_t> indices, VkBuffer& indexBuffer, VkDeviceMemory& indexBufferMemory);
 
-	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
+	// Uniform buffer
 
-	float m_DeltaTime{};
-
-	
 	VkBuffer m_UniformBuffer{};
 	VkDeviceMemory m_UniformBufferMemory{};
 	void* m_UniformBufferMapped{};
 	VkDescriptorPool m_DescriptorPool{};
 	VkDescriptorSet m_DescriptorSet{};
 
+	void CreateDescriptorSet();
+	void CreateUnfiformBuffer();
 
-	Camera m_Camera{ glm::vec3{0.f, 1.f, -3.f}, 90.f };
-
-	
-
-	
-	//MachineShader m_MachineShader{"Shaders/shader.vert.spv", "Shaders/shader.frag.spv"};
-		
-	
-	
-	
-	void CreateUnfiformBuffers();
 	void UpdateUniformBuffer(uint32_t currentImage, glm::mat4 meshModelMatrix);
 	void CreateDescriptorPool();
-	void CreateDescriptorSets();
-
-	
-
-	
-
-
-	
 
 
 
+	// Helper functions
 
+	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
+	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 
 	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice m_Device)

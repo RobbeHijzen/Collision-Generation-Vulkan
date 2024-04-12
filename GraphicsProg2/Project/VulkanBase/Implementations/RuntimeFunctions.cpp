@@ -123,3 +123,13 @@ void VulkanBase::BindVertexIndexBuffers(uint32_t buffersIndex)
 	vkCmdBindIndexBuffer(m_CommandBuffer, m_IndexBuffers[buffersIndex], 0, VK_INDEX_TYPE_UINT32);
 }
 
+void VulkanBase::UpdateUniformBuffer(uint32_t currentImage, glm::mat4 meshModelMatrix)
+{
+	UniformBufferObject ubo{};
+	ubo.model = meshModelMatrix;
+	ubo.view = m_Camera.viewMatrix;
+	ubo.proj = m_Camera.projectionMatrix;
+
+	memcpy(m_UniformBufferMapped, &ubo, sizeof(ubo));
+}
+

@@ -30,7 +30,7 @@ set(SOURCES
     "VulkanUtil/VulkanUtil.cpp"
     # Add other source files here
     
-    "Abstraction/Weeks/Week03.cpp"
+    
 
     "Abstraction/Shaders/DerivedShaders/MachineShader.h"
     "Abstraction/Shaders/DerivedShaders/MachineShader.cpp" 
@@ -48,7 +48,7 @@ set(SOURCES
     "VulkanBase/Implementations/RuntimeFunctions.cpp" 
     "VulkanBase/Implementations/Initialization/SemaphoresFencesInit.cpp" 
     "VulkanBase/Implementations/Initialization/VertexBufferInit.cpp" 
-    "VulkanBase/Implementations/BufferHelpers.cpp")
+    "VulkanBase/Implementations/BufferHelpers.cpp" "VulkanBase/Implementations/Initialization/DescriptorInit.cpp")
 
 set(OBJ_FILE "${CMAKE_SOURCE_DIR}/Project/Resources/lowpoly_bunny.obj")
 add_custom_target(BunnyObj SOURCES ${OBJ_FILE})

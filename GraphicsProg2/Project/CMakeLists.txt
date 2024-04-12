@@ -29,9 +29,6 @@ set(SOURCES
     "VulkanUtil/VulkanUtil.h"
     "VulkanUtil/VulkanUtil.cpp"
     # Add other source files here
-    
-    
-
     "Abstraction/Shaders/DerivedShaders/MachineShader.h"
     "Abstraction/Shaders/DerivedShaders/MachineShader.cpp" 
     "Abstraction/Scene/Scene.h" 
@@ -48,18 +45,22 @@ set(SOURCES
     "VulkanBase/Implementations/RuntimeFunctions.cpp" 
     "VulkanBase/Implementations/Initialization/SemaphoresFencesInit.cpp" 
     "VulkanBase/Implementations/Initialization/VertexBufferInit.cpp" 
-    "VulkanBase/Implementations/BufferHelpers.cpp" "VulkanBase/Implementations/Initialization/DescriptorInit.cpp")
+    "VulkanBase/Implementations/BufferHelpers.cpp" "VulkanBase/Implementations/Initialization/DescriptorInit.cpp" "VulkanUtil/stb_image.h" "VulkanBase/Implementations/Initialization/TextureInit.cpp" "VulkanBase/Implementations/Initialization/DepthBufferingInit.cpp")
 
-set(OBJ_FILE "${CMAKE_SOURCE_DIR}/Project/Resources/lowpoly_bunny.obj")
-add_custom_target(BunnyObj SOURCES ${OBJ_FILE})
+set(RESOURCES_DIR "${CMAKE_SOURCE_DIR}/Project/Resources")
+file(COPY ${RESOURCES_DIR} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+add_custom_target(CopyResources ALL
+    COMMENT "Copying resources directory to build directory"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${RESOURCES_DIR} ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS ${RESOURCES_DIR}
+)
 
 # Create the execut
 add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES}  "Abstraction/Mesh.h" "Abstraction/Mesh.cpp" "Abstraction/Camera.h" "Abstraction/Utils.h")
-add_dependencies(${PROJECT_NAME} Shaders BunnyObj)
+add_dependencies(${PROJECT_NAME} Shaders)
 
 # Link libraries
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES} glfw)
 
-
-configure_file(${CMAKE_SOURCE_DIR}/Project/Resources/lowpoly_bunny.obj ${CMAKE_CURRENT_BINARY_DIR}/Resources/lowpoly_bunny.obj COPYONLY)

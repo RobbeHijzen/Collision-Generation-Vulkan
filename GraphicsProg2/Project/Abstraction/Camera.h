@@ -51,18 +51,17 @@ struct Camera
 
 	void CalculateViewMatrix()
 	{
-
-		const glm::mat4 finalRotation{ glm::rotate(unitMatrix, totalPitch, glm::vec3{1.f, 0.f, 0.f})
-									  * glm::rotate(unitMatrix,  totalYaw, glm::vec3{0.f, 1.f, 0.f}) };
-
-		// X and Y axis are reversed inside Vulkan
+		const glm::mat4 finalRotation{   glm::rotate(unitMatrix, totalPitch, glm::vec3{1.f, 0.f, 0.f})
+									    * glm::rotate(unitMatrix,  totalYaw, glm::vec3{0.f, 1.f, 0.f}) };
 		const glm::mat4 finalTranslation{ glm::translate(unitMatrix, glm::vec3{-origin.x, -origin.y, origin.z}) };
 
-		glm::vec4 forwardVec4{ finalRotation * glm::vec4{ 0.f, 0.f, 1.f, 0.f} };
-		forward = { forwardVec4.x, forwardVec4.y, forwardVec4.z};
+
+		auto inverseRot{glm::inverse(finalRotation)};
+		glm::vec4 transformedForward = inverseRot * glm::vec4(0.f, 0.f, 1.f, 0.f);
+
+		forward = glm::normalize(glm::vec3{ -transformedForward.x, -transformedForward.y, transformedForward.z });
 		right = glm::normalize(glm::cross({ 0.f, 1.f, 0.f }, forward));
 		up = glm::normalize(glm::cross(forward, right));
-		
 
 		viewMatrix = finalRotation * finalTranslation;
 	}
@@ -141,6 +140,23 @@ struct Camera
 		}
 
 		totalPitch = std::clamp(totalPitch, -PI / 2.f, PI / 2.f);
+	}
+
+	glm::mat4 CreateRotation(float pitch, float yaw)
+	{
+		return
+		glm::mat4{
+			{ 1, 0, 0, 0 },
+			{ 0, cos(pitch), -sin(pitch), 0 },
+			{ 0, sin(pitch), cos(pitch), 0 },
+			{ 0, 0, 0, 1 }
+		} * 
+		glm::mat4{
+			{cos(yaw), 0, -sin(yaw), 0},
+			{ 0, 1, 0, 0 },
+			{ sin(yaw), 0, cos(yaw), 0 },
+			{ 0, 0, 0, 1 }
+		};
 	}
 };
 

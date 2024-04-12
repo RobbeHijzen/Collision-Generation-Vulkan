@@ -1,8 +1,11 @@
-#pragma once
+#ifndef VULKANBASE_HEADER
+#define VULKANBASE_HEADER
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
+
+
 #include "VulkanUtil/VulkanUtil.h"
 #include "Abstraction/Camera.h"
 #include "Abstraction/VertexInfo.h"
@@ -86,6 +89,7 @@ private:
 		PickPhysicalDevice();
 		CreateLogicalDevice();
 
+		
 		// SwapChain setup
 		CreateSwapChain();
 		CreateImageViews();
@@ -97,20 +101,30 @@ private:
 		CreateRenderPass();
 		CreateDescriptorSetLayout();
 		CreateGraphicsPipelines();
-		CreateFrameBuffers();
 
 		// Command Buffers setup
 		CreateCommandPool();
 		CreateCommandBuffers();
 
+		// Depth Buffering setup
+		CreateDepthResources();
+
+		// Frame Buffers setup
+		CreateFrameBuffers();
+
 		// Index and Vertex buffer setup
 		CreateVertexBuffers();
 		CreateIndexBuffers();
 
+		// Textures setup
+		CreateTextureImages();
+		CreateTextureImageViews();
+		CreateTextureSampler();
+
 		// Uniform buffer setup
-		CreateUnfiformBuffer();
+		CreateUnfiformBuffers();
 		CreateDescriptorPool();
-		CreateDescriptorSet();
+		CreateDescriptorSets();
 
 		// Semaphore and Fence setup
 		CreateSyncObjects();
@@ -135,6 +149,27 @@ private:
 	}
 	void Cleanup()
 	{
+		// Texture Images cleanup
+		vkDestroySampler(m_Device, m_TextureSampler, nullptr);
+		for (auto& textureImageView : m_TextureImageViews)
+		{
+			vkDestroyImageView(m_Device, textureImageView, nullptr);
+		}
+		for (auto& textureImage : m_TextureImages)
+		{
+			vkDestroyImage(m_Device, textureImage, nullptr);
+		}
+		for (auto& textureImageMemory : m_TextureImagesMemory)
+		{
+			vkFreeMemory(m_Device, textureImageMemory, nullptr);
+		}
+		
+
+		// Depth Buffer cleanup
+		vkDestroyImage(m_Device, m_DepthImage, nullptr);
+		vkFreeMemory(m_Device, m_DepthImageMemory, nullptr);
+		vkDestroyImageView(m_Device, m_DepthImageView, nullptr);
+
 		// SwapChain cleanup
 		for (auto framebuffer : m_SwapChainFramebuffers)
 		{
@@ -155,8 +190,14 @@ private:
 		vkDestroyRenderPass(m_Device, m_RenderPass, nullptr);
 
 		// Uniform buffer cleanup
-		vkDestroyBuffer(m_Device, m_UniformBuffer, nullptr);
-		vkFreeMemory(m_Device, m_UniformBufferMemory, nullptr);
+		for (auto& uniformBuffer : m_UniformBuffers)
+		{
+			vkDestroyBuffer(m_Device, uniformBuffer, nullptr);
+		}
+		for (auto& uniformBufferMemory : m_UniformBuffersMemory)
+		{
+			vkFreeMemory(m_Device, uniformBufferMemory, nullptr);
+		}
 
 		vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
 		vkDestroyDescriptorSetLayout(m_Device, m_DescriptorSetLayout, nullptr);
@@ -204,8 +245,11 @@ private:
 	{
 		uint32_t machineShaderIndex{ShaderManager::GetInstance().AddShader(new MachineShader("Shaders/shader.vert.spv", "Shaders/shader.frag.spv"), m_Device)};
 
-		m_Scene->AddMesh(new Mesh("Resources/lowpoly_bunny.obj", machineShaderIndex, glm::mat4{1.f}));
-		//m_Scene->AddMesh(new Mesh("Resources/lowpoly_bunny.obj", machineShaderIndex, glm::translate(glm::mat4{ 1.f }, glm::vec3{5.f, 0.f, 0.f})));
+		m_Scene->AddMesh(new Mesh("Resources/lowpoly_bunny.obj", "resources/vehicle_diffuse.png", machineShaderIndex, glm::mat4{1.f}));
+		m_Scene->AddMesh(new Mesh("Resources/vehicle.obj", "resources/vehicle_diffuse.png", machineShaderIndex, glm::translate(glm::mat4{ 1.f }, glm::vec3{20.f, 0.f, 0.f})));
+	
+
+		m_MeshesAmount = static_cast<uint32_t>(m_Scene->GetMeshes().size());
 	}
 
 
@@ -213,10 +257,11 @@ private:
 	float m_DeltaTime{};
 
 	std::unique_ptr<Scene> m_Scene{};
+	uint32_t m_MeshesAmount{};
+
 	Camera m_Camera{ glm::vec3{0.f, 1.f, -3.f}, 90.f };
 
 	// Window / Surface setup
-
 	GLFWwindow* m_Window{};
 	VkSurfaceKHR m_Surface{};
 
@@ -229,7 +274,6 @@ private:
 	}
 
 	// Instance and Validation Layer setup
-
 	VkInstance m_Instance{};
 	VkDebugUtilsMessengerEXT m_DebugMessenger{};
 
@@ -241,7 +285,6 @@ private:
 
 
 	// Physical Device setup
-
 	VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
 
 	void PickPhysicalDevice();
@@ -251,7 +294,6 @@ private:
 
 	
 	// Logical device and queue Families setup
-
 	VkDevice m_Device = VK_NULL_HANDLE;
 	VkQueue m_GraphicsQueue{};
 	VkQueue m_PresentQueue{};
@@ -259,7 +301,6 @@ private:
 	void CreateLogicalDevice();
 
 	// Swap Chain setup
-
 	VkSwapchainKHR m_SwapChain{};
 	std::vector<VkImage> m_SwapChainImages{};
 	VkFormat m_SwapChainImageFormat{};
@@ -276,10 +317,10 @@ private:
 
 	void CreateSwapChain();
 	void CreateImageViews();
+	VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 	void CreateFrameBuffers();
 
 	// GraphicsPipeline setup
-
 	std::vector<VkPipeline> m_GraphicsPipelines{};
 	VkPipelineLayout m_PipelineLayout{};
 	VkDescriptorSetLayout m_DescriptorSetLayout{};
@@ -290,7 +331,6 @@ private:
 	void CreateRenderPass();
 
 	// Command Buffer setup
-
 	VkCommandPool m_CommandPool{};
 	VkCommandBuffer m_CommandBuffer{};
 
@@ -299,7 +339,6 @@ private:
 
 
 	// Runtime Functions
-
 	void DrawFrame();
 	void RecordCommandBuffer(VkCommandBuffer m_CommandBuffer, uint32_t imageIndex);
 	void RecordRenderPass(uint32_t imageIndex);
@@ -307,7 +346,6 @@ private:
 	void BindVertexIndexBuffers(uint32_t buffersIndex);
 
 	// Semaphores and Fences
-
 	VkSemaphore m_ImageAvailableSemaphore{};
 	VkSemaphore m_RenderFinishedSemaphore{};
 	VkFence m_InFlightFence{};
@@ -315,7 +353,6 @@ private:
 	void CreateSyncObjects();
 
 	// Vertex and Index buffers
-
 	std::vector<VkBuffer> m_VertexBuffers{};
 	std::vector<VkDeviceMemory> m_VertexBuffersMemory{};
 
@@ -329,28 +366,55 @@ private:
 
 
 	// Uniform buffer
-
-	VkBuffer m_UniformBuffer{};
-	VkDeviceMemory m_UniformBufferMemory{};
-	void* m_UniformBufferMapped{};
 	VkDescriptorPool m_DescriptorPool{};
-	VkDescriptorSet m_DescriptorSet{};
 
-	void CreateDescriptorSet();
-	void CreateUnfiformBuffer();
+	std::vector<VkBuffer> m_UniformBuffers{};
+	std::vector<VkDeviceMemory> m_UniformBuffersMemory{};
+	std::vector<void*> m_UniformBuffersMapped{};
+	std::vector<VkDescriptorSet> m_MeshDescriptorSets{};
 
-	void UpdateUniformBuffer(uint32_t currentImage, glm::mat4 meshModelMatrix);
+	void CreateDescriptorSets();
+	void CreateUnfiformBuffers();
+
+	void UpdateUniformBuffer(uint32_t currentImage, uint32_t meshIndex, glm::mat4 meshModelMatrix);
 	void CreateDescriptorPool();
 
+	// Texture
+	std::vector<VkImage> m_TextureImages;
+	std::vector<VkImageView> m_TextureImageViews;
+	std::vector<VkDeviceMemory> m_TextureImagesMemory;
+
+	VkSampler m_TextureSampler;
+
+	void CreateTextureImages();
+	void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
+					 VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+	void CreateTextureImageViews();
+	void CreateTextureSampler();
+
+	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+	void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
+	// Depth Buffering
+	VkImage m_DepthImage;
+	VkDeviceMemory m_DepthImageMemory;
+	VkImageView m_DepthImageView;
+
+	void CreateDepthResources();
 
 
 	// Helper functions
-
 	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
+	VkCommandBuffer BeginSingleTimeCommands();
+	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+	
+	VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+	VkFormat FindDepthFormat();
+	bool HasStencilComponent(VkFormat format);
 
 	QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice m_Device)
 	{
@@ -401,3 +465,4 @@ private:
 		return VK_FALSE;
 	}
 };
+#endif

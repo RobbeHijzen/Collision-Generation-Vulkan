@@ -29,7 +29,7 @@ namespace Utils
 
 		std::vector<glm::vec3> positions{};
 		//std::vector<glm::vec3> normals{};
-		//std::vector<glm::vec2> UVs{};
+		std::vector<glm::vec2> UVs{};
 
 		vertices.clear();
 		indices.clear();
@@ -58,7 +58,7 @@ namespace Utils
 				// Vertex TexCoord
 				float u, v;
 				file >> u >> v;
-				//UVs.emplace_back(u, 1 - v);
+				UVs.emplace_back(u, 1 - v);
 			}
 			else if (sCommand == "vn")
 			{
@@ -94,7 +94,7 @@ namespace Utils
 						{
 							// Optional texture coordinate
 							file >> iTexCoord;
-							//vertex.uv = UVs[iTexCoord - 1];
+							vertex.texCoord = UVs[iTexCoord - 1];
 						}
 
 						if ('/' == file.peek())
@@ -109,7 +109,7 @@ namespace Utils
 
 					vertices.push_back(vertex);
 					tempIndices[iFace] = uint32_t(vertices.size()) - 1;
-					//indices.push_back(uint32_t(vertices.size()) - 1);
+					indices.push_back(uint32_t(vertices.size()) - 1);
 				}
 
 				indices.push_back(tempIndices[0]);

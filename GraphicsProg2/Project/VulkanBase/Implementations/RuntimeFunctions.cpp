@@ -75,19 +75,22 @@ void VulkanBase::RecordRenderPass(uint32_t imageIndex)
 	renderPassInfo.renderArea.offset = { 0, 0 };
 	renderPassInfo.renderArea.extent = m_SwapChainExtent;
 
-	VkClearValue clearColor = { {{0.01f, 0.01f, 0.01f, 1.0f}} };
-	renderPassInfo.clearValueCount = 1;
-	renderPassInfo.pClearValues = &clearColor;
+	std::array<VkClearValue, 2> clearValues{};
+	clearValues[0].color = { {0.01f, 0.01f, 0.01f, 1.0f} };
+	clearValues[1].depthStencil = { 1.0f, 0 };
+
+	renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+	renderPassInfo.pClearValues = clearValues.data();
 
 	vkCmdBeginRenderPass(m_CommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 	for (Mesh* mesh : m_Scene->GetMeshes())
 	{
-		UpdateUniformBuffer(imageIndex, mesh->GetModelMatrix());
+		UpdateUniformBuffer(imageIndex, mesh->GetMeshIndex(), mesh->GetModelMatrix());
 
 		BindPipelineInfo(mesh->GetShaderIndex());
-		BindVertexIndexBuffers(mesh->GetVertexIndexBufferIndex());
-		vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSet, 0, nullptr);
+		BindVertexIndexBuffers(mesh->GetMeshIndex());
+		vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_MeshDescriptorSets[mesh->GetMeshIndex()], 0, nullptr);
 
 		mesh->Draw(m_CommandBuffer);
 	}
@@ -123,13 +126,13 @@ void VulkanBase::BindVertexIndexBuffers(uint32_t buffersIndex)
 	vkCmdBindIndexBuffer(m_CommandBuffer, m_IndexBuffers[buffersIndex], 0, VK_INDEX_TYPE_UINT32);
 }
 
-void VulkanBase::UpdateUniformBuffer(uint32_t currentImage, glm::mat4 meshModelMatrix)
+void VulkanBase::UpdateUniformBuffer(uint32_t currentImage, uint32_t meshIndex, glm::mat4 meshModelMatrix)
 {
 	UniformBufferObject ubo{};
 	ubo.model = meshModelMatrix;
 	ubo.view = m_Camera.viewMatrix;
 	ubo.proj = m_Camera.projectionMatrix;
 
-	memcpy(m_UniformBufferMapped, &ubo, sizeof(ubo));
+	memcpy(m_UniformBuffersMapped[meshIndex], &ubo, sizeof(ubo));
 }
 

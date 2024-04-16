@@ -245,8 +245,9 @@ private:
 	{
 		uint32_t machineShaderIndex{ShaderManager::GetInstance().AddShader(new MachineShader("Shaders/shader.vert.spv", "Shaders/shader.frag.spv"), m_Device)};
 
-		m_Scene->AddMesh(new Mesh("Resources/lowpoly_bunny.obj", "resources/vehicle_diffuse.png", machineShaderIndex, glm::mat4{1.f}));
+		//m_Scene->AddMesh(new Mesh("Resources/lowpoly_bunny.obj", "resources/vehicle_diffuse.png", machineShaderIndex, glm::mat4{1.f}));
 		m_Scene->AddMesh(new Mesh("Resources/vehicle.obj", "resources/vehicle_diffuse.png", machineShaderIndex, glm::translate(glm::mat4{ 1.f }, glm::vec3{20.f, 0.f, 0.f})));
+		m_Scene->AddMesh(new Mesh("Resources/viking_room.obj", "resources/viking_room.png", machineShaderIndex, glm::translate(glm::mat4{ 1.f }, glm::vec3{ -2.f, 0.f, 0.f }) * glm::rotate(glm::mat4{ 1.f }, glm::radians(-90.f), glm::vec3{1.f, 0.f, 0.f})));
 	
 
 		m_MeshesAmount = static_cast<uint32_t>(m_Scene->GetMeshes().size());

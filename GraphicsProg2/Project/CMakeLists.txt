@@ -46,7 +46,7 @@ set(SOURCES
     "VulkanBase/Implementations/Initialization/SemaphoresFencesInit.cpp" 
     "VulkanBase/Implementations/Initialization/VertexBufferInit.cpp" 
     "VulkanBase/Implementations/BufferHelpers.cpp" "VulkanBase/Implementations/Initialization/DescriptorInit.cpp" "VulkanUtil/stb_image.h" "VulkanBase/Implementations/Initialization/TextureInit.cpp" "VulkanBase/Implementations/Initialization/DepthBufferingInit.cpp")
-
+    
 set(RESOURCES_DIR "${CMAKE_SOURCE_DIR}/Project/Resources")
 file(COPY ${RESOURCES_DIR} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 add_custom_target(CopyResources ALL

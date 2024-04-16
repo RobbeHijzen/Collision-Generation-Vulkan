@@ -5,11 +5,15 @@
 
 void VulkanBase::CreateTextureImages()
 {
-    m_TextureImages.resize(m_MeshesAmount);
-    m_TextureImagesMemory.resize(m_MeshesAmount);
+    m_TextureImages.resize(m_Scene->GetAmount3DMeshes());
+    m_TextureImagesMemory.resize(m_Scene->GetAmount3DMeshes());
 
-    for (const auto& mesh : m_Scene->GetMeshes())
+    uint32_t index{};
+    for (const auto& mesh : m_Scene->GetMeshes3D())
     {
+        mesh->SetTextureIndex(index);
+        ++index;
+
         // Loads the texture from resources
         int texWidth, texHeight, texChannels;
         stbi_uc* pixels = stbi_load(mesh->GetDiffuseString().c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
@@ -36,12 +40,12 @@ void VulkanBase::CreateTextureImages()
         stbi_image_free(pixels);
 
         CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_TextureImages[mesh->GetMeshIndex()], m_TextureImagesMemory[mesh->GetMeshIndex()]);
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_TextureImages[mesh->GetTextureIndex()], m_TextureImagesMemory[mesh->GetMeshIndex()]);
 
 
-        TransitionImageLayout(m_TextureImages[mesh->GetMeshIndex()], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        CopyBufferToImage(stagingBuffer, m_TextureImages[mesh->GetMeshIndex()], static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-        TransitionImageLayout(m_TextureImages[mesh->GetMeshIndex()], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        TransitionImageLayout(m_TextureImages[mesh->GetTextureIndex()], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        CopyBufferToImage(stagingBuffer, m_TextureImages[mesh->GetTextureIndex()], static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+        TransitionImageLayout(m_TextureImages[mesh->GetTextureIndex()], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
         vkDestroyBuffer(m_Device, stagingBuffer, nullptr);
         vkFreeMemory(m_Device, stagingBufferMemory, nullptr);
@@ -175,11 +179,11 @@ void VulkanBase::CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t widt
 
 void VulkanBase::CreateTextureImageViews()
 {
-    m_TextureImageViews.resize(m_MeshesAmount);
+    m_TextureImageViews.resize(m_Scene->GetAmount3DMeshes());
 
-    for (const auto& mesh : m_Scene->GetMeshes())
+    for (const auto& mesh : m_Scene->GetMeshes3D())
     {
-        m_TextureImageViews[mesh->GetMeshIndex()] = CreateImageView(m_TextureImages[mesh->GetMeshIndex()], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+        m_TextureImageViews[mesh->GetTextureIndex()] = CreateImageView(m_TextureImages[mesh->GetMeshIndex()], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
     }
 }
 

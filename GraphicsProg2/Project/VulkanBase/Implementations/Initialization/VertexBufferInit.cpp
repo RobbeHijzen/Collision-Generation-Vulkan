@@ -2,9 +2,9 @@
 
 void VulkanBase::CreateVertexBuffers()
 {
-	for (auto& mesh : m_Scene->GetMeshes())
+	for (auto& mesh : m_Scene->GetAllMeshes())
 	{
-		mesh->SetVertexIndexBufferIndex(static_cast<uint32_t>(m_VertexBuffers.size()));
+		mesh->SetMeshIndex(static_cast<uint32_t>(m_VertexBuffers.size()));
 
 		VkBuffer vertexBuffer; 
 		VkDeviceMemory vertexBufferMemory;
@@ -16,7 +16,7 @@ void VulkanBase::CreateVertexBuffers()
 }
 void VulkanBase::CreateIndexBuffers()
 {
-	for (auto& mesh : m_Scene->GetMeshes())
+	for (auto& mesh : m_Scene->GetAllMeshes())
 	{
 		VkBuffer indexBuffer;
 		VkDeviceMemory indexBufferMemory;

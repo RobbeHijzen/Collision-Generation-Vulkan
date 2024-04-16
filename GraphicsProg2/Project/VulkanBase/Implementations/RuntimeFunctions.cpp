@@ -84,7 +84,17 @@ void VulkanBase::RecordRenderPass(uint32_t imageIndex)
 
 	vkCmdBeginRenderPass(m_CommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	for (Mesh* mesh : m_Scene->GetMeshes())
+	for (const auto* mesh : m_Scene->GetMeshes3D())
+	{
+		UpdateUniformBuffer(imageIndex, mesh->GetMeshIndex(), mesh->GetModelMatrix());
+
+		BindPipelineInfo(mesh->GetShaderIndex());
+		BindVertexIndexBuffers(mesh->GetMeshIndex());
+		vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_MeshDescriptorSets[mesh->GetMeshIndex()], 0, nullptr);
+
+		mesh->Draw(m_CommandBuffer);
+	}
+	for (const auto* mesh : m_Scene->GetMeshes2D())
 	{
 		UpdateUniformBuffer(imageIndex, mesh->GetMeshIndex(), mesh->GetModelMatrix());
 

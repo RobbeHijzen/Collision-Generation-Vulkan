@@ -29,8 +29,8 @@ set(SOURCES
     "VulkanUtil/VulkanUtil.h"
     "VulkanUtil/VulkanUtil.cpp"
     # Add other source files here
-    "Abstraction/Shaders/DerivedShaders/MachineShader.h"
-    "Abstraction/Shaders/DerivedShaders/MachineShader.cpp" 
+    "Abstraction/Shaders/DerivedShaders/Shader3D.h"
+    "Abstraction/Shaders/DerivedShaders/Shader3D.cpp" 
     "Abstraction/Scene/Scene.h" 
     "Abstraction/Scene/Scene.cpp" 
     "Abstraction/Singleton.h" 

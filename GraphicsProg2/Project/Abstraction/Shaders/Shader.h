@@ -5,6 +5,9 @@
 
 #include "vulkan/vulkan_core.h"
 
+class VulkanBase;
+class Mesh3D;
+
 class Shader 
 {
 public:
@@ -17,8 +20,11 @@ public:
 
 	virtual ~Shader() = default;
 
-
 	virtual void Initialize(const VkDevice& m_Device) = 0;
+
+
+	void AddReferencedMeshIndex(uint32_t meshIndex) { m_ReferencedMeshIndices.emplace_back(meshIndex); }
+	auto GetReferencedMeshIndices() const { return m_ReferencedMeshIndices; }
 
 	auto& GetShaderStages() { return m_ShaderStages; }
 	void DestroyShaderStages(const VkDevice& m_Device)
@@ -29,6 +35,8 @@ public:
 		}
 	}
 
+	bool SupportsImages() const { return m_SupportsImages; }
+
 	virtual VkPipelineShaderStageCreateInfo CreateFragmentShaderInfo(const VkDevice& m_Device) = 0;
 	virtual VkPipelineShaderStageCreateInfo CreateVertexShaderInfo(const VkDevice& m_Device) = 0;
 
@@ -36,8 +44,14 @@ public:
 	virtual VkPipelineInputAssemblyStateCreateInfo CreateInputAssemblyStateInfo() = 0;
 
 	virtual VkShaderModule CreateShaderModule(const VkDevice& m_Device, const std::vector<char>& code) = 0;
+	virtual std::vector<VkDescriptorSetLayoutBinding> CreateDescriptorSetLayoutBindings() = 0;
+
+	virtual void SetupDescriptorSet(VulkanBase* vulkanBase, Mesh3D* mesh) = 0;
+
 
 protected:
+
+	std::vector<uint32_t> m_ReferencedMeshIndices{};
 
 	std::string m_FragmentShaderFile;
 	std::string m_FSEntryPoint{ "main" };
@@ -46,4 +60,6 @@ protected:
 	std::string m_VSEntryPoint{ "main" };
 
 	std::vector<VkPipelineShaderStageCreateInfo> m_ShaderStages;
+
+	bool m_SupportsImages{ false };
 };

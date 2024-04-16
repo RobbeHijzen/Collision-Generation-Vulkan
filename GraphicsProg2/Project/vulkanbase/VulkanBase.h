@@ -11,7 +11,7 @@
 #include "Abstraction/VertexInfo.h"
 #include "Abstraction/Shaders/Shader.h"
 #include "Abstraction/Shaders/ShaderManager.h"
-#include "Abstraction/Shaders/DerivedShaders/MachineShader.h"
+#include "Abstraction/Shaders/DerivedShaders/Shader3D.h"
 #include "Abstraction/Scene/Scene.h"
 #include "Abstraction/Mesh.h"
 
@@ -65,6 +65,17 @@ public:
 		Cleanup();
 	}
 
+
+	auto GetDevice() const { return m_Device; }
+	
+	auto GetUniformBuffers() const { return m_UniformBuffers; }
+
+	auto GetTextureImageViews() const { return m_TextureImageViews; }
+	auto GetTextureSampler() const { return m_TextureSampler; }
+
+	auto GetMeshDescriptorSets() const { return m_MeshDescriptorSets; }
+
+
 private:
 
 	void InitializeWindow()
@@ -89,7 +100,6 @@ private:
 		PickPhysicalDevice();
 		CreateLogicalDevice();
 
-		
 		// SwapChain setup
 		CreateSwapChain();
 		CreateImageViews();
@@ -99,12 +109,12 @@ private:
 
 		// GraphicsPipeline setup
 		CreateRenderPass();
-		CreateDescriptorSetLayout();
+		CreateDescriptorSetLayouts();
 		CreateGraphicsPipelines();
 
 		// Command Buffers setup
 		CreateCommandPool();
-		CreateCommandBuffers();
+		CreateCommandBuffer();
 
 		// Depth Buffering setup
 		CreateDepthResources();
@@ -186,6 +196,11 @@ private:
 		{
 			vkDestroyPipeline(m_Device, pipeline, nullptr);
 		}
+		for (auto& descriptorSetLayout : m_DescriptorSetLayouts)
+		{
+			vkDestroyDescriptorSetLayout(m_Device, descriptorSetLayout, nullptr);
+		}
+
 		vkDestroyPipelineLayout(m_Device, m_PipelineLayout, nullptr);
 		vkDestroyRenderPass(m_Device, m_RenderPass, nullptr);
 
@@ -200,7 +215,6 @@ private:
 		}
 
 		vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
-		vkDestroyDescriptorSetLayout(m_Device, m_DescriptorSetLayout, nullptr);
 
 		// Destroy Vertex and Index buffers
 		for (auto& vertexBuffer : m_VertexBuffers)
@@ -243,14 +257,12 @@ private:
 
 	void LoadScene()
 	{
-		uint32_t machineShaderIndex{ShaderManager::GetInstance().AddShader(new MachineShader("Shaders/shader.vert.spv", "Shaders/shader.frag.spv"), m_Device)};
+		uint32_t machineShaderIndex{ShaderManager::GetInstance().AddShader(new Shader3D("Shaders/shader.vert.spv", "Shaders/shader.frag.spv"), m_Device)};
 
 		//m_Scene->AddMesh(new Mesh("Resources/lowpoly_bunny.obj", "resources/vehicle_diffuse.png", machineShaderIndex, glm::mat4{1.f}));
-		m_Scene->AddMesh(new Mesh("Resources/vehicle.obj", "resources/vehicle_diffuse.png", machineShaderIndex, glm::translate(glm::mat4{ 1.f }, glm::vec3{20.f, 0.f, 0.f})));
-		m_Scene->AddMesh(new Mesh("Resources/viking_room.obj", "resources/viking_room.png", machineShaderIndex, glm::translate(glm::mat4{ 1.f }, glm::vec3{ -2.f, 0.f, 0.f }) * glm::rotate(glm::mat4{ 1.f }, glm::radians(-90.f), glm::vec3{1.f, 0.f, 0.f})));
+		m_Scene->AddMesh(new Mesh3D("Resources/vehicle.obj", "resources/vehicle_diffuse.png", machineShaderIndex, glm::translate(glm::mat4{ 1.f }, glm::vec3{20.f, 0.f, 0.f})));
+		m_Scene->AddMesh(new Mesh3D("Resources/viking_room.obj", "resources/viking_room.png", machineShaderIndex, glm::translate(glm::mat4{ 1.f }, glm::vec3{ -2.f, 0.f, 0.f }) * glm::rotate(glm::mat4{ 1.f }, glm::radians(-90.f), glm::vec3{1.f, 0.f, 0.f})));
 	
-
-		m_MeshesAmount = static_cast<uint32_t>(m_Scene->GetMeshes().size());
 	}
 
 
@@ -258,7 +270,6 @@ private:
 	float m_DeltaTime{};
 
 	std::unique_ptr<Scene> m_Scene{};
-	uint32_t m_MeshesAmount{};
 
 	Camera m_Camera{ glm::vec3{0.f, 1.f, -3.f}, 90.f };
 
@@ -322,13 +333,13 @@ private:
 	void CreateFrameBuffers();
 
 	// GraphicsPipeline setup
+	std::vector<VkDescriptorSetLayout> m_DescriptorSetLayouts{};
 	std::vector<VkPipeline> m_GraphicsPipelines{};
 	VkPipelineLayout m_PipelineLayout{};
-	VkDescriptorSetLayout m_DescriptorSetLayout{};
 	VkRenderPass m_RenderPass{};
 
 	void CreateGraphicsPipelines();
-	void CreateDescriptorSetLayout();
+	void CreateDescriptorSetLayouts();
 	void CreateRenderPass();
 
 	// Command Buffer setup
@@ -336,7 +347,7 @@ private:
 	VkCommandBuffer m_CommandBuffer{};
 
 	void CreateCommandPool();
-	void CreateCommandBuffers();
+	void CreateCommandBuffer();
 
 
 	// Runtime Functions
@@ -362,7 +373,9 @@ private:
 
 	void CreateVertexBuffers();
 	void CreateIndexBuffers();
-	void CreateVertexBuffer(std::vector<Vertex> vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory);
+
+	template <typename vertex>
+	void CreateVertexBuffer(std::vector<vertex> vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory);
 	void CreateIndexBuffer(std::vector<uint32_t> indices, VkBuffer& indexBuffer, VkDeviceMemory& indexBufferMemory);
 
 

@@ -5,46 +5,60 @@
 
 void VulkanBase::CreateTextureImages()
 {
-    m_TextureImages.resize(m_MeshesAmount);
-    m_TextureImagesMemory.resize(m_MeshesAmount);
+    auto allMeshes{ m_Scene->GetMeshes() };
 
-    for (const auto& mesh : m_Scene->GetMeshes())
+    size_t textureIndex{ 0 };
+    for (const auto& shader : ShaderManager::GetInstance().GetShaders())
     {
-        // Loads the texture from resources
-        int texWidth, texHeight, texChannels;
-        stbi_uc* pixels = stbi_load(mesh->GetDiffuseString().c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-        VkDeviceSize imageSize = texWidth * texHeight * 4;
-
-        if (!pixels)
+        if (shader->SupportsImages())
         {
-            throw std::runtime_error("failed to load texture image!");
+            for (const auto& meshIndex : shader->GetReferencedMeshIndices())
+            {
+                auto mesh{ allMeshes[meshIndex] };
+                mesh->SetTextureIndex(textureIndex);
+
+                m_TextureImages.emplace_back(nullptr);
+                m_TextureImagesMemory.emplace_back(nullptr);
+
+                // Loads the texture from resources
+                int texWidth, texHeight, texChannels;
+                stbi_uc* pixels = stbi_load(mesh->GetDiffuseString().c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+                VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+                if (!pixels)
+                {
+                    throw std::runtime_error("failed to load texture image!");
+                }
+
+                // Create the staging buffer
+                VkBuffer stagingBuffer;
+                VkDeviceMemory stagingBufferMemory;
+
+                CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                    stagingBuffer, stagingBufferMemory);
+
+                // Map the pixels-info onto the buffer
+                void* data;
+                vkMapMemory(m_Device, stagingBufferMemory, 0, imageSize, 0, &data);
+                memcpy(data, pixels, static_cast<size_t>(imageSize));
+                vkUnmapMemory(m_Device, stagingBufferMemory);
+
+                stbi_image_free(pixels);
+
+                CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_TextureImages[mesh->GetTextureIndex()], m_TextureImagesMemory[mesh->GetMeshIndex()]);
+
+
+                TransitionImageLayout(m_TextureImages[mesh->GetTextureIndex()], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                CopyBufferToImage(stagingBuffer, m_TextureImages[mesh->GetTextureIndex()], static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+                TransitionImageLayout(m_TextureImages[mesh->GetTextureIndex()], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+                vkDestroyBuffer(m_Device, stagingBuffer, nullptr);
+                vkFreeMemory(m_Device, stagingBufferMemory, nullptr);
+
+                ++textureIndex;
+            }
         }
-
-        // Create the staging buffer
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-
-        CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            stagingBuffer, stagingBufferMemory);
-
-        // Map the pixels-info onto the buffer
-        void* data;
-        vkMapMemory(m_Device, stagingBufferMemory, 0, imageSize, 0, &data);
-        memcpy(data, pixels, static_cast<size_t>(imageSize));
-        vkUnmapMemory(m_Device, stagingBufferMemory);
-
-        stbi_image_free(pixels);
-
-        CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_TextureImages[mesh->GetMeshIndex()], m_TextureImagesMemory[mesh->GetMeshIndex()]);
-
-
-        TransitionImageLayout(m_TextureImages[mesh->GetMeshIndex()], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        CopyBufferToImage(stagingBuffer, m_TextureImages[mesh->GetMeshIndex()], static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-        TransitionImageLayout(m_TextureImages[mesh->GetMeshIndex()], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-        vkDestroyBuffer(m_Device, stagingBuffer, nullptr);
-        vkFreeMemory(m_Device, stagingBufferMemory, nullptr);
     }
 }
 
@@ -175,11 +189,11 @@ void VulkanBase::CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t widt
 
 void VulkanBase::CreateTextureImageViews()
 {
-    m_TextureImageViews.resize(m_MeshesAmount);
+    m_TextureImageViews.resize(m_TextureImages.size());
 
-    for (const auto& mesh : m_Scene->GetMeshes())
+    for (size_t index{}; index < m_TextureImages.size(); ++index)
     {
-        m_TextureImageViews[mesh->GetMeshIndex()] = CreateImageView(m_TextureImages[mesh->GetMeshIndex()], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+        m_TextureImageViews[index] = CreateImageView(m_TextureImages[index], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
     }
 }
 

@@ -84,7 +84,7 @@ void VulkanBase::RecordRenderPass(uint32_t imageIndex)
 
 	vkCmdBeginRenderPass(m_CommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	for (Mesh* mesh : m_Scene->GetMeshes())
+	for (Mesh3D* mesh : m_Scene->GetMeshes())
 	{
 		UpdateUniformBuffer(imageIndex, mesh->GetMeshIndex(), mesh->GetModelMatrix());
 

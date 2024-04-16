@@ -62,27 +62,34 @@ void VulkanBase::CreateGraphicsPipelines()
 	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 	dynamicState.pDynamicStates = dynamicStates.data();
 
-	// PipelineLayout
-	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 1;
-	pipelineLayoutInfo.pSetLayouts = &m_DescriptorSetLayout;
-	pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-	if (vkCreatePipelineLayout(m_Device, &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create pipeline layout!");
-	}
-
+	
 	// Loop over every shader to make a graphics pipeline for each of them.
-	for (auto& shader : ShaderManager::GetInstance().GetShaders())
+	auto shaders{ ShaderManager::GetInstance().GetShaders() };
+	int index{};
+	m_GraphicsPipelines.resize(shaders.size());
+
+	for (auto& shader : shaders)
 	{
+		// PipelineLayout
+		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutInfo.setLayoutCount = 1;
+		pipelineLayoutInfo.pSetLayouts = &m_DescriptorSetLayouts[index];
+		pipelineLayoutInfo.pushConstantRangeCount = 0;
+
+		if (vkCreatePipelineLayout(m_Device, &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create pipeline layout!");
+		}
+
+
 		// VertexInputState
 		auto pvisi{ shader->CreateVertexInputStateInfo() };
 
-		auto bindingDescription = Vertex::GetBindingDescription();
-		auto attributeDescriptions = Vertex::GetAttributeDescriptions();
-
+		auto bindingDescription = Vertex3D::GetBindingDescription();
+		auto attributeDescriptions = Vertex3D::GetAttributeDescriptions();
+	 
 		pvisi.vertexBindingDescriptionCount = 1;
 		pvisi.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
 		pvisi.pVertexBindingDescriptions = &bindingDescription;
@@ -114,14 +121,14 @@ void VulkanBase::CreateGraphicsPipelines()
 		pipelineInfo.subpass = 0;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-		VkPipeline graphicsPipeline;
-		if (vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
+		if (vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipelines[index]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create graphics pipeline!");
 		}
-		m_GraphicsPipelines.emplace_back(graphicsPipeline);
 
 		shader->DestroyShaderStages(m_Device);
+
+		++index;
 	}
 }
 
@@ -163,8 +170,8 @@ void VulkanBase::CreateRenderPass()
 	subpass.colorAttachmentCount = 1;
 	subpass.pColorAttachments = &colorAttachmentRef;
 	subpass.pDepthStencilAttachment = &depthAttachmentRef;
-
-	// Dependancy
+	
+	// Dependency
 	VkSubpassDependency dependency{};
 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 	dependency.dstSubpass = 0;

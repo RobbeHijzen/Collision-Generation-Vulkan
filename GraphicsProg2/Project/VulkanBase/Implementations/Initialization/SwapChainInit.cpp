@@ -183,7 +183,6 @@ void VulkanBase::CreateFrameBuffers()
 	{
 		std::array<VkImageView, 2> attachments = { m_SwapChainImageViews[i], m_DepthImageView};
 
-
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.renderPass = m_RenderPass;

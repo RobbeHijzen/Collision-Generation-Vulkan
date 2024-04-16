@@ -10,16 +10,16 @@
 #include "Abstraction/Mesh.h"
 
 #include "../Shader.h"
+class VulkanBase;
 
-
-class MachineShader : public Shader
+class Shader3D : public Shader
 {
 public:
 
-	explicit MachineShader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
+	explicit Shader3D(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
 		: Shader(vertexShaderFile, fragmentShaderFile) {}
 
-	~MachineShader() = default;
+	~Shader3D() = default;
 
 	virtual void Initialize(const VkDevice& m_Device) override;
 	
@@ -30,7 +30,10 @@ public:
 	virtual VkPipelineInputAssemblyStateCreateInfo CreateInputAssemblyStateInfo() override;
 	
 	virtual VkShaderModule CreateShaderModule(const VkDevice& m_Device, const std::vector<char>& code) override;
-	
+	virtual std::vector<VkDescriptorSetLayoutBinding> CreateDescriptorSetLayoutBindings() override;
+
+	virtual void SetupDescriptorSet(VulkanBase* vulkanBase, Mesh3D* mesh) override;
+
 private:
 
 

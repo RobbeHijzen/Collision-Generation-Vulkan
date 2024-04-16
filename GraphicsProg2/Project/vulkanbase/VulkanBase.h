@@ -243,14 +243,14 @@ private:
 
 	void LoadScene()
 	{
-		uint32_t shaderIndex3D{ShaderManager::GetInstance().AddShader(new MachineShader("Resources/Shaders/shader3D.vert.spv", "Resources/Shaders/shader3D.frag.spv"), m_Device)};
-		uint32_t shaderIndex2D{ShaderManager::GetInstance().AddShader(new MachineShader("Resources/Shaders/shader3D.vert.spv", "Resources/Shaders/shader3D.frag.spv"), m_Device)};
+		uint32_t machineShaderIndex{ShaderManager::GetInstance().AddShader(new MachineShader("Shaders/shader.vert.spv", "Shaders/shader.frag.spv"), m_Device)};
 
-		m_Scene->AddMesh(new Mesh3D("Resources/vehicle.obj", "resources/vehicle_diffuse.png", shaderIndex3D, glm::translate(glm::mat4{ 1.f }, glm::vec3{20.f, 0.f, 0.f})));
-		m_Scene->AddMesh(new Mesh3D("Resources/viking_room.obj", "resources/viking_room.png", shaderIndex3D, glm::translate(glm::mat4{ 1.f }, glm::vec3{ -2.f, 0.f, 0.f }) * glm::rotate(glm::mat4{ 1.f }, glm::radians(-90.f), glm::vec3{1.f, 0.f, 0.f})));
-		m_Scene->AddMesh(new Mesh2D(shaderIndex2D, glm::mat4{ 1.f }, RectangleInfo{5.f, -5.f, 0.f, 5.f}));
-		
+		//m_Scene->AddMesh(new Mesh("Resources/lowpoly_bunny.obj", "resources/vehicle_diffuse.png", machineShaderIndex, glm::mat4{1.f}));
+		m_Scene->AddMesh(new Mesh("Resources/vehicle.obj", "resources/vehicle_diffuse.png", machineShaderIndex, glm::translate(glm::mat4{ 1.f }, glm::vec3{20.f, 0.f, 0.f})));
+		m_Scene->AddMesh(new Mesh("Resources/viking_room.obj", "resources/viking_room.png", machineShaderIndex, glm::translate(glm::mat4{ 1.f }, glm::vec3{ -2.f, 0.f, 0.f }) * glm::rotate(glm::mat4{ 1.f }, glm::radians(-90.f), glm::vec3{1.f, 0.f, 0.f})));
+	
 
+		m_MeshesAmount = static_cast<uint32_t>(m_Scene->GetMeshes().size());
 	}
 
 
@@ -258,6 +258,7 @@ private:
 	float m_DeltaTime{};
 
 	std::unique_ptr<Scene> m_Scene{};
+	uint32_t m_MeshesAmount{};
 
 	Camera m_Camera{ glm::vec3{0.f, 1.f, -3.f}, 90.f };
 

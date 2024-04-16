@@ -30,6 +30,10 @@ public:
 	virtual VkPipelineInputAssemblyStateCreateInfo CreateInputAssemblyStateInfo() override;
 	
 	virtual VkShaderModule CreateShaderModule(const VkDevice& m_Device, const std::vector<char>& code) override;
+	
+private:
+
+
 };
 
 #endif // !MACHINESHADER_H

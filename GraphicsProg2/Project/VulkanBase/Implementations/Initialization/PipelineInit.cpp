@@ -80,8 +80,8 @@ void VulkanBase::CreateGraphicsPipelines()
 		// VertexInputState
 		auto pvisi{ shader->CreateVertexInputStateInfo() };
 
-		auto bindingDescription = Vertex3D::GetBindingDescription();
-		auto attributeDescriptions = Vertex3D::GetAttributeDescriptions();
+		auto bindingDescription = Vertex::GetBindingDescription();
+		auto attributeDescriptions = Vertex::GetAttributeDescriptions();
 
 		pvisi.vertexBindingDescriptionCount = 1;
 		pvisi.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());

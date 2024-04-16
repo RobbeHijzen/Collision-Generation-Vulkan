@@ -13,7 +13,7 @@ namespace Utils
 	//Just parses vertices and indices
 #pragma warning(push)
 #pragma warning(disable : 4505) //Warning unreferenced local function
-	static bool ParseOBJ(const std::string& filename, std::vector<Vertex3D>& vertices, std::vector<uint32_t>& indices, bool flipAxisAndWinding = true)
+	static bool ParseOBJ(const std::string& filename, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices, bool flipAxisAndWinding = true)
 	{
 #ifdef DISABLE_OBJ
 
@@ -76,7 +76,7 @@ namespace Utils
 				//add the material index as attibute to the attribute array
 				//
 				// Faces or triangles
-				Vertex3D vertex{};
+				Vertex vertex{};
 				size_t iPosition, iTexCoord, iNormal;
 
 				uint32_t tempIndices[3];

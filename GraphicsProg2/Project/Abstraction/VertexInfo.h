@@ -42,8 +42,8 @@ struct Vertex3D : public Vertex
 		: pos{ p }, texCoord{ tex }, normal{ norm }
 	{}
 
-	glm::vec3 pos;
-	glm::vec2 texCoord;
+	glm::vec3 pos{};
+	glm::vec2 texCoord{};
 	glm::vec3 normal{};
 
 	static auto GetBindingDescription()
@@ -85,8 +85,8 @@ struct Vertex2D : public Vertex
 	Vertex2D(glm::vec2 p, glm::vec3 col = {1.f, 1.f, 1.f})
 		: pos{ p }, color{ col } {}
 
-	glm::vec2 pos;
-	glm::vec3 color;
+	glm::vec2 pos{};
+	glm::vec3 color{};
 
 	static auto GetBindingDescription()
 	{

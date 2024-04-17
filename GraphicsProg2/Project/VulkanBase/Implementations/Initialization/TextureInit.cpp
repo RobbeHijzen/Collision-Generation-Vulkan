@@ -17,7 +17,7 @@ void VulkanBase::CreateTextureImages()
                 auto mesh{ allMeshes[meshIndex] };
                 if (auto mesh3D{ dynamic_cast<Mesh3D*>(mesh) })
                 {
-                    mesh3D->SetTextureIndex(textureIndex);
+                    mesh3D->SetTextureIndex(static_cast<uint32_t>(textureIndex));
 
                     m_TextureImages.emplace_back(nullptr);
                     m_TextureImagesMemory.emplace_back(nullptr);

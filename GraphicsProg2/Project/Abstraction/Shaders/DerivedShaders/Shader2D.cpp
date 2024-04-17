@@ -79,7 +79,7 @@ std::vector<VkDescriptorSetLayoutBinding> Shader2D::CreateDescriptorSetLayoutBin
 	return { uboLayoutBinding };
 }
 
-void Shader2D::SetupDescriptorSet(VulkanBase* vulkanBase, Mesh3D* mesh)
+void Shader2D::SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh)
 {
 	VkDescriptorBufferInfo bufferInfo{};
 	bufferInfo.buffer = vulkanBase->GetUniformBuffers()[mesh->GetMeshIndex()];

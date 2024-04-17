@@ -28,7 +28,7 @@ namespace Utils
 			return false;
 
 		std::vector<glm::vec3> positions{};
-		//std::vector<glm::vec3> normals{};
+		std::vector<glm::vec3> normals{};
 		std::vector<glm::vec2> UVs{};
 
 		vertices.clear();
@@ -66,7 +66,7 @@ namespace Utils
 				float x, y, z;
 				file >> x >> y >> z;
 
-				//normals.emplace_back(x, y, z);
+				normals.emplace_back(x, y, z);
 			}
 			else if (sCommand == "f")
 			{
@@ -103,7 +103,7 @@ namespace Utils
 
 							// Optional vertex normal
 							file >> iNormal;
-							//vertex.normal = normals[iNormal - 1];
+							vertex.normal = normals[iNormal - 1];
 						}
 					}
 
@@ -128,27 +128,27 @@ namespace Utils
 			file.ignore(1000, '\n');
 		}
 
-		//Cheap Tangent Calculations
+		////Cheap Tangent Calculations
 		//for (uint32_t i = 0; i < indices.size(); i += 3)
 		//{
 		//	uint32_t index0 = indices[i];
 		//	uint32_t index1 = indices[size_t(i) + 1];
 		//	uint32_t index2 = indices[size_t(i) + 2];
 		//
-		//	const Vector3& p0 = vertices[index0].position;
-		//	const Vector3& p1 = vertices[index1].position;
-		//	const Vector3& p2 = vertices[index2].position;
-		//	const Vector2& uv0 = vertices[index0].uv;
-		//	const Vector2& uv1 = vertices[index1].uv;
-		//	const Vector2& uv2 = vertices[index2].uv;
+		//	const glm::vec3& p0 = vertices[index0].pos;
+		//	const glm::vec3& p1 = vertices[index1].pos;
+		//	const glm::vec3& p2 = vertices[index2].pos;
+		//	const glm::vec2& uv0 = vertices[index0].texCoord;
+		//	const glm::vec2& uv1 = vertices[index1].texCoord;
+		//	const glm::vec2& uv2 = vertices[index2].texCoord;
 		//
-		//	const Vector3 edge0 = p1 - p0;
-		//	const Vector3 edge1 = p2 - p0;
-		//	const Vector2 diffX = Vector2(uv1.x - uv0.x, uv2.x - uv0.x);
-		//	const Vector2 diffY = Vector2(uv1.y - uv0.y, uv2.y - uv0.y);
-		//	float r = 1.f / Vector2::Cross(diffX, diffY);
+		//	const glm::vec3 edge0 = p1 - p0;
+		//	const glm::vec3 edge1 = p2 - p0;
+		//	const glm::vec2 diffX = glm::vec2(uv1.x - uv0.x, uv2.x - uv0.x);
+		//	const glm::vec2 diffY = glm::vec2(uv1.y - uv0.y, uv2.y - uv0.y);
+		//	float r = 1.f / glm::cross({diffX}, diffY);
 		//
-		//	Vector3 tangent = (edge0 * diffY.y - edge1 * diffY.x) * r;
+		//	glm::vec3 tangent = (edge0 * diffY.y - edge1 * diffY.x) * r;
 		//	vertices[index0].tangent += tangent;
 		//	vertices[index1].tangent += tangent;
 		//	vertices[index2].tangent += tangent;
@@ -157,11 +157,11 @@ namespace Utils
 		////Fix the tangents per vertex now because we accumulated
 		//for (auto& v : vertices)
 		//{
-		//	v.tangent = Vector3::Reject(v.tangent, v.normal).Normalized();
+		//	v.tangent = glm::Reject(v.tangent, v.normal).Normalized();
 		//
 		//	if (flipAxisAndWinding)
 		//	{
-		//		v.position.z *= -1.f;
+		//		v.pos.z *= -1.f;
 		//		v.normal.z *= -1.f;
 		//		v.tangent.z *= -1.f;
 		//	}

@@ -8,7 +8,15 @@ void VulkanBase::CreateVertexBuffers()
 
 		VkBuffer vertexBuffer; 
 		VkDeviceMemory vertexBufferMemory;
-		CreateVertexBuffer(mesh->Get3DVertices(), vertexBuffer, vertexBufferMemory);
+
+		if (auto mesh3D{ dynamic_cast<Mesh3D*>(mesh) })
+		{
+			CreateVertexBuffer(mesh3D->Get3DVertices(), vertexBuffer, vertexBufferMemory);
+		}
+		else if (auto mesh2D{ dynamic_cast<Mesh2D*>(mesh) })
+		{
+			CreateVertexBuffer(mesh2D->Get2DVertices(), vertexBuffer, vertexBufferMemory);
+		}
 
 		m_VertexBuffers.emplace_back(vertexBuffer);
 		m_VertexBuffersMemory.emplace_back(vertexBufferMemory);

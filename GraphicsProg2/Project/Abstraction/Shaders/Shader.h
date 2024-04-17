@@ -6,7 +6,7 @@
 #include "vulkan/vulkan_core.h"
 
 class VulkanBase;
-class Mesh3D;
+class Mesh;
 
 class Shader 
 {
@@ -46,7 +46,7 @@ public:
 	virtual VkShaderModule CreateShaderModule(const VkDevice& m_Device, const std::vector<char>& code) = 0;
 	virtual std::vector<VkDescriptorSetLayoutBinding> CreateDescriptorSetLayoutBindings() = 0;
 
-	virtual void SetupDescriptorSet(VulkanBase* vulkanBase, Mesh3D* mesh) = 0;
+	virtual void SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh) = 0;
 
 
 protected:

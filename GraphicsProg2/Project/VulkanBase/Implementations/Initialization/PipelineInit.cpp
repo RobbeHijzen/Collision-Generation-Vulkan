@@ -87,15 +87,34 @@ void VulkanBase::CreateGraphicsPipelines()
 
 		// VertexInputState
 		auto pvisi{ shader->CreateVertexInputStateInfo() };
+		VkVertexInputBindingDescription bindingDescription;
+		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
-		auto bindingDescription = Vertex3D::GetBindingDescription();
-		auto attributeDescriptions = Vertex3D::GetAttributeDescriptions();
-	 
-		pvisi.vertexBindingDescriptionCount = 1;
-		pvisi.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-		pvisi.pVertexBindingDescriptions = &bindingDescription;
-		pvisi.pVertexAttributeDescriptions = attributeDescriptions.data();
+		if (dynamic_cast<Shader2D*>(shader))
+		{
+			bindingDescription = Vertex2D::GetBindingDescription();
+			attributeDescriptions = Vertex2D::GetAttributeDescriptions();
 
+			pvisi.vertexBindingDescriptionCount = 1;
+			pvisi.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+			pvisi.pVertexBindingDescriptions = &bindingDescription;
+			pvisi.pVertexAttributeDescriptions = attributeDescriptions.data();
+		}
+		else if (dynamic_cast<Shader3D*>(shader))
+		{
+			bindingDescription = Vertex3D::GetBindingDescription();
+			attributeDescriptions = Vertex3D::GetAttributeDescriptions();
+
+			pvisi.vertexBindingDescriptionCount = 1;
+			pvisi.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+			pvisi.pVertexBindingDescriptions = &bindingDescription;
+			pvisi.pVertexAttributeDescriptions = attributeDescriptions.data();
+		}
+		else
+		{
+			throw std::runtime_error("failed to create graphics pipeline!");
+		}	 
+		
 		// Shader Info
 		auto piasi{ shader->CreateInputAssemblyStateInfo() };
 		std::vector<VkPipelineShaderStageCreateInfo>& shaderStages{ shader->GetShaderStages() };

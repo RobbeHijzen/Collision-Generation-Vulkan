@@ -22,7 +22,7 @@ public:
 
 	void SetMeshIndex(uint32_t index);
 
-	const std::vector<Vertex>& GetVertices() const { return m_Vertices; };
+	//const std::vector<Vertex>& GetVertices() const { return m_Vertices; };
 	const std::vector<uint32_t>& GetIndices() const { return m_Indices; };
 
 protected:
@@ -64,10 +64,12 @@ private:
 class Mesh2D : public Mesh
 {
 public:
-	Mesh2D(uint32_t shaderIndex, glm::mat4 modelMatrix, RectangleInfo rec);
-	Mesh2D(uint32_t shaderIndex, glm::mat4 modelMatrix, OvalInfo oval);
+	Mesh2D(uint32_t shaderIndex, glm::mat4 modelMatrix, RectangleInfo rec, glm::vec3 color = {1.f, 1.f, 1.f});
+	Mesh2D(uint32_t shaderIndex, glm::mat4 modelMatrix, OvalInfo oval, glm::vec3 color = { 1.f, 1.f, 1.f });
 
 	virtual void Draw(VkCommandBuffer buffer) const override;
+
+	auto Get2DVertices() const { return m_2DVertices; }
 
 private:
 	Mesh2D(uint32_t shaderIndex, glm::mat4 modelMatrix);
@@ -75,4 +77,5 @@ private:
 	void UseRectangleInfo(RectangleInfo rec);
 	void UseOvalInfo(OvalInfo oval);
 
+	std::vector<Vertex2D> m_2DVertices{};
 };

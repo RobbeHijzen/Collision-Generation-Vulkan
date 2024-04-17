@@ -29,19 +29,32 @@ void Mesh3D::Draw(VkCommandBuffer buffer) const
 }
 
 
-Mesh2D::Mesh2D(uint32_t shaderIndex, glm::mat4 modelMatrix, RectangleInfo rec)
+Mesh2D::Mesh2D(uint32_t shaderIndex, glm::mat4 modelMatrix, RectangleInfo rec, glm::vec3 color)
     : Mesh2D(shaderIndex, modelMatrix)
 {
     UseRectangleInfo(rec);
+    m_Vertices.clear();
+    for (auto& vertex : m_2DVertices)
+    {
+        vertex.color = color;
+        m_Vertices.emplace_back(vertex);
+    }
 }
-Mesh2D::Mesh2D(uint32_t shaderIndex, glm::mat4 modelMatrix, OvalInfo oval)
+Mesh2D::Mesh2D(uint32_t shaderIndex, glm::mat4 modelMatrix, OvalInfo oval, glm::vec3 color)
     : Mesh2D(shaderIndex, modelMatrix)
 {
     UseOvalInfo(oval);
+    m_Vertices.clear();
+    for (auto& vertex : m_2DVertices)
+    {
+        vertex.color = color;
+        m_Vertices.emplace_back(vertex);
+    }
 }
 Mesh2D::Mesh2D(uint32_t shaderIndex, glm::mat4 modelMatrix)
     : Mesh{ shaderIndex, modelMatrix }
 {
+    m_Indices = { 0, 1, 2 };
 }
 void Mesh2D::Draw(VkCommandBuffer buffer) const
 {
@@ -50,14 +63,14 @@ void Mesh2D::Draw(VkCommandBuffer buffer) const
 
 void Mesh2D::UseRectangleInfo(RectangleInfo rec)
 {
-    m_Vertices.clear();
+    m_2DVertices.clear();
     m_Indices.clear();
 
     // Add vertices of the rectangle
-    m_Vertices.emplace_back(Vertex2D{ glm::vec2{rec.left, rec.top }, glm::vec3{1.f, 1.f, 1.f} });
-    m_Vertices.emplace_back(Vertex2D{ glm::vec2{rec.right, rec.top}, glm::vec3{1.f, 1.f, 1.f} });
-    m_Vertices.emplace_back(Vertex2D{ glm::vec2{rec.right, rec.bot}, glm::vec3{1.f, 1.f, 1.f} });
-    m_Vertices.emplace_back(Vertex2D{ glm::vec2{rec.left, rec.bot }, glm::vec3{1.f, 1.f, 1.f} });
+    m_2DVertices.emplace_back(Vertex2D{ glm::vec2{rec.left, rec.top }});
+    m_2DVertices.emplace_back(Vertex2D{ glm::vec2{rec.right, rec.top}});
+    m_2DVertices.emplace_back(Vertex2D{ glm::vec2{rec.right, rec.bot}});
+    m_2DVertices.emplace_back(Vertex2D{ glm::vec2{rec.left, rec.bot }});
 
     // Add indices to form two triangles (rectangular shape)
     m_Indices.emplace_back(0);
@@ -70,7 +83,7 @@ void Mesh2D::UseRectangleInfo(RectangleInfo rec)
 }
 void Mesh2D::UseOvalInfo(OvalInfo oval)
 {
-    m_Vertices.clear();
+    m_2DVertices.clear();
     m_Indices.clear();
 
     float angleIncrement = 2.0f * 3.14159265f / oval.segments;
@@ -78,9 +91,9 @@ void Mesh2D::UseOvalInfo(OvalInfo oval)
     for (int i = 0; i < oval.segments; ++i)
     {
         float angle = i * angleIncrement;
-        float x = oval.centerX + oval.radius * cos(angle);
-        float y = oval.centerY + oval.radius * sin(angle);
-        m_Vertices.emplace_back(Vertex2D{ {x, y}, {1.f, 1.f, 1.f} });
+        float x = oval.radiusX * cos(angle);
+        float y = oval.radiusY * sin(angle);
+        m_2DVertices.emplace_back(Vertex2D{ {x, y}});
     }
 
     // Add indices to form triangles connecting the vertices
@@ -90,10 +103,5 @@ void Mesh2D::UseOvalInfo(OvalInfo oval)
         m_Indices.emplace_back(i);
         m_Indices.emplace_back(i + 1);
     }
-
-    // Connect last vertex with the first to close the oval
-    m_Indices.emplace_back(0);
-    m_Indices.emplace_back(oval.segments - 1);
-    m_Indices.emplace_back(1);
 }
 

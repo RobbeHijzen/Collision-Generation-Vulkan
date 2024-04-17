@@ -16,14 +16,14 @@ public:
 	Scene& operator=(Scene&& other) noexcept = delete;
 
 
-	void AddMesh(Mesh3D* mesh)
+	void AddMesh(Mesh* mesh)
 	{
 		m_Meshes.emplace_back(mesh);
 	}
 
-	std::vector<Mesh3D*> GetMeshes()
+	std::vector<Mesh*> GetMeshes()
 	{
-		std::vector<Mesh3D*> meshes{};
+		std::vector<Mesh*> meshes{};
 		for (const auto& mesh : m_Meshes)
 		{
 			meshes.emplace_back(mesh.get());
@@ -35,6 +35,6 @@ public:
 
 private:
 
-	std::vector<std::unique_ptr<Mesh3D>> m_Meshes{};
+	std::vector<std::unique_ptr<Mesh>> m_Meshes{};
 
 };

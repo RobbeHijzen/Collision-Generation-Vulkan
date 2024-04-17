@@ -7,6 +7,7 @@
 
 
 #include "VulkanUtil/VulkanUtil.h"
+#include "Abstraction/HelperStructs.h"
 #include "Abstraction/Camera.h"
 #include "Abstraction/VertexInfo.h"
 #include "Abstraction/Shaders/Shader.h"
@@ -31,24 +32,6 @@
 
 const std::vector<const char*> validationLayers{ "VK_LAYER_KHRONOS_validation" };
 const std::vector<const char*> deviceExtensions{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-
-struct QueueFamilyIndices 
-{
-	std::optional<uint32_t> graphicsFamily;
-	std::optional<uint32_t> presentFamily;
-
-	bool IsComplete() const
-	{
-		return graphicsFamily.has_value() && presentFamily.has_value();
-	}
-};
-
-struct SwapChainSupportDetails 
-{
-	VkSurfaceCapabilitiesKHR capabilities;
-	std::vector<VkSurfaceFormatKHR> formats;
-	std::vector<VkPresentModeKHR> presentModes;
-};
 
 class VulkanBase 
 {
@@ -263,10 +246,11 @@ private:
 		uint32_t shader3D{ShaderManager::GetInstance().AddShader(new Shader3D("Resources/Shaders/shader3D.vert.spv", "Resources/Shaders/shader3D.frag.spv"), m_Device)};
 		uint32_t shader2D{ShaderManager::GetInstance().AddShader(new Shader2D("Resources/Shaders/shader2D.vert.spv", "Resources/Shaders/shader2D.frag.spv"), m_Device)};
 
-		m_Scene->AddMesh(new Mesh3D("Resources/vehicle.obj", "resources/vehicle_diffuse.png", shader2D, glm::translate(glm::mat4{ 1.f }, glm::vec3{20.f, 0.f, 0.f})));
-		m_Scene->AddMesh(new Mesh3D("Resources/viking_room.obj", "resources/viking_room.png", shader3D, glm::translate(glm::mat4{ 1.f }, glm::vec3{ -2.f, 0.f, 0.f }) * glm::rotate(glm::mat4{ 1.f }, glm::radians(-90.f), glm::vec3{1.f, 0.f, 0.f})));
+		m_Scene->AddMesh(new Mesh3D("Resources/vehicle.obj", "resources/vehicle_diffuse.png", shader3D, glm::translate(glm::mat4{ 1.f }, glm::vec3{20.f, 0.f, 0.f})));
+		m_Scene->AddMesh(new Mesh3D("Resources/viking_room.obj", "resources/viking_room.png", shader3D, glm::translate(glm::mat4{ 1.f }, glm::vec3{ -15.f, 0.f, 0.f }) * glm::rotate(glm::mat4{ 1.f }, glm::radians(-90.f), glm::vec3{ 1.f, 0.f, 0.f }) * glm::scale(glm::mat4{ 1.f }, glm::vec3{ 10.f, 10.f, 10.f })));
 	
-		//m_Scene->AddMesh(new Mesh2D(shader2D, glm::mat4{1.f}, RectangleInfo(10.f, -10.f, 0.f, 10.f)));
+		m_Scene->AddMesh(new Mesh2D(shader2D, glm::translate(glm::mat4{ 1.f }, glm::vec3{ 0.f, 0.f, -10.f }), RectangleInfo(3.f, 3.f, 0.f, -3.f), glm::vec3{1.f, 0.f, 0.f}));
+		m_Scene->AddMesh(new Mesh2D(shader2D, glm::translate(glm::mat4{ 1.f }, glm::vec3{ 0.f, 0.f, -5.f }), OvalInfo{2.f, 1.5f, 8}, glm::vec3{ 1.f, 1.f, 0.f }));
 	}
 
 
@@ -275,7 +259,7 @@ private:
 
 	std::unique_ptr<Scene> m_Scene{};
 
-	Camera m_Camera{ glm::vec3{0.f, 1.f, -3.f}, 90.f };
+	Camera m_Camera{ glm::vec3{0.f, 1.f, -15.f}, 90.f };
 
 	// Window / Surface setup
 	GLFWwindow* m_Window{};

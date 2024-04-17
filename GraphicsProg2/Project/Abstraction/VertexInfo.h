@@ -16,10 +16,12 @@ struct RectangleInfo
 };
 struct OvalInfo
 {
-	float centerX;
-	float centerY;
-	float radius;
-	float segments;
+	OvalInfo(float xRadius, float yRadius, int _segments)
+		: radiusX{ xRadius }, radiusY{ yRadius }, segments{_segments} {}
+
+	float radiusX;
+	float radiusY;
+	int segments;
 };
 
 struct UniformBufferObject
@@ -36,11 +38,13 @@ struct Vertex
 struct Vertex3D : public Vertex
 {
 	Vertex3D() {}
-	Vertex3D(glm::vec3 p, glm::vec2 tex)
-		: pos{ p }, texCoord{ tex } {}
+	Vertex3D(glm::vec3 p, glm::vec2 tex, glm::vec3 norm)
+		: pos{ p }, texCoord{ tex }, normal{ norm }
+	{}
 
 	glm::vec3 pos;
 	glm::vec2 texCoord;
+	glm::vec3 normal{};
 
 	static auto GetBindingDescription()
 	{
@@ -52,9 +56,10 @@ struct Vertex3D : public Vertex
 		return bindingDescription;
 	}
 
-	static auto GetAttributeDescriptions()
+	static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions()
 	{
-		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+		std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
+		attributeDescriptions.resize(3);
 
 		attributeDescriptions[0].binding = 0;
 		attributeDescriptions[0].location = 0;
@@ -66,13 +71,18 @@ struct Vertex3D : public Vertex
 		attributeDescriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
 		attributeDescriptions[1].offset = offsetof(Vertex3D, texCoord);
 
+		attributeDescriptions[2].binding = 0;
+		attributeDescriptions[2].location = 2;
+		attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[2].offset = offsetof(Vertex3D, normal);
+		
 		return attributeDescriptions;
 	}
 };
 
 struct Vertex2D : public Vertex
 {
-	Vertex2D(glm::vec2 p, glm::vec3 col)
+	Vertex2D(glm::vec2 p, glm::vec3 col = {1.f, 1.f, 1.f})
 		: pos{ p }, color{ col } {}
 
 	glm::vec2 pos;
@@ -82,15 +92,16 @@ struct Vertex2D : public Vertex
 	{
 		VkVertexInputBindingDescription bindingDescription{};
 		bindingDescription.binding = 0;
-		bindingDescription.stride = sizeof(Vertex3D);
+		bindingDescription.stride = sizeof(Vertex2D);
 		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 		return bindingDescription;
 	}
 
-	static auto GetAttributeDescriptions()
+	static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions()
 	{
-		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+		std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
+		attributeDescriptions.resize(2);
 
 		attributeDescriptions[0].binding = 0;
 		attributeDescriptions[0].location = 0;

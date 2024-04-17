@@ -263,10 +263,10 @@ private:
 		uint32_t shader3D{ShaderManager::GetInstance().AddShader(new Shader3D("Resources/Shaders/shader3D.vert.spv", "Resources/Shaders/shader3D.frag.spv"), m_Device)};
 		uint32_t shader2D{ShaderManager::GetInstance().AddShader(new Shader2D("Resources/Shaders/shader2D.vert.spv", "Resources/Shaders/shader2D.frag.spv"), m_Device)};
 
-		//m_Scene->AddMesh(new Mesh("Resources/lowpoly_bunny.obj", "resources/vehicle_diffuse.png", machineShaderIndex, glm::mat4{1.f}));
 		m_Scene->AddMesh(new Mesh3D("Resources/vehicle.obj", "resources/vehicle_diffuse.png", shader2D, glm::translate(glm::mat4{ 1.f }, glm::vec3{20.f, 0.f, 0.f})));
 		m_Scene->AddMesh(new Mesh3D("Resources/viking_room.obj", "resources/viking_room.png", shader3D, glm::translate(glm::mat4{ 1.f }, glm::vec3{ -2.f, 0.f, 0.f }) * glm::rotate(glm::mat4{ 1.f }, glm::radians(-90.f), glm::vec3{1.f, 0.f, 0.f})));
 	
+		//m_Scene->AddMesh(new Mesh2D(shader2D, glm::mat4{1.f}, RectangleInfo(10.f, -10.f, 0.f, 10.f)));
 	}
 
 

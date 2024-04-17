@@ -12,6 +12,7 @@
 #include "Abstraction/Shaders/Shader.h"
 #include "Abstraction/Shaders/ShaderManager.h"
 #include "Abstraction/Shaders/DerivedShaders/Shader3D.h"
+#include "Abstraction/Shaders/DerivedShaders/Shader2D.h"
 #include "Abstraction/Scene/Scene.h"
 #include "Abstraction/Mesh.h"
 
@@ -200,8 +201,10 @@ private:
 		{
 			vkDestroyDescriptorSetLayout(m_Device, descriptorSetLayout, nullptr);
 		}
-
-		vkDestroyPipelineLayout(m_Device, m_PipelineLayout, nullptr);
+		for (auto& pipelineLayout : m_PipelineLayouts)
+		{
+			vkDestroyPipelineLayout(m_Device, pipelineLayout, nullptr);
+		}
 		vkDestroyRenderPass(m_Device, m_RenderPass, nullptr);
 
 		// Uniform buffer cleanup
@@ -257,11 +260,12 @@ private:
 
 	void LoadScene()
 	{
-		uint32_t machineShaderIndex{ShaderManager::GetInstance().AddShader(new Shader3D("Shaders/shader.vert.spv", "Shaders/shader.frag.spv"), m_Device)};
+		uint32_t shader3D{ShaderManager::GetInstance().AddShader(new Shader3D("Resources/Shaders/shader3D.vert.spv", "Resources/Shaders/shader3D.frag.spv"), m_Device)};
+		uint32_t shader2D{ShaderManager::GetInstance().AddShader(new Shader2D("Resources/Shaders/shader2D.vert.spv", "Resources/Shaders/shader2D.frag.spv"), m_Device)};
 
 		//m_Scene->AddMesh(new Mesh("Resources/lowpoly_bunny.obj", "resources/vehicle_diffuse.png", machineShaderIndex, glm::mat4{1.f}));
-		m_Scene->AddMesh(new Mesh3D("Resources/vehicle.obj", "resources/vehicle_diffuse.png", machineShaderIndex, glm::translate(glm::mat4{ 1.f }, glm::vec3{20.f, 0.f, 0.f})));
-		m_Scene->AddMesh(new Mesh3D("Resources/viking_room.obj", "resources/viking_room.png", machineShaderIndex, glm::translate(glm::mat4{ 1.f }, glm::vec3{ -2.f, 0.f, 0.f }) * glm::rotate(glm::mat4{ 1.f }, glm::radians(-90.f), glm::vec3{1.f, 0.f, 0.f})));
+		m_Scene->AddMesh(new Mesh3D("Resources/vehicle.obj", "resources/vehicle_diffuse.png", shader2D, glm::translate(glm::mat4{ 1.f }, glm::vec3{20.f, 0.f, 0.f})));
+		m_Scene->AddMesh(new Mesh3D("Resources/viking_room.obj", "resources/viking_room.png", shader3D, glm::translate(glm::mat4{ 1.f }, glm::vec3{ -2.f, 0.f, 0.f }) * glm::rotate(glm::mat4{ 1.f }, glm::radians(-90.f), glm::vec3{1.f, 0.f, 0.f})));
 	
 	}
 
@@ -335,7 +339,7 @@ private:
 	// GraphicsPipeline setup
 	std::vector<VkDescriptorSetLayout> m_DescriptorSetLayouts{};
 	std::vector<VkPipeline> m_GraphicsPipelines{};
-	VkPipelineLayout m_PipelineLayout{};
+	std::vector<VkPipelineLayout> m_PipelineLayouts{};
 	VkRenderPass m_RenderPass{};
 
 	void CreateGraphicsPipelines();

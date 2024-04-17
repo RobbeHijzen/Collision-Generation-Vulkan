@@ -67,6 +67,7 @@ void VulkanBase::CreateGraphicsPipelines()
 	// Loop over every shader to make a graphics pipeline for each of them.
 	auto shaders{ ShaderManager::GetInstance().GetShaders() };
 	int index{};
+	m_PipelineLayouts.resize(shaders.size());
 	m_GraphicsPipelines.resize(shaders.size());
 
 	for (auto& shader : shaders)
@@ -78,7 +79,7 @@ void VulkanBase::CreateGraphicsPipelines()
 		pipelineLayoutInfo.pSetLayouts = &m_DescriptorSetLayouts[index];
 		pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-		if (vkCreatePipelineLayout(m_Device, &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
+		if (vkCreatePipelineLayout(m_Device, &pipelineLayoutInfo, nullptr, &m_PipelineLayouts[index]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create pipeline layout!");
 		}
@@ -116,7 +117,7 @@ void VulkanBase::CreateGraphicsPipelines()
 		pipelineInfo.pColorBlendState = &colorBlending;
 		pipelineInfo.pDynamicState = &dynamicState;
 		pipelineInfo.pDepthStencilState = &depthStencil;
-		pipelineInfo.layout = m_PipelineLayout;
+		pipelineInfo.layout = m_PipelineLayouts[index];
 		pipelineInfo.renderPass = m_RenderPass;
 		pipelineInfo.subpass = 0;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;

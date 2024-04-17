@@ -1,11 +1,12 @@
 # Source files
-set(SHADER_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shaders")
-set(SHADER_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders")
+set(SHADER_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Shaders")
+set(SHADER_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/Resources/Shaders")
 
 file(GLOB_RECURSE GLSL_SOURCE_FILES
     "${SHADER_SOURCE_DIR}/*.frag"
     "${SHADER_SOURCE_DIR}/*.vert"
 )
+
 
 foreach(GLSL ${GLSL_SOURCE_FILES})
     get_filename_component(FILE_NAME ${GLSL} NAME)
@@ -45,7 +46,7 @@ set(SOURCES
     "VulkanBase/Implementations/RuntimeFunctions.cpp" 
     "VulkanBase/Implementations/Initialization/SemaphoresFencesInit.cpp" 
     "VulkanBase/Implementations/Initialization/VertexBufferInit.cpp" 
-    "VulkanBase/Implementations/BufferHelpers.cpp" "VulkanBase/Implementations/Initialization/DescriptorInit.cpp" "VulkanUtil/stb_image.h" "VulkanBase/Implementations/Initialization/TextureInit.cpp" "VulkanBase/Implementations/Initialization/DepthBufferingInit.cpp")
+    "VulkanBase/Implementations/BufferHelpers.cpp" "VulkanBase/Implementations/Initialization/DescriptorInit.cpp" "VulkanUtil/stb_image.h" "VulkanBase/Implementations/Initialization/TextureInit.cpp" "VulkanBase/Implementations/Initialization/DepthBufferingInit.cpp" "Abstraction/Shaders/DerivedShaders/Shader2D.h" "Abstraction/Shaders/DerivedShaders/Shader2D.cpp")
     
 set(RESOURCES_DIR "${CMAKE_SOURCE_DIR}/Project/Resources")
 file(COPY ${RESOURCES_DIR} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

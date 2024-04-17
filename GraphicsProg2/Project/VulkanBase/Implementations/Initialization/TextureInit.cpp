@@ -46,7 +46,7 @@ void VulkanBase::CreateTextureImages()
                 stbi_image_free(pixels);
 
                 CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_TextureImages[mesh->GetTextureIndex()], m_TextureImagesMemory[mesh->GetMeshIndex()]);
+                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_TextureImages[mesh->GetTextureIndex()], m_TextureImagesMemory[mesh->GetTextureIndex()]);
 
 
                 TransitionImageLayout(m_TextureImages[mesh->GetTextureIndex()], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);

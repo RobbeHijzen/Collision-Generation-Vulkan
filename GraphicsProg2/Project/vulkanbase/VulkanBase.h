@@ -236,12 +236,12 @@ private:
 		m_Shader3D = std::make_unique<Shader3D>("Resources/Shaders/shader3D.vert.spv", "Resources/Shaders/shader3D.frag.spv");
 		m_Shader3D->Initialize(m_Device);
 
-		m_Camera = std::make_unique<Camera>(glm::vec3{ 0.f, 1.f, -15.f }, 90.f);
+		m_Camera = std::make_unique<Camera>(glm::vec3{ 0.f, 1.f, -50.f }, 90.f);
 	}
 	void LoadScene()
 	{
-		m_Scene->AddMesh(new Mesh("Resources/vehicle.obj", "Resources/vehicle_diffuse.png"));
-		//m_Scene->AddMesh(new Mesh("Resources/viking_room.obj", "Resources/viking_room.png"));
+		m_Scene->AddMesh(new Mesh("Resources/viking_room.obj", "Resources/viking_room.png", {20.f, -15.f, -20.f}, {-90, -90, 0}, {25.f, 25.f, 25.f }));
+		m_Scene->AddMesh(new Mesh("Resources/vehicle.obj", "Resources/vehicle_diffuse.png", {-20, 0, 0}, {0, -90, 0}));
 	
 	}
 

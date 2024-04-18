@@ -10,9 +10,9 @@ Mesh::Mesh(std::string objPath, std::string diffuseString, glm::vec3 translation
 
 
     m_ModelMatrix = glm::translate(glm::mat4{ 1.f }, translation)
-                    * glm::rotate(glm::mat4{ 1.f }, glm::radians(rotation.x), glm::vec3{ 1.f, 0.f, 0.f })
+                    * (glm::rotate(glm::mat4{ 1.f }, glm::radians(rotation.z), glm::vec3{ 0.f, 0.f, 1.f })
                     * glm::rotate(glm::mat4{ 1.f }, glm::radians(rotation.y), glm::vec3{ 0.f, 1.f, 0.f })
-                    * glm::rotate(glm::mat4{ 1.f }, glm::radians(rotation.z), glm::vec3{ 0.f, 0.f, 1.f })
+                    * glm::rotate(glm::mat4{ 1.f }, glm::radians(rotation.x), glm::vec3{ 1.f, 0.f, 0.f }))
                     * glm::scale(glm::mat4{ 1.f }, scale);
 }
 

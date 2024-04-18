@@ -8,7 +8,7 @@ layout(location = 2) in mat4 fragWorldMatrix;
 
 layout(location = 0) out vec4 outColor;
 
-vec3 lightDirection = vec3(0.577, -0.577, 0.557);
+vec3 lightDirection = vec3(-0.577, -0.577, -0.557);
 
 void main() 
 {

@@ -2,25 +2,16 @@
 
 void VulkanBase::CreateDescriptorSetLayouts()
 {
-	auto shaders{ ShaderManager::GetInstance().GetShaders() };
-	int index{};
-	m_DescriptorSetLayouts.resize(shaders.size());
+	auto bindings{ m_Shader3D->CreateDescriptorSetLayoutBindings() };
 
-	for (auto& shader : shaders)
+	VkDescriptorSetLayoutCreateInfo layoutInfo{};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+	layoutInfo.pBindings = bindings.data();
+
+	if (vkCreateDescriptorSetLayout(m_Device, &layoutInfo, nullptr, &m_DescriptorSetLayout) != VK_SUCCESS)
 	{
-		auto bindings{ shader->CreateDescriptorSetLayoutBindings() };
-
-		VkDescriptorSetLayoutCreateInfo layoutInfo{};
-		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-		layoutInfo.pBindings = bindings.data();
-
-		if (vkCreateDescriptorSetLayout(m_Device, &layoutInfo, nullptr, &m_DescriptorSetLayouts[index]) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create descriptor set layout!");
-		}
-
-		++index;
+		throw std::runtime_error("failed to create descriptor set layout!");
 	}
 }
 
@@ -70,15 +61,14 @@ void VulkanBase::CreateDescriptorSets()
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = m_DescriptorPool;
 		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &m_DescriptorSetLayouts[mesh->GetShaderIndex()];
+		allocInfo.pSetLayouts = &m_DescriptorSetLayout;
 
 		if (vkAllocateDescriptorSets(m_Device, &allocInfo, &m_MeshDescriptorSets[mesh->GetMeshIndex()]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to allocate descriptor sets!");
 		}
 
-		auto shader{ ShaderManager::GetInstance().GetShaders()[mesh->GetShaderIndex()] };
-		shader->SetupDescriptorSet(this, mesh);
+		m_Shader3D->SetupDescriptorSet(this, mesh);
 	}
 }
 

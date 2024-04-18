@@ -2,41 +2,37 @@
 
 void VulkanBase::CreateVertexBuffers()
 {
+	m_VertexBuffers.resize(m_Scene->GetMeshesAmount());
+	m_VertexBuffersMemory.resize(m_Scene->GetMeshesAmount());
+
 	for (auto& mesh : m_Scene->GetMeshes())
 	{
-		mesh->SetMeshIndex(static_cast<uint32_t>(m_VertexBuffers.size()));
-
 		VkBuffer vertexBuffer; 
 		VkDeviceMemory vertexBufferMemory;
 
-		if (auto mesh3D{ dynamic_cast<Mesh3D*>(mesh) })
-		{
-			CreateVertexBuffer(mesh3D->Get3DVertices(), vertexBuffer, vertexBufferMemory);
-		}
-		else if (auto mesh2D{ dynamic_cast<Mesh2D*>(mesh) })
-		{
-			CreateVertexBuffer(mesh2D->Get2DVertices(), vertexBuffer, vertexBufferMemory);
-		}
-
-		m_VertexBuffers.emplace_back(vertexBuffer);
-		m_VertexBuffersMemory.emplace_back(vertexBufferMemory);
+		CreateVertexBuffer(mesh->GetVertices(), vertexBuffer, vertexBufferMemory);
+		
+		m_VertexBuffers[mesh->GetMeshIndex()] = vertexBuffer;
+		m_VertexBuffersMemory[mesh->GetMeshIndex()] = vertexBufferMemory;
 	}
 }
 void VulkanBase::CreateIndexBuffers()
 {
+	m_IndexBuffers.resize(m_Scene->GetMeshesAmount());
+	m_IndexBuffersMemory.resize(m_Scene->GetMeshesAmount());
+
 	for (auto& mesh : m_Scene->GetMeshes())
 	{
 		VkBuffer indexBuffer;
 		VkDeviceMemory indexBufferMemory;
 		CreateIndexBuffer(mesh->GetIndices(), indexBuffer, indexBufferMemory);
 
-		m_IndexBuffers.emplace_back(indexBuffer);
-		m_IndexBuffersMemory.emplace_back(indexBufferMemory);
+		m_IndexBuffers[mesh->GetMeshIndex()] = indexBuffer;
+		m_IndexBuffersMemory[mesh->GetMeshIndex()] = indexBufferMemory;
 	}
 }
 
-template <typename vertex>
-void VulkanBase::CreateVertexBuffer(std::vector<vertex> vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory)
+void VulkanBase::CreateVertexBuffer(std::vector<Vertex> vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory)
 {
 	VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 

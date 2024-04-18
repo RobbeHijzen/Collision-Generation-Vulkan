@@ -7,7 +7,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 
-constexpr auto PI = 3.14159265358979323846f;
 
 struct Camera
 {
@@ -140,23 +139,6 @@ struct Camera
 		}
 
 		totalPitch = std::clamp(totalPitch, -PI / 2.f, PI / 2.f);
-	}
-
-	glm::mat4 CreateRotation(float pitch, float yaw)
-	{
-		return
-		glm::mat4{
-			{ 1, 0, 0, 0 },
-			{ 0, cos(pitch), -sin(pitch), 0 },
-			{ 0, sin(pitch), cos(pitch), 0 },
-			{ 0, 0, 0, 1 }
-		} * 
-		glm::mat4{
-			{cos(yaw), 0, -sin(yaw), 0},
-			{ 0, 1, 0, 0 },
-			{ sin(yaw), 0, cos(yaw), 0 },
-			{ 0, 0, 0, 1 }
-		};
 	}
 };
 

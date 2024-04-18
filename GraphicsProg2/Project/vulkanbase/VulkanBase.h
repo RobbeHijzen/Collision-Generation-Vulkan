@@ -11,9 +11,7 @@
 #include "Abstraction/Camera.h"
 #include "Abstraction/VertexInfo.h"
 #include "Abstraction/Shaders/Shader.h"
-#include "Abstraction/Shaders/ShaderManager.h"
 #include "Abstraction/Shaders/DerivedShaders/Shader3D.h"
-#include "Abstraction/Shaders/DerivedShaders/Shader2D.h"
 #include "Abstraction/Scene/Scene.h"
 #include "Abstraction/Mesh.h"
 
@@ -36,11 +34,7 @@ const std::vector<const char*> deviceExtensions{ VK_KHR_SWAPCHAIN_EXTENSION_NAME
 class VulkanBase 
 {
 public:
-	VulkanBase()
-	{
-		m_Scene = std::make_unique<Scene>();
-	}
-
+	
 	void Run() 
 	{
 		InitializeWindow();
@@ -89,6 +83,7 @@ private:
 		CreateImageViews();
 
 		// Load the scene
+		InitializeAbstractions();
 		LoadScene();
 
 		// GraphicsPipeline setup
@@ -131,7 +126,7 @@ private:
 		{
 			glfwPollEvents();
 
-			m_Camera.Update(m_DeltaTime, m_Window);
+			m_Camera->Update(m_DeltaTime, m_Window);
 
 			DrawFrame();
 
@@ -176,18 +171,10 @@ private:
 		vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
 
 		// Pipeline cleanup
-		for (auto& pipeline : m_GraphicsPipelines)
-		{
-			vkDestroyPipeline(m_Device, pipeline, nullptr);
-		}
-		for (auto& descriptorSetLayout : m_DescriptorSetLayouts)
-		{
-			vkDestroyDescriptorSetLayout(m_Device, descriptorSetLayout, nullptr);
-		}
-		for (auto& pipelineLayout : m_PipelineLayouts)
-		{
-			vkDestroyPipelineLayout(m_Device, pipelineLayout, nullptr);
-		}
+		vkDestroyPipeline(m_Device, m_GraphicsPipeline, nullptr);
+		vkDestroyDescriptorSetLayout(m_Device, m_DescriptorSetLayout, nullptr);
+		
+		vkDestroyPipelineLayout(m_Device, m_PipelineLayout, nullptr);
 		vkDestroyRenderPass(m_Device, m_RenderPass, nullptr);
 
 		// Uniform buffer cleanup
@@ -240,26 +227,32 @@ private:
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();
 	}
+	
 
+	void InitializeAbstractions()
+	{
+		m_Scene = std::make_unique<Scene>();
+
+		m_Shader3D = std::make_unique<Shader3D>("Resources/Shaders/shader3D.vert.spv", "Resources/Shaders/shader3D.frag.spv");
+		m_Shader3D->Initialize(m_Device);
+
+		m_Camera = std::make_unique<Camera>(glm::vec3{ 0.f, 1.f, -15.f }, 90.f);
+	}
 	void LoadScene()
 	{
-		uint32_t shader3D{ShaderManager::GetInstance().AddShader(new Shader3D("Resources/Shaders/shader3D.vert.spv", "Resources/Shaders/shader3D.frag.spv"), m_Device)};
-		uint32_t shader2D{ShaderManager::GetInstance().AddShader(new Shader2D("Resources/Shaders/shader2D.vert.spv", "Resources/Shaders/shader2D.frag.spv"), m_Device)};
-
-		m_Scene->AddMesh(new Mesh3D("Resources/vehicle.obj", "resources/vehicle_diffuse.png", shader3D, glm::translate(glm::mat4{ 1.f }, glm::vec3{20.f, 0.f, 0.f})));
-		m_Scene->AddMesh(new Mesh3D("Resources/viking_room.obj", "resources/viking_room.png", shader3D, glm::translate(glm::mat4{ 1.f }, glm::vec3{ -15.f, 0.f, 0.f }) * glm::rotate(glm::mat4{ 1.f }, glm::radians(-90.f), glm::vec3{ 1.f, 0.f, 0.f }) * glm::scale(glm::mat4{ 1.f }, glm::vec3{ 10.f, 10.f, 10.f })));
+		m_Scene->AddMesh(new Mesh("Resources/vehicle.obj", "Resources/vehicle_diffuse.png"));
+		//m_Scene->AddMesh(new Mesh("Resources/viking_room.obj", "Resources/viking_room.png"));
 	
-		m_Scene->AddMesh(new Mesh2D(shader2D, glm::translate(glm::mat4{ 1.f }, glm::vec3{ 0.f, 0.f, -10.f }), RectangleInfo(3.f, 3.f, 0.f, -3.f), glm::vec3{1.f, 0.f, 0.f}));
-		m_Scene->AddMesh(new Mesh2D(shader2D, glm::translate(glm::mat4{ 1.f }, glm::vec3{ 0.f, 0.f, -5.f }), OvalInfo{2.f, 1.5f, 8}, glm::vec3{ 1.f, 1.f, 0.f }));
 	}
 
 
 	// General variables
 	float m_DeltaTime{};
 
-	std::unique_ptr<Scene> m_Scene{};
+	std::unique_ptr<Scene> m_Scene;
+	std::unique_ptr<Shader> m_Shader3D;
 
-	Camera m_Camera{ glm::vec3{0.f, 1.f, -15.f}, 90.f };
+	std::unique_ptr<Camera> m_Camera;
 
 	// Window / Surface setup
 	GLFWwindow* m_Window{};
@@ -321,9 +314,9 @@ private:
 	void CreateFrameBuffers();
 
 	// GraphicsPipeline setup
-	std::vector<VkDescriptorSetLayout> m_DescriptorSetLayouts{};
-	std::vector<VkPipeline> m_GraphicsPipelines{};
-	std::vector<VkPipelineLayout> m_PipelineLayouts{};
+	VkDescriptorSetLayout m_DescriptorSetLayout{};
+	VkPipeline m_GraphicsPipeline{};
+	VkPipelineLayout m_PipelineLayout{};
 	VkRenderPass m_RenderPass{};
 
 	void CreateGraphicsPipelines();
@@ -342,7 +335,7 @@ private:
 	void DrawFrame();
 	void RecordCommandBuffer(VkCommandBuffer m_CommandBuffer, uint32_t imageIndex);
 	void RecordRenderPass(uint32_t imageIndex);
-	void BindPipelineInfo(uint32_t pipelineIndex);
+	void BindPipelineInfo();
 	void BindVertexIndexBuffers(uint32_t buffersIndex);
 
 	// Semaphores and Fences
@@ -362,8 +355,7 @@ private:
 	void CreateVertexBuffers();
 	void CreateIndexBuffers();
 
-	template <typename vertex>
-	void CreateVertexBuffer(std::vector<vertex> vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory);
+	void CreateVertexBuffer(std::vector<Vertex> vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory);
 	void CreateIndexBuffer(std::vector<uint32_t> indices, VkBuffer& indexBuffer, VkDeviceMemory& indexBufferMemory);
 
 

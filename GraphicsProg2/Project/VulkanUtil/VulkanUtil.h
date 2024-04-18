@@ -6,6 +6,8 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
+constexpr auto PI = 3.14159265358979323846f;
+
 const uint32_t WIDTH{ 800 };
 const uint32_t HEIGHT{ 600 };
 

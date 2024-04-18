@@ -62,94 +62,64 @@ void VulkanBase::CreateGraphicsPipelines()
 	dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 	dynamicState.pDynamicStates = dynamicStates.data();
 
-
 	
-	// Loop over every shader to make a graphics pipeline for each of them.
-	auto shaders{ ShaderManager::GetInstance().GetShaders() };
-	int index{};
-	m_PipelineLayouts.resize(shaders.size());
-	m_GraphicsPipelines.resize(shaders.size());
+	// PipelineLayout
+	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutInfo.setLayoutCount = 1;
+	pipelineLayoutInfo.pSetLayouts = &m_DescriptorSetLayout;
+	pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-	for (auto& shader : shaders)
+	if (vkCreatePipelineLayout(m_Device, &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS)
 	{
-		// PipelineLayout
-		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 1;
-		pipelineLayoutInfo.pSetLayouts = &m_DescriptorSetLayouts[index];
-		pipelineLayoutInfo.pushConstantRangeCount = 0;
-
-		if (vkCreatePipelineLayout(m_Device, &pipelineLayoutInfo, nullptr, &m_PipelineLayouts[index]) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create pipeline layout!");
-		}
-
-
-		// VertexInputState
-		auto pvisi{ shader->CreateVertexInputStateInfo() };
-		VkVertexInputBindingDescription bindingDescription;
-		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
-
-		if (dynamic_cast<Shader2D*>(shader))
-		{
-			bindingDescription = Vertex2D::GetBindingDescription();
-			attributeDescriptions = Vertex2D::GetAttributeDescriptions();
-
-			pvisi.vertexBindingDescriptionCount = 1;
-			pvisi.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-			pvisi.pVertexBindingDescriptions = &bindingDescription;
-			pvisi.pVertexAttributeDescriptions = attributeDescriptions.data();
-		}
-		else if (dynamic_cast<Shader3D*>(shader))
-		{
-			bindingDescription = Vertex3D::GetBindingDescription();
-			attributeDescriptions = Vertex3D::GetAttributeDescriptions();
-
-			pvisi.vertexBindingDescriptionCount = 1;
-			pvisi.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-			pvisi.pVertexBindingDescriptions = &bindingDescription;
-			pvisi.pVertexAttributeDescriptions = attributeDescriptions.data();
-		}
-		else
-		{
-			throw std::runtime_error("failed to create graphics pipeline!");
-		}	 
-		
-		// Shader Info
-		auto piasi{ shader->CreateInputAssemblyStateInfo() };
-		std::vector<VkPipelineShaderStageCreateInfo>& shaderStages{ shader->GetShaderStages() };
-
-		// Entire Pipeline (using variables above)
-		VkGraphicsPipelineCreateInfo pipelineInfo{};
-		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-
-		pipelineInfo.stageCount = uint32_t(shaderStages.size());
-		pipelineInfo.pStages = shaderStages.data();
-
-
-		pipelineInfo.pVertexInputState = &pvisi;
-		pipelineInfo.pInputAssemblyState = &piasi;
-
-		pipelineInfo.pViewportState = &viewportState;
-		pipelineInfo.pRasterizationState = &rasterizer;
-		pipelineInfo.pMultisampleState = &multisampling;
-		pipelineInfo.pColorBlendState = &colorBlending;
-		pipelineInfo.pDynamicState = &dynamicState;
-		pipelineInfo.pDepthStencilState = &depthStencil;
-		pipelineInfo.layout = m_PipelineLayouts[index];
-		pipelineInfo.renderPass = m_RenderPass;
-		pipelineInfo.subpass = 0;
-		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-
-		if (vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipelines[index]) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create graphics pipeline!");
-		}
-
-		shader->DestroyShaderStages(m_Device);
-
-		++index;
+		throw std::runtime_error("failed to create pipeline layout!");
 	}
+
+
+	// VertexInputState
+	auto pvisi{ m_Shader3D->CreateVertexInputStateInfo() };
+	auto bindingDescription{ Vertex::GetBindingDescription() };
+	auto attributeDescriptions{ Vertex::GetAttributeDescriptions() };
+
+	pvisi.vertexBindingDescriptionCount = 1;
+	pvisi.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	pvisi.pVertexBindingDescriptions = &bindingDescription;
+	pvisi.pVertexAttributeDescriptions = attributeDescriptions.data();
+	
+
+	// Shader Info
+	auto piasi{ m_Shader3D->CreateInputAssemblyStateInfo() };
+	std::vector<VkPipelineShaderStageCreateInfo>& shaderStages{ m_Shader3D->GetShaderStages() };
+
+
+	// Entire Pipeline (using variables above)
+	VkGraphicsPipelineCreateInfo pipelineInfo{};
+	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+
+	pipelineInfo.stageCount = uint32_t(shaderStages.size());
+	pipelineInfo.pStages = shaderStages.data();
+
+
+	pipelineInfo.pVertexInputState = &pvisi;
+	pipelineInfo.pInputAssemblyState = &piasi;
+
+	pipelineInfo.pViewportState = &viewportState;
+	pipelineInfo.pRasterizationState = &rasterizer;
+	pipelineInfo.pMultisampleState = &multisampling;
+	pipelineInfo.pColorBlendState = &colorBlending;
+	pipelineInfo.pDynamicState = &dynamicState;
+	pipelineInfo.pDepthStencilState = &depthStencil;
+	pipelineInfo.layout = m_PipelineLayout;
+	pipelineInfo.renderPass = m_RenderPass;
+	pipelineInfo.subpass = 0;
+	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+
+	if (vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
+	{
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+	m_Shader3D->DestroyShaderStages(m_Device);
 }
 
 void VulkanBase::CreateRenderPass()

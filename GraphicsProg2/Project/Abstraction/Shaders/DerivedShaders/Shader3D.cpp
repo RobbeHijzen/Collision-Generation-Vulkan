@@ -90,9 +90,6 @@ std::vector<VkDescriptorSetLayoutBinding> Shader3D::CreateDescriptorSetLayoutBin
 
 void Shader3D::SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh)
 {
-	auto mesh3D{ dynamic_cast<Mesh3D*>(mesh) };
-	if (!mesh3D) return;
-
 	VkDescriptorBufferInfo bufferInfo{};
 	bufferInfo.buffer = vulkanBase->GetUniformBuffers()[mesh->GetMeshIndex()];
 	bufferInfo.offset = 0;
@@ -100,7 +97,7 @@ void Shader3D::SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh)
 
 	VkDescriptorImageInfo imageInfo{};
 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	imageInfo.imageView = vulkanBase->GetTextureImageViews()[mesh3D->GetTextureIndex()];
+	imageInfo.imageView = vulkanBase->GetTextureImageViews()[mesh->GetMeshIndex()];
 	imageInfo.sampler = vulkanBase->GetTextureSampler();
 
 

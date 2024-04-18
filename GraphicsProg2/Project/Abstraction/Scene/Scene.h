@@ -18,6 +18,7 @@ public:
 
 	void AddMesh(Mesh* mesh)
 	{
+		mesh->SetMeshIndex(static_cast<uint32_t>(m_Meshes.size()));
 		m_Meshes.emplace_back(mesh);
 	}
 

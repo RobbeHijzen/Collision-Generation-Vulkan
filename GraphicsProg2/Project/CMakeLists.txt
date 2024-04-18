@@ -34,7 +34,7 @@ set(SOURCES
     "Abstraction/Scene/Scene.h" 
     "Abstraction/Scene/Scene.cpp" 
     "Abstraction/Singleton.h" 
-    "Abstraction/Shaders/ShaderManager.h" 
+     
     "Abstraction/VertexInfo.h" 
     "VulkanBase/Implementations/Initialization/InstanceInit.cpp"
     "VulkanBase/Implementations/Initialization/PhysicalDeviceInit.cpp" 
@@ -49,8 +49,8 @@ set(SOURCES
     "VulkanBase/Implementations/Initialization/DescriptorInit.cpp"
     "VulkanUtil/stb_image.h" "VulkanBase/Implementations/Initialization/TextureInit.cpp"
     "VulkanBase/Implementations/Initialization/DepthBufferingInit.cpp" 
-    "Abstraction/Shaders/DerivedShaders/Shader2D.h"
-    "Abstraction/Shaders/DerivedShaders/Shader2D.cpp" 
+    
+     
     "Abstraction/HelperStructs.h")
     
 

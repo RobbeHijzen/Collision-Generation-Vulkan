@@ -88,9 +88,9 @@ void VulkanBase::RecordRenderPass(uint32_t imageIndex)
 	{
 		UpdateUniformBuffer(imageIndex, mesh->GetMeshIndex(), mesh->GetModelMatrix());
 
-		BindPipelineInfo(mesh->GetShaderIndex());
+		BindPipelineInfo();
 		BindVertexIndexBuffers(mesh->GetMeshIndex());
-		vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayouts[mesh->GetShaderIndex()], 0, 1, &m_MeshDescriptorSets[mesh->GetMeshIndex()], 0, nullptr);
+		vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_MeshDescriptorSets[mesh->GetMeshIndex()], 0, nullptr);
 
 		mesh->Draw(m_CommandBuffer);
 	}
@@ -98,9 +98,9 @@ void VulkanBase::RecordRenderPass(uint32_t imageIndex)
 	vkCmdEndRenderPass(m_CommandBuffer);
 }
 
-void VulkanBase::BindPipelineInfo(uint32_t pipelineIndex)
+void VulkanBase::BindPipelineInfo()
 {
-	vkCmdBindPipeline(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipelines[pipelineIndex]);
+	vkCmdBindPipeline(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
 
 	VkViewport viewport{};
 	viewport.x = 0.0f;
@@ -130,8 +130,8 @@ void VulkanBase::UpdateUniformBuffer(uint32_t currentImage, uint32_t meshIndex, 
 {
 	UniformBufferObject ubo{};
 	ubo.model = meshModelMatrix;
-	ubo.view = m_Camera.viewMatrix;
-	ubo.proj = m_Camera.projectionMatrix;
+	ubo.view = m_Camera->viewMatrix;
+	ubo.proj = m_Camera->projectionMatrix;
 
 	memcpy(m_UniformBuffersMapped[meshIndex], &ubo, sizeof(ubo));
 }

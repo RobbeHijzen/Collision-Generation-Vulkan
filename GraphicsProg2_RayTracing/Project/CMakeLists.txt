@@ -23,6 +23,12 @@ add_custom_target(
     DEPENDS ${SPIRV_BINARY_FILES}
 )
 
+file(GLOB RayTracing_SRC
+     "*.hpp"
+     "*.cpp"
+     "*.h"
+)
+
 set(SOURCES
     "main.cpp"
     "VulkanBase/VulkanBase.h" 
@@ -34,6 +40,10 @@ set(SOURCES
     "Abstraction/Scene/Scene.h" 
     "Abstraction/Scene/Scene.cpp" 
     "Abstraction/Singleton.h" 
+    "Abstraction/Mesh.h" 
+    "Abstraction/Mesh.cpp" 
+    "Abstraction/Camera.h" 
+    "Abstraction/Utils.h"
      
     "Abstraction/VertexInfo.h" 
     "VulkanBase/Implementations/Initialization/InstanceInit.cpp"
@@ -49,9 +59,9 @@ set(SOURCES
     "VulkanBase/Implementations/Initialization/DescriptorInit.cpp"
     "VulkanUtil/stb_image.h" "VulkanBase/Implementations/Initialization/TextureInit.cpp"
     "VulkanBase/Implementations/Initialization/DepthBufferingInit.cpp" 
-    
-     
-    "Abstraction/HelperStructs.h" "VulkanBase/Implementations/Initialization/RayTracing/RayTracingSetup.cpp")
+    "Abstraction/HelperStructs.h"
+    "VulkanBase/Implementations/Initialization/RayTracing/RayTracingSetup.cpp"
+    )
     
 
 # Copies the Resources folder into out
@@ -65,7 +75,7 @@ add_custom_target(CopyResources ALL
 )
 
 # Create the execut
-add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES}  "Abstraction/Mesh.h" "Abstraction/Mesh.cpp" "Abstraction/Camera.h" "Abstraction/Utils.h")
+add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES} ${RayTracing_SRC})
 add_dependencies(${PROJECT_NAME} Shaders)
 
 # Link libraries

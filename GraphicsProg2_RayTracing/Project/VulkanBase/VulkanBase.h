@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
+#include "RayTracingHelpers/nvpro_core/nvvk/raytraceKHR_vk.hpp"
 
 #include "VulkanUtil/VulkanUtil.h"
 #include "Abstraction/HelperStructs.h"
@@ -83,6 +84,7 @@ private:
 		// Physical device, Logical device and queue Families setup
 		PickPhysicalDevice();
 		CreateLogicalDevice();
+		m_alloc.init(m_Instance, m_Device, m_PhysicalDevice);
 
 		// SwapChain setup
 		CreateSwapChain();
@@ -257,7 +259,15 @@ private:
 
 	// Ray Tracing
 	void InitializeRayTracing();
+
+	void CreateTLAS();
+	void CreateBLASes();
+	auto objectToVkGeometryKHR(Mesh* mesh);
+
+	nvvk::ResourceAllocatorDma m_alloc;
+
 	VkPhysicalDeviceRayTracingPipelinePropertiesKHR m_RTProperties{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR };
+	nvvk::RaytracingBuilderKHR m_RTBuilder;
 
 	// General variables
 	float m_DeltaTime{};

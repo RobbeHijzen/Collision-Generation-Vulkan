@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Project Name
-project(VulkanTest)
+project(VulkanRayTracer)
 
 # Use C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -30,6 +30,7 @@ find_package(Vulkan REQUIRED)
 include_directories(${Vulkan_INCLUDE_DIRS})
 
 add_subdirectory(Project)
+add_subdirectory(nvpro_core)
 
 # If using validation layers, copy the required JSON files (optional)
 # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

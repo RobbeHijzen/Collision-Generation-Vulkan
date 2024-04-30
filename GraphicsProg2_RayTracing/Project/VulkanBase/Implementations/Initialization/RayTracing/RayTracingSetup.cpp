@@ -14,24 +14,7 @@ void VulkanBase::CreateTLAS()
 
 }
 
-void VulkanBase::CreateBLASes()
-{
-	std::vector<nvvk::RaytracingBuilderKHR::BlasInput> allBlas;
-
-	allBlas.resize(m_Scene->GetMeshesAmount());
-
-	for (const auto& mesh : m_Scene->GetMeshes())
-	{
-		auto blas = objectToVkGeometryKHR(mesh);
-
-		// We could add more geometry in each BLAS, but we add only one for now
-		allBlas.emplace_back(blas);
-	}
-	
-	m_RTBuilder.buildBlas(allBlas, VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR);
-}
-
-auto VulkanBase::objectToVkGeometryKHR(Mesh* mesh)
+auto VulkanBase::ObjectToVkGeometryKHR(Mesh* mesh)
 {
 	// Create the Vertex and Index addresses
 	VkBufferDeviceAddressInfo vertexAddressInfo{};
@@ -77,4 +60,22 @@ auto VulkanBase::objectToVkGeometryKHR(Mesh* mesh)
 	input.asBuildOffsetInfo.emplace_back(offset);
 
 	return input;
+}
+
+
+void VulkanBase::CreateBLASes()
+{
+	std::vector<nvvk::RaytracingBuilderKHR::BlasInput> allBlas{};
+
+	allBlas.resize(m_Scene->GetMeshesAmount());
+
+	for (const auto& mesh : m_Scene->GetMeshes())
+	{
+		nvvk::RaytracingBuilderKHR::BlasInput blas = ObjectToVkGeometryKHR(mesh);
+
+		// We could add more geometry in each BLAS, but we add only one for now
+		allBlas.emplace_back(blas);
+	}
+
+	m_RTBuilder.buildBlas(allBlas, VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR);
 }

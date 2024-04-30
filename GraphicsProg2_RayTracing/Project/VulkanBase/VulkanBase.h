@@ -5,8 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
-#include "RayTracingHelpers/nvpro_core/nvvk/raytraceKHR_vk.hpp"
-
+#include "nvvk/raytraceKHR_vk.hpp"
 #include "VulkanUtil/VulkanUtil.h"
 #include "Abstraction/HelperStructs.h"
 #include "Abstraction/Camera.h"
@@ -262,7 +261,7 @@ private:
 
 	void CreateTLAS();
 	void CreateBLASes();
-	auto objectToVkGeometryKHR(Mesh* mesh);
+	auto ObjectToVkGeometryKHR(Mesh* mesh);
 
 	nvvk::ResourceAllocatorDma m_alloc;
 

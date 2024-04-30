@@ -23,12 +23,6 @@ add_custom_target(
     DEPENDS ${SPIRV_BINARY_FILES}
 )
 
-file(GLOB RayTracing_SRC
-     "*.hpp"
-     "*.cpp"
-     "*.h"
-)
-
 set(SOURCES
     "main.cpp"
     "VulkanBase/VulkanBase.h" 
@@ -74,6 +68,9 @@ add_custom_target(CopyResources ALL
     DEPENDS ${RESOURCES_DIR}
 )
 
+#add_subdirectory(nvpro_core)
+
+
 # Create the execut
 add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES} ${RayTracing_SRC})
 add_dependencies(${PROJECT_NAME} Shaders)
@@ -81,4 +78,5 @@ add_dependencies(${PROJECT_NAME} Shaders)
 # Link libraries
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES} glfw)
+target_link_libraries(${PROJECT_NAME} PUBLIC nvvkLib)
 

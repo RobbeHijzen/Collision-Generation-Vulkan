@@ -7,7 +7,7 @@ void VulkanBase::InitializeRayTracing()
 	properties2.pNext = &m_RTProperties;
 	vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &properties2);
 
-	m_RTBuilder.setup(m_Device, &m_alloc, 0);
+	//m_RTBuilder.setup(m_Device, &m_alloc, 0);
 }
 void VulkanBase::CreateTLAS()
 {
@@ -55,27 +55,28 @@ auto VulkanBase::ObjectToVkGeometryKHR(Mesh* mesh)
 	offset.transformOffset = 0;
 
 	// Our blas is made from only one geometry, but could be made of many geometries
-	nvvk::RaytracingBuilderKHR::BlasInput input;
-	input.asGeometry.emplace_back(asGeom);
-	input.asBuildOffsetInfo.emplace_back(offset);
+	//nvvk::RaytracingBuilderKHR::BlasInput input;
+	//input.asGeometry.emplace_back(asGeom);
+	//input.asBuildOffsetInfo.emplace_back(offset);
 
-	return input;
+	//return input;
+	return 0;
 }
 
 
 void VulkanBase::CreateBLASes()
 {
-	std::vector<nvvk::RaytracingBuilderKHR::BlasInput> allBlas{};
+	//std::vector<nvvk::RaytracingBuilderKHR::BlasInput> allBlas{};
 
-	allBlas.resize(m_Scene->GetMeshesAmount());
+	//allBlas.resize(m_Scene->GetMeshesAmount());
 
 	for (const auto& mesh : m_Scene->GetMeshes())
 	{
-		nvvk::RaytracingBuilderKHR::BlasInput blas = ObjectToVkGeometryKHR(mesh);
+		//nvvk::RaytracingBuilderKHR::BlasInput blas = ObjectToVkGeometryKHR(mesh);
 
 		// We could add more geometry in each BLAS, but we add only one for now
-		allBlas.emplace_back(blas);
+		//allBlas.emplace_back(blas);
 	}
 
-	m_RTBuilder.buildBlas(allBlas, VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR);
+	//m_RTBuilder.buildBlas(allBlas, VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR);
 }

@@ -40,19 +40,19 @@ set(SOURCES
     "Abstraction/Utils.h"
      
     "Abstraction/VertexInfo.h" 
-    "VulkanBase/Implementations/Initialization/InstanceInit.cpp"
-    "VulkanBase/Implementations/Initialization/PhysicalDeviceInit.cpp" 
-    "VulkanBase/Implementations/Initialization/LogicalDeviceInit.cpp" 
-    "VulkanBase/Implementations/Initialization/SwapChainInit.cpp"
-    "VulkanBase/Implementations/Initialization/PipelineInit.cpp" 
-    "VulkanBase/Implementations/Initialization/CommandBufferInit.cpp" 
+    "VulkanBase/Implementations/Initialization/BaseVulkan/InstanceInit.cpp"
+    "VulkanBase/Implementations/Initialization/BaseVulkan/PhysicalDeviceInit.cpp" 
+    "VulkanBase/Implementations/Initialization/BaseVulkan/LogicalDeviceInit.cpp" 
+    "VulkanBase/Implementations/Initialization/BaseVulkan/SwapChainInit.cpp"
+    "VulkanBase/Implementations/Initialization/BaseVulkan/PipelineInit.cpp" 
+    "VulkanBase/Implementations/Initialization/BaseVulkan/CommandBufferInit.cpp" 
     "VulkanBase/Implementations/RuntimeFunctions.cpp" 
-    "VulkanBase/Implementations/Initialization/SemaphoresFencesInit.cpp" 
-    "VulkanBase/Implementations/Initialization/VertexBufferInit.cpp" 
+    "VulkanBase/Implementations/Initialization/BaseVulkan/SemaphoresFencesInit.cpp" 
+    "VulkanBase/Implementations/Initialization/BaseVulkan/VertexBufferInit.cpp" 
     "VulkanBase/Implementations/BufferHelpers.cpp"
-    "VulkanBase/Implementations/Initialization/DescriptorInit.cpp"
-    "VulkanUtil/stb_image.h" "VulkanBase/Implementations/Initialization/TextureInit.cpp"
-    "VulkanBase/Implementations/Initialization/DepthBufferingInit.cpp" 
+    "VulkanBase/Implementations/Initialization/BaseVulkan/DescriptorInit.cpp"
+    "VulkanUtil/stb_image.h" "VulkanBase/Implementations/Initialization/BaseVulkan/TextureInit.cpp"
+    "VulkanBase/Implementations/Initialization/BaseVulkan/DepthBufferingInit.cpp" 
     "Abstraction/HelperStructs.h"
     "VulkanBase/Implementations/Initialization/RayTracing/RayTracingSetup.cpp"
     )
@@ -78,5 +78,4 @@ add_dependencies(${PROJECT_NAME} Shaders)
 # Link libraries
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES} glfw)
-target_link_libraries(${PROJECT_NAME} PUBLIC nvvkLib)
 

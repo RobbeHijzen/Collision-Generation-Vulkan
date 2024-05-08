@@ -11,7 +11,7 @@
 #include "Abstraction/Camera.h"
 #include "Abstraction/VertexInfo.h"
 #include "Abstraction/Shaders/Shader.h"
-#include "Abstraction/Shaders/DerivedShaders/Shader3D.h"
+#include "Abstraction/Shaders/DerivedShaders/ShaderRT.h"
 #include "Abstraction/Scene/Scene.h"
 #include "Abstraction/Mesh.h"
 
@@ -98,7 +98,7 @@ private:
 		// GraphicsPipeline setup
 		CreateRenderPass();
 		CreateDescriptorSetLayouts();
-		CreateGraphicsPipelines();
+		CreateGraphicsPipeline();
 
 		// Command Buffers setup
 		CreateCommandPool();
@@ -247,8 +247,8 @@ private:
 	{
 		m_Scene = std::make_unique<Scene>();
 
-		m_Shader3D = std::make_unique<ShaderRT>("Resources/Shaders/shader3D.vert.spv", "Resources/Shaders/shader3D.frag.spv");
-		m_Shader3D->Initialize(m_Device);
+		m_ShaderRT = std::make_unique<ShaderRT>("Resources/Shaders/raytrace.rgen.spv", "Resources/Shaders/raytrace.rmiss.spv", "Resources/Shaders/raytrace.rchit.spv");
+		m_ShaderRT->Initialize(m_Device);
 
 		m_Camera = std::make_unique<Camera>(glm::vec3{ 0.f, 1.f, -50.f }, 90.f);
 	}
@@ -275,12 +275,14 @@ private:
 
 	nvvk::DescriptorSetBindings m_DescriptorSetLayoutBindings;
 
+	PushConstantRay m_RayPC{};
+	std::vector<VkRayTracingShaderGroupCreateInfoKHR> m_ShaderGroups;
 
 	// General variables
 	float m_DeltaTime{};
 
 	std::unique_ptr<Scene> m_Scene;
-	std::unique_ptr<Shader> m_Shader3D;
+	std::unique_ptr<Shader> m_ShaderRT;
 
 	std::unique_ptr<Camera> m_Camera;
 
@@ -349,7 +351,7 @@ private:
 	VkPipelineLayout m_PipelineLayout{};
 	VkRenderPass m_RenderPass{};
 
-	void CreateGraphicsPipelines();
+	void CreateGraphicsPipeline();
 	void CreateDescriptorSetLayouts();
 	void CreateRenderPass();
 

@@ -48,3 +48,12 @@ struct Vertex
 		return attributeDescriptions;
 	}
 };
+
+// Push constant structure for the ray tracer
+struct PushConstantRay
+{
+	glm::vec4  clearColor;
+	glm::vec3  lightPosition;
+	float lightIntensity;
+	int   lightType;
+};

@@ -11,16 +11,6 @@ void VulkanBase::CreateDescriptorSetLayouts()
 	m_DescriptorSetLayoutBindings.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1,
 		VK_SHADER_STAGE_RAYGEN_BIT_KHR); 
 
-	// Camera matrices
-	m_DescriptorSetLayoutBindings.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
-		VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_RAYGEN_BIT_KHR);
-	// Obj descriptions
-	m_DescriptorSetLayoutBindings.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1,
-		VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
-	// Textures
-	m_DescriptorSetLayoutBindings.addBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, nbTxt,
-		VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
-
 	m_DescriptorSetLayout = m_DescriptorSetLayoutBindings.createLayout(m_Device);
 }
 
@@ -61,7 +51,7 @@ void VulkanBase::CreateDescriptorSets()
 			throw std::runtime_error("failed to allocate descriptor sets!");
 		}
 
-		m_Shader3D->SetupDescriptorSet(this, mesh);
+		m_ShaderRT->SetupDescriptorSet(this, mesh);
 	}
 }
 

@@ -15,15 +15,16 @@ class ShaderRT : public Shader
 {
 public:
 
-	explicit ShaderRT(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
-		: Shader(vertexShaderFile, fragmentShaderFile) {}
+	explicit ShaderRT(const std::string& rayGen, const std::string& rayMiss, const std::string& rayHit)
+		: Shader(rayGen, rayMiss, rayHit) {}
 
 	~ShaderRT() = default;
 
 	virtual void Initialize(const VkDevice& m_Device) override;
 	
-	virtual VkPipelineShaderStageCreateInfo CreateFragmentShaderInfo(const VkDevice& m_Device) override;
-	virtual VkPipelineShaderStageCreateInfo CreateVertexShaderInfo(const VkDevice& m_Device) override;
+	virtual VkPipelineShaderStageCreateInfo CreateRayGenShaderInfo(const VkDevice& m_Device) override;
+	virtual VkPipelineShaderStageCreateInfo CreateRayMissShaderInfo(const VkDevice& m_Device) override;
+	virtual VkPipelineShaderStageCreateInfo CreateRayHitShaderInfo(const VkDevice& m_Device) override;
 
 	virtual VkPipelineVertexInputStateCreateInfo CreateVertexInputStateInfo() override;
 	virtual VkPipelineInputAssemblyStateCreateInfo CreateInputAssemblyStateInfo() override;

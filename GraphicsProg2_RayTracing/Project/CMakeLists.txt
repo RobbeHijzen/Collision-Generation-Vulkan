@@ -5,18 +5,28 @@ set(SHADER_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/Resources/Shaders")
 file(GLOB_RECURSE GLSL_SOURCE_FILES
     "${SHADER_SOURCE_DIR}/*.frag"
     "${SHADER_SOURCE_DIR}/*.vert"
+    "${SHADER_SOURCE_DIR}/*.rchit"
+    "${SHADER_SOURCE_DIR}/*.rgen"
+    "${SHADER_SOURCE_DIR}/*.rmiss"
 )
 
-foreach(GLSL ${GLSL_SOURCE_FILES})
-    get_filename_component(FILE_NAME ${GLSL} NAME)
-    set(SPIRV "${SHADER_BINARY_DIR}/${FILE_NAME}.spv")
-    add_custom_command(
-        OUTPUT ${SPIRV}
-        COMMAND ${Vulkan_GLSLC_EXECUTABLE} ${GLSL} -o ${SPIRV}
-        DEPENDS ${GLSL}
-    )
-    list(APPEND SPIRV_BINARY_FILES ${SPIRV})
-endforeach(GLSL)
+#foreach(GLSL ${GLSL_SOURCE_FILES})
+#    get_filename_component(FILE_NAME ${GLSL} NAME)
+#    set(SPIRV "${SHADER_BINARY_DIR}/${FILE_NAME}.spv")
+#    add_custom_command(
+#        OUTPUT ${SPIRV}
+#        COMMAND ${Vulkan_GLSLC_EXECUTABLE} ${GLSL} -o ${SPIRV}
+#        DEPENDS ${GLSL}
+#    )
+#    list(APPEND SPIRV_BINARY_FILES ${SPIRV})
+#endforeach(GLSL)
+
+#compile_glsl_directory(
+#	SRC "${CMAKE_CURRENT_SOURCE_DIR}/shaders" 
+#	DST "${CMAKE_CURRENT_SOURCE_DIR}/spv" 
+#	VULKAN_TARGET "vulkan1.2"
+#	DEPENDENCY ${VULKAN_BUILD_DEPENDENCIES}
+#	)
 
 add_custom_target(
     Shaders 
@@ -29,8 +39,8 @@ set(SOURCES
     "VulkanUtil/VulkanUtil.h"
     "VulkanUtil/VulkanUtil.cpp"
 
-    "Abstraction/Shaders/DerivedShaders/Shader3D.h"
-    "Abstraction/Shaders/DerivedShaders/Shader3D.cpp" 
+    "Abstraction/Shaders/DerivedShaders/ShaderRT.h"
+    "Abstraction/Shaders/DerivedShaders/ShaderRT.cpp" 
     "Abstraction/Scene/Scene.h" 
     "Abstraction/Scene/Scene.cpp" 
     "Abstraction/Singleton.h" 

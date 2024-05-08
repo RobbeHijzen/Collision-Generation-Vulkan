@@ -1,4 +1,4 @@
-#include "Shader3D.h"
+#include "ShaderRT.h"
 #include "vulkanbase/VulkanBase.h"
 
 void ShaderRT::Initialize(const VkDevice& m_Device)
@@ -6,35 +6,47 @@ void ShaderRT::Initialize(const VkDevice& m_Device)
 	m_SupportsImages = true;
 
 	m_ShaderStages.clear();
-	m_ShaderStages.emplace_back(CreateVertexShaderInfo(m_Device));
-	m_ShaderStages.emplace_back(CreateFragmentShaderInfo(m_Device));
+	m_ShaderStages.emplace_back(CreateRayGenShaderInfo(m_Device));
+	m_ShaderStages.emplace_back(CreateRayGenShaderInfo(m_Device));
+	m_ShaderStages.emplace_back(CreateRayGenShaderInfo(m_Device));
 }
 
-VkPipelineShaderStageCreateInfo ShaderRT::CreateFragmentShaderInfo(const VkDevice& m_Device)
+VkPipelineShaderStageCreateInfo ShaderRT::CreateRayGenShaderInfo(const VkDevice& m_Device)
 {
-	std::vector<char> fragShaderCode = ReadFile(m_FragmentShaderFile);
-	VkShaderModule fragShaderModule = CreateShaderModule(m_Device, fragShaderCode);
+	std::vector<char> shaderCode = ReadFile(m_RayGenFile);
+	VkShaderModule shaderModule = CreateShaderModule(m_Device, shaderCode);
 
-	VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-	fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	fragShaderStageInfo.module = fragShaderModule;
-	fragShaderStageInfo.pName = m_FSEntryPoint.c_str();
+	VkPipelineShaderStageCreateInfo shaderInfo{};
+	shaderInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	shaderInfo.stage = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+	shaderInfo.module = shaderModule;
+	shaderInfo.pName = m_EntryPoint.c_str();
 
-	return fragShaderStageInfo;
+	return shaderInfo;
 }
-
-VkPipelineShaderStageCreateInfo ShaderRT::CreateVertexShaderInfo(const VkDevice& m_Device)
+VkPipelineShaderStageCreateInfo ShaderRT::CreateRayMissShaderInfo(const VkDevice& m_Device)
 {
-	std::vector<char> vertShaderCode = ReadFile(m_VertexShaderFile);
-	VkShaderModule vertShaderModule = CreateShaderModule(m_Device, vertShaderCode);
+	std::vector<char> shaderCode = ReadFile(m_RayMissFile);
+	VkShaderModule shaderModule = CreateShaderModule(m_Device, shaderCode);
 
-	VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-	vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-	vertShaderStageInfo.module = vertShaderModule;
-	vertShaderStageInfo.pName = m_VSEntryPoint.c_str();
-	return vertShaderStageInfo;
+	VkPipelineShaderStageCreateInfo shaderInfo{};
+	shaderInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	shaderInfo.stage = VK_SHADER_STAGE_MISS_BIT_KHR;
+	shaderInfo.module = shaderModule;
+	shaderInfo.pName = m_EntryPoint.c_str();
+	return shaderInfo;
+}
+VkPipelineShaderStageCreateInfo ShaderRT::CreateRayHitShaderInfo(const VkDevice& m_Device)
+{
+	std::vector<char> shaderCode = ReadFile(m_RayHitFile);
+	VkShaderModule shaderModule = CreateShaderModule(m_Device, shaderCode);
+
+	VkPipelineShaderStageCreateInfo shaderInfo{};
+	shaderInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	shaderInfo.stage = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+	shaderInfo.module = shaderModule;
+	shaderInfo.pName = m_EntryPoint.c_str();
+	return shaderInfo;
 }
 
 VkPipelineVertexInputStateCreateInfo ShaderRT::CreateVertexInputStateInfo()

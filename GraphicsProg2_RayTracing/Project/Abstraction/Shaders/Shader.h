@@ -12,9 +12,10 @@ class Shader
 {
 public:
 
-	explicit Shader(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
-		: m_VertexShaderFile{ vertexShaderFile }
-		, m_FragmentShaderFile{ fragmentShaderFile }
+	explicit Shader(const std::string& rayGen, const std::string& rayMiss, const std::string& rayHit)
+		: m_RayGenFile{ rayGen }
+		, m_RayMissFile{ rayMiss }
+		, m_RayHitFile{ rayHit }
 	{
 	}
 
@@ -22,9 +23,6 @@ public:
 
 	virtual void Initialize(const VkDevice& m_Device) = 0;
 
-
-	void AddReferencedMeshIndex(uint32_t meshIndex) { m_ReferencedMeshIndices.emplace_back(meshIndex); }
-	auto GetReferencedMeshIndices() const { return m_ReferencedMeshIndices; }
 
 	auto& GetShaderStages() { return m_ShaderStages; }
 	void DestroyShaderStages(const VkDevice& m_Device)
@@ -37,8 +35,9 @@ public:
 
 	bool SupportsImages() const { return m_SupportsImages; }
 
-	virtual VkPipelineShaderStageCreateInfo CreateFragmentShaderInfo(const VkDevice& m_Device) = 0;
-	virtual VkPipelineShaderStageCreateInfo CreateVertexShaderInfo(const VkDevice& m_Device) = 0;
+	virtual VkPipelineShaderStageCreateInfo CreateRayGenShaderInfo(const VkDevice& m_Device) = 0;
+	virtual VkPipelineShaderStageCreateInfo CreateRayMissShaderInfo(const VkDevice& m_Device) = 0;
+	virtual VkPipelineShaderStageCreateInfo CreateRayHitShaderInfo(const VkDevice& m_Device) = 0;
 
 	virtual VkPipelineVertexInputStateCreateInfo CreateVertexInputStateInfo() = 0;
 	virtual VkPipelineInputAssemblyStateCreateInfo CreateInputAssemblyStateInfo() = 0;
@@ -53,11 +52,11 @@ protected:
 
 	std::vector<uint32_t> m_ReferencedMeshIndices{};
 
-	std::string m_FragmentShaderFile;
-	std::string m_FSEntryPoint{ "main" };
+	std::string m_RayGenFile;
+	std::string m_RayMissFile;
+	std::string m_RayHitFile;
 
-	std::string m_VertexShaderFile;
-	std::string m_VSEntryPoint{ "main" };
+	std::string m_EntryPoint{ "main" };
 
 	std::vector<VkPipelineShaderStageCreateInfo> m_ShaderStages;
 

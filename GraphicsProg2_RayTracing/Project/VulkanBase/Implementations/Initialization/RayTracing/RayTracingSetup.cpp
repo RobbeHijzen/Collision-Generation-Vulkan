@@ -7,6 +7,8 @@ void VulkanBase::InitializeRayTracing()
 void VulkanBase::CreateTLAS()
 {
 
+
+
 }
 
 auto VulkanBase::ObjectToVkGeometryKHR(Mesh* mesh)

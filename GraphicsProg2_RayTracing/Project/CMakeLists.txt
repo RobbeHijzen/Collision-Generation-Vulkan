@@ -56,7 +56,6 @@ set(SOURCES
     "Abstraction/HelperStructs.h"
     "VulkanBase/Implementations/Initialization/RayTracing/RayTracingSetup.cpp"
     )
-    
 
 # Copies the Resources folder into out
 set(RESOURCES_DIR "${CMAKE_SOURCE_DIR}/Project/Resources")
@@ -68,11 +67,12 @@ add_custom_target(CopyResources ALL
     DEPENDS ${RESOURCES_DIR}
 )
 
-#add_subdirectory(nvpro_core)
+set(BASE_DIRECTORY ON)
+add_subdirectory(nvpro_core)
 
 
 # Create the execut
-add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES} ${RayTracing_SRC})
+add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES} ${RayTracing_SRC} nvpro_core)
 add_dependencies(${PROJECT_NAME} Shaders)
 
 # Link libraries

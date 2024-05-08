@@ -31,6 +31,7 @@ include_directories(${Vulkan_INCLUDE_DIRS})
 
 add_subdirectory(Project)
 
+
 # If using validation layers, copy the required JSON files (optional)
 # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 #    COMMAND ${CMAKE_COMMAND} -E copy_if_different

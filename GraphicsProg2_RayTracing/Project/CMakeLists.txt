@@ -72,10 +72,11 @@ add_subdirectory(nvpro_core)
 
 
 # Create the execut
-add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES} ${RayTracing_SRC} nvpro_core)
+add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES} ${RayTracing_SRC})
 add_dependencies(${PROJECT_NAME} Shaders)
 
 # Link libraries
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${Vulkan_LIBRARIES} glfw)
+target_link_libraries(${PROJECT_NAME} PUBLIC nvpro_core)
 

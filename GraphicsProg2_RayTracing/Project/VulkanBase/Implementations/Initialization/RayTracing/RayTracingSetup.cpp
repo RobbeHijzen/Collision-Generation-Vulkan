@@ -1,8 +1,8 @@
 #include "VulkanBase/VulkanBase.h"
-
-
+#include "nvvk/raytraceKHR_vk.hpp"
 void VulkanBase::InitializeRayTracing()
 {
+
 }
 void VulkanBase::CreateTLAS()
 {

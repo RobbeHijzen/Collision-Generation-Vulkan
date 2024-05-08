@@ -28,6 +28,8 @@
 #include <chrono>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "nvvk/raytraceKHR_vk.hpp"
+
 const std::vector<const char*> validationLayers{ "VK_LAYER_KHRONOS_validation" };
 const std::vector<const char*> deviceExtensions{ VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 												 VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME, 
@@ -257,12 +259,17 @@ private:
 
 	// Ray Tracing
 	void InitializeRayTracing();
+	void DestroyRayTracing();
 
 	void CreateTLAS();
 	void CreateBLASes();
 	auto ObjectToVkGeometryKHR(Mesh* mesh);
 
 	VkPhysicalDeviceRayTracingPipelinePropertiesKHR m_RTProperties{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR };
+	
+	nvvk::RaytracingBuilderKHR m_RTBuilder;
+	nvvk::ResourceAllocatorDma m_alloc;
+
 
 	// General variables
 	float m_DeltaTime{};

@@ -29,6 +29,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "nvvk/raytraceKHR_vk.hpp"
+#include "nvvk/descriptorsets_vk.hpp"
 
 const std::vector<const char*> validationLayers{ "VK_LAYER_KHRONOS_validation" };
 const std::vector<const char*> deviceExtensions{ VK_KHR_SWAPCHAIN_EXTENSION_NAME,
@@ -60,7 +61,7 @@ public:
 	auto GetTextureSampler() const { return m_TextureSampler; }
 
 	auto GetMeshDescriptorSets() const { return m_MeshDescriptorSets; }
-
+	auto& GetRTBuilder() const { return m_RTBuilder; }
 
 private:
 
@@ -128,6 +129,8 @@ private:
 
 		// Ray Tracing setup
 		InitializeRayTracing();
+		CreateBLASes();
+		CreateTLAS();
 	}
 	void MainLoop()
 	{
@@ -244,7 +247,7 @@ private:
 	{
 		m_Scene = std::make_unique<Scene>();
 
-		m_Shader3D = std::make_unique<Shader3D>("Resources/Shaders/shader3D.vert.spv", "Resources/Shaders/shader3D.frag.spv");
+		m_Shader3D = std::make_unique<ShaderRT>("Resources/Shaders/shader3D.vert.spv", "Resources/Shaders/shader3D.frag.spv");
 		m_Shader3D->Initialize(m_Device);
 
 		m_Camera = std::make_unique<Camera>(glm::vec3{ 0.f, 1.f, -50.f }, 90.f);
@@ -269,6 +272,8 @@ private:
 	
 	nvvk::RaytracingBuilderKHR m_RTBuilder;
 	nvvk::ResourceAllocatorDma m_alloc;
+
+	nvvk::DescriptorSetBindings m_DescriptorSetLayoutBindings;
 
 
 	// General variables

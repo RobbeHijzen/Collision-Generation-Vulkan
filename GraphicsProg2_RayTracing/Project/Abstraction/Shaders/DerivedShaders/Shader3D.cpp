@@ -1,7 +1,7 @@
 #include "Shader3D.h"
 #include "vulkanbase/VulkanBase.h"
 
-void Shader3D::Initialize(const VkDevice& m_Device)
+void ShaderRT::Initialize(const VkDevice& m_Device)
 {
 	m_SupportsImages = true;
 
@@ -10,7 +10,7 @@ void Shader3D::Initialize(const VkDevice& m_Device)
 	m_ShaderStages.emplace_back(CreateFragmentShaderInfo(m_Device));
 }
 
-VkPipelineShaderStageCreateInfo Shader3D::CreateFragmentShaderInfo(const VkDevice& m_Device)
+VkPipelineShaderStageCreateInfo ShaderRT::CreateFragmentShaderInfo(const VkDevice& m_Device)
 {
 	std::vector<char> fragShaderCode = ReadFile(m_FragmentShaderFile);
 	VkShaderModule fragShaderModule = CreateShaderModule(m_Device, fragShaderCode);
@@ -24,7 +24,7 @@ VkPipelineShaderStageCreateInfo Shader3D::CreateFragmentShaderInfo(const VkDevic
 	return fragShaderStageInfo;
 }
 
-VkPipelineShaderStageCreateInfo Shader3D::CreateVertexShaderInfo(const VkDevice& m_Device)
+VkPipelineShaderStageCreateInfo ShaderRT::CreateVertexShaderInfo(const VkDevice& m_Device)
 {
 	std::vector<char> vertShaderCode = ReadFile(m_VertexShaderFile);
 	VkShaderModule vertShaderModule = CreateShaderModule(m_Device, vertShaderCode);
@@ -37,7 +37,7 @@ VkPipelineShaderStageCreateInfo Shader3D::CreateVertexShaderInfo(const VkDevice&
 	return vertShaderStageInfo;
 }
 
-VkPipelineVertexInputStateCreateInfo Shader3D::CreateVertexInputStateInfo()
+VkPipelineVertexInputStateCreateInfo ShaderRT::CreateVertexInputStateInfo()
 {
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -46,7 +46,7 @@ VkPipelineVertexInputStateCreateInfo Shader3D::CreateVertexInputStateInfo()
 	return vertexInputInfo;
 }
 
-VkPipelineInputAssemblyStateCreateInfo Shader3D::CreateInputAssemblyStateInfo()
+VkPipelineInputAssemblyStateCreateInfo ShaderRT::CreateInputAssemblyStateInfo()
 {
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -55,7 +55,7 @@ VkPipelineInputAssemblyStateCreateInfo Shader3D::CreateInputAssemblyStateInfo()
 	return inputAssembly;
 }
 
-VkShaderModule Shader3D::CreateShaderModule(const VkDevice& m_Device, const std::vector<char>& code)
+VkShaderModule ShaderRT::CreateShaderModule(const VkDevice& m_Device, const std::vector<char>& code)
 {
 	VkShaderModuleCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -70,7 +70,7 @@ VkShaderModule Shader3D::CreateShaderModule(const VkDevice& m_Device, const std:
 	return shaderModule;
 }
 
-std::vector<VkDescriptorSetLayoutBinding> Shader3D::CreateDescriptorSetLayoutBindings()
+std::vector<VkDescriptorSetLayoutBinding> ShaderRT::CreateDescriptorSetLayoutBindings()
 {
 	VkDescriptorSetLayoutBinding uboLayoutBinding{};
 	uboLayoutBinding.binding = 0;
@@ -88,7 +88,7 @@ std::vector<VkDescriptorSetLayoutBinding> Shader3D::CreateDescriptorSetLayoutBin
 	return { uboLayoutBinding, samplerLayoutBinding };
 }
 
-void Shader3D::SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh)
+void ShaderRT::SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh)
 {
 	VkDescriptorBufferInfo bufferInfo{};
 	bufferInfo.buffer = vulkanBase->GetUniformBuffers()[mesh->GetMeshIndex()];
@@ -100,8 +100,13 @@ void Shader3D::SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh)
 	imageInfo.imageView = vulkanBase->GetTextureImageViews()[mesh->GetMeshIndex()];
 	imageInfo.sampler = vulkanBase->GetTextureSampler();
 
+	VkAccelerationStructureKHR tlas = vulkanBase->GetRTBuilder().getAccelerationStructure();
+	VkWriteDescriptorSetAccelerationStructureKHR descASInfo{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR };
+	descASInfo.accelerationStructureCount = 1;
+	descASInfo.pAccelerationStructures = &tlas;
 
-	std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+
+	std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 
 	descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	descriptorWrites[0].dstSet = vulkanBase->GetMeshDescriptorSets()[mesh->GetMeshIndex()];
@@ -119,7 +124,15 @@ void Shader3D::SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh)
 	descriptorWrites[1].descriptorCount = 1;
 	descriptorWrites[1].pImageInfo = &imageInfo;
 
-	vkUpdateDescriptorSets(vulkanBase->GetDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+	descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorWrites[2].dstSet = vulkanBase->GetMeshDescriptorSets()[mesh->GetMeshIndex()];
+	descriptorWrites[2].dstBinding = 2;
+	descriptorWrites[2].dstArrayElement = 0;
+	descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+	descriptorWrites[2].descriptorCount = 1;
+	descriptorWrites[2].pNext = &descASInfo;
 
+
+	vkUpdateDescriptorSets(vulkanBase->GetDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 }
 

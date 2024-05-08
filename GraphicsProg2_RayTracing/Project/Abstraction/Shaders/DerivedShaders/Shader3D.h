@@ -11,14 +11,14 @@
 #include "../Shader.h"
 class VulkanBase;
 
-class Shader3D : public Shader
+class ShaderRT : public Shader
 {
 public:
 
-	explicit Shader3D(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
+	explicit ShaderRT(const std::string& vertexShaderFile, const std::string& fragmentShaderFile)
 		: Shader(vertexShaderFile, fragmentShaderFile) {}
 
-	~Shader3D() = default;
+	~ShaderRT() = default;
 
 	virtual void Initialize(const VkDevice& m_Device) override;
 	

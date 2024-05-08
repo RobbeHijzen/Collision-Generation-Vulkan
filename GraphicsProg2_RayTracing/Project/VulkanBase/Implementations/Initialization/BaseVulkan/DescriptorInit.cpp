@@ -1,18 +1,27 @@
 #include "VulkanBase/VulkanBase.h"
 
+
 void VulkanBase::CreateDescriptorSetLayouts()
 {
-	auto bindings{ m_Shader3D->CreateDescriptorSetLayoutBindings() };
+	// TLAS
+	m_DescriptorSetLayoutBindings.addBinding(0, VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1,
+		VK_SHADER_STAGE_RAYGEN_BIT_KHR); 
 
-	VkDescriptorSetLayoutCreateInfo layoutInfo{};
-	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-	layoutInfo.pBindings = bindings.data();
+	// Output image
+	m_DescriptorSetLayoutBindings.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1,
+		VK_SHADER_STAGE_RAYGEN_BIT_KHR); 
 
-	if (vkCreateDescriptorSetLayout(m_Device, &layoutInfo, nullptr, &m_DescriptorSetLayout) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create descriptor set layout!");
-	}
+	// Camera matrices
+	m_DescriptorSetLayoutBindings.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+		VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_RAYGEN_BIT_KHR);
+	// Obj descriptions
+	m_DescriptorSetLayoutBindings.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1,
+		VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
+	// Textures
+	m_DescriptorSetLayoutBindings.addBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, nbTxt,
+		VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR);
+
+	m_DescriptorSetLayout = m_DescriptorSetLayoutBindings.createLayout(m_Device);
 }
 
 void VulkanBase::CreateUnfiformBuffers()
@@ -32,23 +41,7 @@ void VulkanBase::CreateUnfiformBuffers()
 
 void VulkanBase::CreateDescriptorPool()
 {
-	std::array<VkDescriptorPoolSize, 2> poolSizes{};
-	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = static_cast<uint32_t>(m_Scene->GetMeshesAmount());
-	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[1].descriptorCount = static_cast<uint32_t>(m_Scene->GetMeshesAmount());
-
-
-	VkDescriptorPoolCreateInfo poolInfo{};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = static_cast<uint32_t>(m_Scene->GetMeshesAmount());
-
-	if (vkCreateDescriptorPool(m_Device, &poolInfo, nullptr, &m_DescriptorPool) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create descriptor pool!");
-	}
+	m_DescriptorPool = m_DescriptorSetLayoutBindings.createPool(m_Device);
 }
 
 void VulkanBase::CreateDescriptorSets()

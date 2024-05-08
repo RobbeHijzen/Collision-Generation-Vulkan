@@ -261,10 +261,7 @@ private:
 	void CreateBLASes();
 	auto ObjectToVkGeometryKHR(Mesh* mesh);
 
-	//ResourceAllocatorDma m_alloc;
-
 	VkPhysicalDeviceRayTracingPipelinePropertiesKHR m_RTProperties{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR };
-	//RaytracingBuilderKHR m_RTBuilder;
 
 	// General variables
 	float m_DeltaTime{};

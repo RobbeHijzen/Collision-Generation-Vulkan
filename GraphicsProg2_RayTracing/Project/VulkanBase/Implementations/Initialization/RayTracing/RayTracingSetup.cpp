@@ -3,11 +3,6 @@
 
 void VulkanBase::InitializeRayTracing()
 {
-	VkPhysicalDeviceProperties2 properties2{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2 };
-	properties2.pNext = &m_RTProperties;
-	vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &properties2);
-
-	//m_RTBuilder.setup(m_Device, &m_alloc, 0);
 }
 void VulkanBase::CreateTLAS()
 {

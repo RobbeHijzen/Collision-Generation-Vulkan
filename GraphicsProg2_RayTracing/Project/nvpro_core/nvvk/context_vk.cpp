@@ -442,7 +442,7 @@ bool Context::initDevice(uint32_t deviceIndex, const ContextCreateInfo& info)
 
     for(auto& it : m_physicalInfo.queueProperties)
     {
-      maxQueueCount = max(maxQueueCount, it.queueCount);
+      maxQueueCount = std::max(maxQueueCount, it.queueCount);
     }
     // priorities is sized to easily address enough slots for each family
     priorities.resize(m_physicalInfo.queueProperties.size() * maxQueueCount);
@@ -1168,7 +1168,7 @@ std::vector<VkLayerProperties> Context::getInstanceLayers()
   NVVK_CHECK(vkEnumerateInstanceLayerProperties(&count, nullptr));
   layerProperties.resize(count);
   NVVK_CHECK(vkEnumerateInstanceLayerProperties(&count, layerProperties.data()));
-  layerProperties.resize(min(layerProperties.size(), size_t(count)));
+  layerProperties.resize(std::min(layerProperties.size(), size_t(count)));
   return layerProperties;
 }
 
@@ -1179,7 +1179,7 @@ std::vector<VkExtensionProperties> Context::getInstanceExtensions()
   NVVK_CHECK(vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr));
   extensionProperties.resize(count);
   NVVK_CHECK(vkEnumerateInstanceExtensionProperties(nullptr, &count, extensionProperties.data()));
-  extensionProperties.resize(min(extensionProperties.size(), size_t(count)));
+  extensionProperties.resize(std::min(extensionProperties.size(), size_t(count)));
   return extensionProperties;
 }
 
@@ -1190,7 +1190,7 @@ std::vector<VkExtensionProperties> Context::getDeviceExtensions(VkPhysicalDevice
   NVVK_CHECK(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, nullptr));
   extensionProperties.resize(count);
   NVVK_CHECK(vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count, extensionProperties.data()));
-  extensionProperties.resize(min(extensionProperties.size(), size_t(count)));
+  extensionProperties.resize(std::min(extensionProperties.size(), size_t(count)));
   return extensionProperties;
 }
 

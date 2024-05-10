@@ -10,6 +10,9 @@ file(GLOB_RECURSE GLSL_SOURCE_FILES
     "${SHADER_SOURCE_DIR}/*.rmiss"
 )
 
+include("nvpro_core/cmake/setup.cmake")
+include("nvpro_core/cmake/utilities.cmake")
+
 #foreach(GLSL ${GLSL_SOURCE_FILES})
 #    get_filename_component(FILE_NAME ${GLSL} NAME)
 #    set(SPIRV "${SHADER_BINARY_DIR}/${FILE_NAME}.spv")
@@ -21,12 +24,12 @@ file(GLOB_RECURSE GLSL_SOURCE_FILES
 #    list(APPEND SPIRV_BINARY_FILES ${SPIRV})
 #endforeach(GLSL)
 
-#compile_glsl_directory(
-#	SRC "${CMAKE_CURRENT_SOURCE_DIR}/shaders" 
-#	DST "${CMAKE_CURRENT_SOURCE_DIR}/spv" 
-#	VULKAN_TARGET "vulkan1.2"
-#	DEPENDENCY ${VULKAN_BUILD_DEPENDENCIES}
-#	)
+compile_glsl_directory(
+	SRC "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Shaders" 
+	DST "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Shaders" 
+	VULKAN_TARGET "vulkan1.2"
+	DEPENDENCY ${VULKAN_BUILD_DEPENDENCIES}
+	)
 
 add_custom_target(
     Shaders 

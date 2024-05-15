@@ -41,8 +41,8 @@ struct Camera
 	const float nearDistance{ 0.1f };
 	const float farDistance{ 100.f };
 
-	const float m_MoveSpeed{ 10.f };
-	const float m_MouseMoveMultiplier{ 10.f };
+	const float m_MoveSpeed{ 25.f };
+	const float m_MouseMoveMultiplier{ 100.f };
 	const float m_PanSpeed{ 1.f / 180.f };
 
 	int m_LastMouseX = 0;

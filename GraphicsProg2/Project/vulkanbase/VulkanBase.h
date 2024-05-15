@@ -240,9 +240,9 @@ private:
 	}
 	void LoadScene()
 	{
-		m_Scene->AddMesh(new Mesh("Resources/viking_room.obj", "Resources/viking_room.png", {20.f, -15.f, -20.f}, {-90, -90, 0}, {25.f, 25.f, 25.f }));
-		m_Scene->AddMesh(new Mesh("Resources/vehicle.obj", "Resources/vehicle_diffuse.png", {-20, 0, 0}, {0, -90, 0}));
-	
+		m_Scene->AddMesh(new Mesh("Resources/xm177.obj", "Resources/xm177_basecolor.png", { 5.f, 0.f, -15.f }, {}, { 0.4f, 0.4f, 0.4f }));
+		m_Scene->AddMesh(new Mesh("Resources/vehicle.obj", "Resources/vehicle_diffuse.png", { -20, 0, 0 }, { 0, -90, 0 }));
+
 	}
 
 

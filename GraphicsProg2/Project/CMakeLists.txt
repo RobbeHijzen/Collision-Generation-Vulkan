@@ -51,7 +51,7 @@ set(SOURCES
     "VulkanBase/Implementations/Initialization/DepthBufferingInit.cpp" 
     
      
-    "Abstraction/HelperStructs.h")
+    "Abstraction/HelperStructs.h" "Abstraction/Meshes/DerivedMeshes/PlayerMesh.h" "Abstraction/Meshes/DerivedMeshes/PlayerMesh.cpp")
     
 
 # Copies the Resources folder into out
@@ -65,7 +65,7 @@ add_custom_target(CopyResources ALL
 )
 
 # Create the execut
-add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES}  "Abstraction/Mesh.h" "Abstraction/Mesh.cpp" "Abstraction/Camera.h" "Abstraction/Utils.h")
+add_executable(${PROJECT_NAME} ${SOURCES} ${GLSL_SOURCE_FILES}  "Abstraction/Meshes/Mesh.h" "Abstraction/Meshes/Mesh.cpp" "Abstraction/Camera.h" "Abstraction/Utils.h")
 add_dependencies(${PROJECT_NAME} Shaders)
 
 # Link libraries

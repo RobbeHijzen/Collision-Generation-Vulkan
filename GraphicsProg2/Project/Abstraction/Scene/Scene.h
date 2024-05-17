@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 
-#include "../Mesh.h"
+#include "Abstraction/Meshes/Mesh.h"
 
 class Scene
 {

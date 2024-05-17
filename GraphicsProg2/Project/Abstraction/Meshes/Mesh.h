@@ -6,7 +6,8 @@
 #include <string>
 #include <optional>
 
-#include "VertexInfo.h"
+#include "Abstraction/VertexInfo.h"
+#include "Abstraction/Camera.h"
 
 class Mesh
 {
@@ -19,6 +20,9 @@ public:
 
 	void Draw(VkCommandBuffer buffer) const;
 
+	virtual void GameStart() {};
+	virtual void Update(float deltaTime, GLFWwindow* window) {};
+
 	glm::mat4 GetModelMatrix() const { return m_ModelMatrix; }
 
 
@@ -30,14 +34,30 @@ public:
 
 	void SetMeshIndex(uint32_t index) { m_MeshIndex = index; }
 
-private:
+	virtual void Translate(glm::vec3 addedPos);
+	virtual void Rotate(glm::vec3 addedRot);
+	virtual void Scale(glm::vec3 addedScale);
+
+
+protected:
 
 	std::vector<uint32_t> m_Indices{};
 	std::vector<Vertex> m_Vertices{};
 
 	glm::mat4 m_ModelMatrix{ glm::mat4{1.f} };
 
-	std::optional<uint32_t> m_MeshIndex{};
+	glm::vec3 m_WorldPos{};
+	glm::vec3 m_BaseRot{};
+	glm::vec3 m_WorldRot{};
+	glm::vec3 m_WorldScale{};
 
+	glm::mat4 m_TranslationMatrix{};
+	glm::mat4 m_RotationMatrix{};
+	glm::mat4 m_ScaleMatrix{};
+
+	void CalculateWorldMatrix();
+	
+
+	std::optional<uint32_t> m_MeshIndex{};
 	std::string m_DiffuseString{};
 };

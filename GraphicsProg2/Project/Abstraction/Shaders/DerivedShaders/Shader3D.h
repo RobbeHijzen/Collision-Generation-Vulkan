@@ -6,7 +6,7 @@
 #include <array>
 #include "VulkanUtil/VulkanUtil.h"
 #include "glm/glm.hpp"
-#include "Abstraction/Mesh.h"
+#include "Abstraction/Meshes/Mesh.h"
 
 #include "../Shader.h"
 class VulkanBase;

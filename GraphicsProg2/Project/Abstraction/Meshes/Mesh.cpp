@@ -83,40 +83,42 @@ void Mesh::CalculateTransformedAABB()
     // This transforms the 8 vertices according to the transform of the triangleMesh
 
     // Begin
-    glm::vec3 tMinAABB = m_ModelMatrix * glm::vec4{ m_MinAABB, 0.f};
+    glm::vec3 tMinAABB = m_ModelMatrix * glm::vec4{ m_MinAABB, 1.f};
     glm::vec3 tMaxAABB = tMinAABB;
 
     // (xMax, yMin, zMin)
-    glm::vec3 tAABB = m_ModelMatrix * glm::vec4{ m_MaxAABB.x, m_MinAABB.y, m_MinAABB.z, 0.f };
+    glm::vec3 tAABB = m_ModelMatrix * glm::vec4{ m_MaxAABB.x, m_MinAABB.y, m_MinAABB.z, 1.f };
     tMinAABB = MinVec(tAABB, tMinAABB);
     tMaxAABB = MaxVec(tAABB, tMaxAABB);
     // (xMax, yMin, zMax)
-    tAABB = m_ModelMatrix * glm::vec4{ m_MaxAABB.x, m_MinAABB.y, m_MaxAABB.z, 0.f };
+    tAABB = m_ModelMatrix * glm::vec4{ m_MaxAABB.x, m_MinAABB.y, m_MaxAABB.z, 1.f };
     tMinAABB = MinVec(tAABB, tMinAABB);
     tMaxAABB = MaxVec(tAABB, tMaxAABB);
     // (xMin, yMin, zMax)
-    tAABB = m_ModelMatrix * glm::vec4{ m_MinAABB.x, m_MinAABB.y, m_MinAABB.z, 0.f };
+    tAABB = m_ModelMatrix * glm::vec4{ m_MinAABB.x, m_MinAABB.y, m_MaxAABB.z, 1.f };
     tMinAABB = MinVec(tAABB, tMinAABB);
     tMaxAABB = MaxVec(tAABB, tMaxAABB);
     // (xMin, yMax, zMin)
-    tAABB = m_ModelMatrix * glm::vec4{ m_MinAABB.x, m_MaxAABB.y, m_MinAABB.z, 0.f };
+    tAABB = m_ModelMatrix * glm::vec4{ m_MinAABB.x, m_MaxAABB.y, m_MinAABB.z, 1.f };
     tMinAABB = MinVec(tAABB, tMinAABB);
     tMaxAABB = MaxVec(tAABB, tMaxAABB);
     // (xMax, yMax, zMin)
-    tAABB = m_ModelMatrix * glm::vec4{ m_MaxAABB.x, m_MaxAABB.y, m_MinAABB.z, 0.f };
+    tAABB = m_ModelMatrix * glm::vec4{ m_MaxAABB.x, m_MaxAABB.y, m_MinAABB.z, 1.f };
     tMinAABB = MinVec(tAABB, tMinAABB);
     tMaxAABB = MaxVec(tAABB, tMaxAABB);
     // (xMax, yMax, zMax)
-    tAABB = m_ModelMatrix * glm::vec4{ m_MaxAABB.x, m_MaxAABB.y, m_MaxAABB.z, 0.f };
+    tAABB = m_ModelMatrix * glm::vec4{ m_MaxAABB.x, m_MaxAABB.y, m_MaxAABB.z, 1.f };
     tMinAABB = MinVec(tAABB, tMinAABB);
     tMaxAABB = MaxVec(tAABB, tMaxAABB);
     // (xMin, yMax, zMax)
-    tAABB = m_ModelMatrix * glm::vec4{ m_MinAABB.x, m_MaxAABB.y, m_MaxAABB.z, 0.f };
+    tAABB = m_ModelMatrix * glm::vec4{ m_MinAABB.x, m_MaxAABB.y, m_MaxAABB.z, 1.f };
     tMinAABB = MinVec(tAABB, tMinAABB);
     tMaxAABB = MaxVec(tAABB, tMaxAABB);
 
     m_TransformedMinAABB = tMinAABB;
     m_TransformedMaxAABB = tMaxAABB;
+
+    //std::cout << "MinAABB.z: " << m_TransformedMinAABB.z << "   MaxAABB.z: " << m_TransformedMaxAABB.z << "\n";
 }
 
 glm::vec3 Mesh::MinVec(const glm::vec3& v1, const glm::vec3& v2)

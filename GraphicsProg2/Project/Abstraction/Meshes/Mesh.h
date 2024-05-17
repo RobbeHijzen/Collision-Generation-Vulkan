@@ -38,8 +38,14 @@ public:
 	virtual void Rotate(glm::vec3 addedRot);
 	virtual void Scale(glm::vec3 addedScale);
 
+	bool IsStaticMesh() const { return m_IsStaticMesh; }
+
+	glm::vec3 GetMinAABB() const { return m_TransformedMinAABB; }
+	glm::vec3 GetMaxAABB() const { return m_TransformedMaxAABB; }
 
 protected:
+
+	bool m_IsStaticMesh{ true };
 
 	std::vector<uint32_t> m_Indices{};
 	std::vector<Vertex> m_Vertices{};

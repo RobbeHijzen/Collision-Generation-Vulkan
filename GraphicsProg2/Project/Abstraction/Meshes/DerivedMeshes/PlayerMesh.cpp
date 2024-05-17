@@ -3,6 +3,7 @@
 PlayerMesh::PlayerMesh(std::string objPath, std::string diffuseString, glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale)
 	: Mesh(objPath, diffuseString, translation, rotation, scale)
 {
+	m_IsStaticMesh = false;
 }
 
 void PlayerMesh::GameStart()

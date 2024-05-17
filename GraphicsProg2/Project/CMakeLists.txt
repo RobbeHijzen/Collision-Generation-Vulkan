@@ -51,7 +51,7 @@ set(SOURCES
     "VulkanBase/Implementations/Initialization/DepthBufferingInit.cpp" 
     
      
-    "Abstraction/HelperStructs.h" "Abstraction/Meshes/DerivedMeshes/PlayerMesh.h" "Abstraction/Meshes/DerivedMeshes/PlayerMesh.cpp")
+    "Abstraction/HelperStructs.h" "Abstraction/Meshes/DerivedMeshes/PlayerMesh.h" "Abstraction/Meshes/DerivedMeshes/PlayerMesh.cpp" "Abstraction/Collision/CollisionFixer.h" "Abstraction/Collision/CollisionFixer.cpp")
     
 
 # Copies the Resources folder into out

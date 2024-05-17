@@ -39,7 +39,7 @@ struct Camera
 	glm::mat4 projectionMatrix{};
 
 	const float nearDistance{ 0.1f };
-	const float farDistance{ 100.f };
+	const float farDistance{ 1000.f };
 
 	void CalculateViewMatrix()
 	{

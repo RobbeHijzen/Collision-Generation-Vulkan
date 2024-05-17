@@ -64,6 +64,14 @@ void PlayerMesh::MovementInputs(float deltaTime, GLFWwindow* window)
 	{
 		Translate(-m_MoveSpeed * deltaTime * right);
 	}
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+	{
+		Translate(-m_MoveSpeed * deltaTime * glm::vec3{0.f, 1.f, 0.f});
+	}
+	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+	{
+		Translate(m_MoveSpeed * deltaTime * glm::vec3{ 0.f, 1.f, 0.f });
+	}
 
 	// Mouse Input
 	double x, y;

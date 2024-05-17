@@ -247,8 +247,9 @@ private:
 	}
 	void LoadScene()
 	{
-		m_Scene->AddMesh(new Mesh("Resources/xm177.obj", "Resources/xm177_basecolor.png", { 5.f, 0.f, 15.f }, {}, { 0.4f, 0.4f, 0.4f }));
-		m_Scene->AddMesh(new Mesh("Resources/vehicle.obj", "Resources/vehicle_diffuse.png", { -20, 0, 0 }, { 0, -90, 0 }));
+		m_Scene->AddMesh(new Mesh("Resources/xm177.obj", "Resources/xm177_basecolor.png", { 5.f, 5.f, 25.f }, {}, { 0.4f, 0.4f, 0.4f }));
+		m_Scene->AddMesh(new Mesh("Resources/vehicle.obj", "Resources/vehicle_diffuse.png", { -20, 8.5f, 0 }, { 0, -90, 0 }));
+		m_Scene->AddMesh(new Mesh("Resources/Plane.obj", "Resources/Plane_BaseColor.png", {}, {}, {0.5f, 0.5f, 0.5f}));
 		
 		auto manny{ new PlayerMesh("Resources/Manny.obj", "Resources/Manny_BaseColor.png", { 0, 0, 0 }, { -90, 180, 0 }, {0.1f, 0.1f, 0.1f}) };
 		manny->AttachCamera(m_Camera.get());

@@ -85,13 +85,10 @@ void PlayerMesh::MovementInputs(float deltaTime, GLFWwindow* window)
 	int RMBState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
 
 	// Mouse Movement
-	if (RMBState == GLFW_PRESS)
-	{
-		Rotate({0.f, mouseX * m_PanSpeed, 0.f});
-		m_Camera->totalPitch += mouseY * m_PanSpeed;
-	}
+	Rotate({0.f, mouseX * m_PanSpeed, 0.f});
 
-	m_Camera->totalPitch = std::clamp(m_Camera->totalPitch, -PI / 2.f, PI / 2.f);
+	m_Camera->totalPitch += mouseY * m_PanSpeed;
+	m_Camera->totalPitch = std::clamp(m_Camera->totalPitch, -PI / 10.f, PI / 4.f);
 }
 
 glm::vec3 PlayerMesh::RotateVectorY(glm::vec3 vec, float angle)

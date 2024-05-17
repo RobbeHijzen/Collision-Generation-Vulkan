@@ -60,4 +60,17 @@ protected:
 
 	std::optional<uint32_t> m_MeshIndex{};
 	std::string m_DiffuseString{};
+
+
+	glm::vec3 m_MinAABB;
+	glm::vec3 m_MaxAABB;
+
+	glm::vec3 m_TransformedMinAABB;
+	glm::vec3 m_TransformedMaxAABB;
+
+	void CalculateAABB();
+	void CalculateTransformedAABB();
+
+	glm::vec3 MinVec(const glm::vec3& v1, const glm::vec3& v2);
+	glm::vec3 MaxVec(const glm::vec3& v1, const glm::vec3& v2);
 };

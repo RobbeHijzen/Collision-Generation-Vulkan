@@ -65,6 +65,7 @@ private:
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 		m_Window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+		glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
 	void InitializeVulkan()
 	{
@@ -243,7 +244,7 @@ private:
 		m_Shader3D = std::make_unique<Shader3D>("Resources/Shaders/shader3D.vert.spv", "Resources/Shaders/shader3D.frag.spv");
 		m_Shader3D->Initialize(m_Device);
 
-		m_Camera = std::make_unique<Camera>(glm::vec3{ 0.f, 1.f, -50.f }, 90.f);
+		m_Camera = std::make_unique<Camera>(glm::vec3{}, 150.f);
 	}
 	void LoadScene()
 	{

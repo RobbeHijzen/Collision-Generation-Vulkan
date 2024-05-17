@@ -8,8 +8,8 @@
 
 constexpr auto PI = 3.14159265358979323846f;
 
-const uint32_t WIDTH{ 800 };
-const uint32_t HEIGHT{ 600 };
+const uint32_t WIDTH{ 1200 };
+const uint32_t HEIGHT{ 900 };
 
 #ifdef NDEBUG
 const bool enableValidationLayers{ false };

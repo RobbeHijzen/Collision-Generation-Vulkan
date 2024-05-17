@@ -15,4 +15,6 @@ private:
 	static bool AreBothNonStaticMeshes(Mesh* mesh1, Mesh* mesh2);
 
 	static bool AreIntervalsOverlapping(float a1, float a2, float A1, float A2);
+
+	static std::pair<glm::vec3, glm::vec3> CalculateCollisionDistances(Mesh* mesh1, Mesh* mesh2);
 };

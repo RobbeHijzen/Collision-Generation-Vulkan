@@ -13,6 +13,8 @@ void PlayerMesh::GameStart()
 
 void PlayerMesh::Update(float deltaTime, GLFWwindow* window)
 {
+
+
 	MovementInputs(deltaTime, window);
 	HandleCameraMovement();
 }

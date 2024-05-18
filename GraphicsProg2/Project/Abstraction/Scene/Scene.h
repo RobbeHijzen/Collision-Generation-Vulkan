@@ -4,8 +4,9 @@
 #include <memory>
 
 #include "Abstraction/Meshes/Mesh.h"
+#include "../Singleton.h"
 
-class Scene
+class Scene : public Singleton<Scene>
 {
 public:
 	Scene() = default;

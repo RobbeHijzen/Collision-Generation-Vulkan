@@ -8,8 +8,12 @@
 
 #include "Abstraction/VertexInfo.h"
 #include "Abstraction/Camera.h"
+#include "Abstraction/EventSystem/Events.h"
+#include "Abstraction/EventSystem/Observer.h"
 
-class Mesh
+#include "Abstraction/Components/BaseComponent.h"
+
+class Mesh final
 {
 public:
 	Mesh(std::string objPath, 
@@ -18,13 +22,12 @@ public:
 			  glm::vec3 rotation = glm::vec3{0.f, 0.f, 0.f},
 			  glm::vec3 scale = glm::vec3{1.f, 1.f, 1.f});
 
-	void Draw(VkCommandBuffer buffer) const;
+	void Render(VkCommandBuffer buffer) const;
 
-	virtual void GameStart() {};
-	virtual void Update(float deltaTime, GLFWwindow* window) {};
+	void GameStart();
+	void Update(float deltaTime, GLFWwindow* window);
 
 	glm::mat4 GetModelMatrix() const { return m_ModelMatrix; }
-
 
 	const std::vector<uint32_t>& GetIndices() const { return m_Indices; };
 	const std::vector<Vertex>& GetVertices() const { return m_Vertices; }
@@ -34,22 +37,63 @@ public:
 
 	void SetMeshIndex(uint32_t index) { m_MeshIndex = index; }
 
-	virtual void Translate(glm::vec3 addedPos);
-	virtual void Rotate(glm::vec3 addedRot);
-	virtual void Scale(glm::vec3 addedScale);
+	void Rotate(glm::vec3 addedRot);
+	void Scale(glm::vec3 addedScale);
 
-	bool IsStaticMesh() const { return m_IsStaticMesh; }
+	bool AddComponent(std::shared_ptr<BaseComponent> component)
+	{
+		if (component.get())
+		{
+			m_Components.emplace_back(component);
+			return true;
+		}
+		return false;
+	}
+	
+	template<typename T>
+	std::shared_ptr<T> GetComponent()
+	{
+		for (auto& component : m_Components)
+		{
+			if (auto castedComponent = std::dynamic_pointer_cast<T>(component))
+			{
+				return castedComponent;
+			}
+		}
+		return nullptr;
+	}
 
-	glm::vec3 GetMinAABB() const { return m_TransformedMinAABB; }
-	glm::vec3 GetMaxAABB() const { return m_TransformedMaxAABB; }
+	void AddObserver(Observer* observer)
+	{
+		m_Observers.emplace_back(observer);
+	}
+	void NotifyObservers(GameEvents event)
+	{
+		for (auto& observer : m_Observers)
+		{
+			if (observer->event == event)
+			{
+				observer->function();
+			}
+		}
+	}
 
-protected:
+	glm::vec3 GetWorldPosition() const { return m_WorldPos; }
+	glm::vec3 GetWorldRotation() const { return m_WorldRot; }
 
-	bool m_IsStaticMesh{ true };
+	void SetVelocity(glm::vec3 inputVelocity) { m_Velocity = inputVelocity; }
+
+private:
 
 	std::vector<uint32_t> m_Indices{};
 	std::vector<Vertex> m_Vertices{};
 
+	std::optional<uint32_t> m_MeshIndex{};
+	std::string m_DiffuseString{};
+
+	//----------
+	// Transformation Handling
+	//----------
 	glm::mat4 m_ModelMatrix{ glm::mat4{1.f} };
 
 	glm::vec3 m_WorldPos{};
@@ -62,21 +106,20 @@ protected:
 	glm::mat4 m_ScaleMatrix{};
 
 	void CalculateWorldMatrix();
-	
+	//-----------
 
-	std::optional<uint32_t> m_MeshIndex{};
-	std::string m_DiffuseString{};
+	//-----------
+	// Movement Handling
+	//-----------
+	glm::vec3 m_Velocity{};
 
+public:
+	void Translate(glm::vec3 addedPos);
+private:
 
-	glm::vec3 m_MinAABB;
-	glm::vec3 m_MaxAABB;
+	// Components
+	std::vector<std::shared_ptr<BaseComponent>> m_Components{};
 
-	glm::vec3 m_TransformedMinAABB;
-	glm::vec3 m_TransformedMaxAABB;
-
-	void CalculateAABB();
-	void CalculateTransformedAABB();
-
-	glm::vec3 MinVec(const glm::vec3& v1, const glm::vec3& v2);
-	glm::vec3 MaxVec(const glm::vec3& v1, const glm::vec3& v2);
+	// Observers
+	std::vector<std::shared_ptr<Observer>> m_Observers{};
 };

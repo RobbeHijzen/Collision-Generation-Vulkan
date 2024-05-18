@@ -39,13 +39,13 @@ struct Camera
 	glm::mat4 projectionMatrix{};
 
 	const float nearDistance{ 0.1f };
-	const float farDistance{ 1000.f };
+	const float farDistance{ 100000.f };
 
 	void CalculateViewMatrix()
 	{
 		const glm::mat4 finalRotation{   glm::rotate(unitMatrix, totalPitch, glm::vec3{1.f, 0.f, 0.f})
 									    * glm::rotate(unitMatrix,  totalYaw, glm::vec3{0.f, 1.f, 0.f}) };
-		const glm::mat4 finalTranslation{ glm::translate(unitMatrix, glm::vec3{-origin.x, -origin.y, origin.z}) };
+		const glm::mat4 finalTranslation{ glm::translate(unitMatrix, glm::vec3{-origin.x, -origin.y, origin.z} ) };
 
 		auto inverseRot{glm::inverse(finalRotation)};
 		glm::vec4 transformedForward = inverseRot * glm::vec4(0.f, 0.f, 1.f, 0.f);

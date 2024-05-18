@@ -1,3 +1,5 @@
+#pragma once
+
 #include "VulkanUtil/VulkanUtil.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <optional>

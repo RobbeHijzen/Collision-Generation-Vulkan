@@ -92,7 +92,7 @@ void VulkanBase::RecordRenderPass(uint32_t imageIndex)
 		BindVertexIndexBuffers(mesh->GetMeshIndex());
 		vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_MeshDescriptorSets[mesh->GetMeshIndex()], 0, nullptr);
 
-		mesh->Draw(m_CommandBuffer);
+		mesh->Render(m_CommandBuffer);
 	}
 	
 	vkCmdEndRenderPass(m_CommandBuffer);

@@ -32,7 +32,7 @@ private:
 	void CalculateTransformedAABBs();
 
 	std::vector<std::vector<glm::vec3>> ClusterVertices(int clusterAmount, int iterations, AABB encompassingAABB);
-	void RandomizeVectors(std::vector<glm::vec3>& vectors, AABB boundary);
+	void RandomizeVector(glm::vec3& vector, AABB boundary);
 	void AssignVertexToCluster(const glm::vec3& vertex, const std::vector<glm::vec3>& centers, std::vector<std::vector<glm::vec3>>& clusters);
 
 	glm::vec3 AveragePositionOfVectors(std::vector<glm::vec3> positions);

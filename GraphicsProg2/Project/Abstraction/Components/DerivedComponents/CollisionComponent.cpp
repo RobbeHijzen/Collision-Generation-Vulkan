@@ -39,7 +39,7 @@ void CollisionComponent::CalculateAABBs()
         encompassingAABB.max = MaxVec(vertex.pos, encompassingAABB.max);
     }  
 
-    auto clusters{ ClusterVertices(15, 5, encompassingAABB) };
+    auto clusters{ ClusterVertices(10, 10, encompassingAABB) };
     std::erase_if(clusters, [&](std::vector<glm::vec3> v)
         {
             return v.size() == 0;
@@ -72,7 +72,8 @@ std::vector<std::vector<glm::vec3>> CollisionComponent::ClusterVertices(int clus
     centers.resize(clusterAmount);
     clusters.resize(clusterAmount);
 
-    RandomizeVectors(centers, encompassingAABB);
+    for(auto& center : centers)
+        RandomizeVector(center, encompassingAABB);
 
     for (int iteration{}; iteration < iterations; ++iteration)
     {
@@ -83,25 +84,23 @@ std::vector<std::vector<glm::vec3>> CollisionComponent::ClusterVertices(int clus
         for (int index{}; index < centers.size(); ++index)
         {
             centers[index] = AveragePositionOfVectors(clusters[index]);
+            if (centers[index].length() == 0.f) RandomizeVector(centers[index], encompassingAABB);
         }
     }
     return clusters;
 }
-void CollisionComponent::RandomizeVectors(std::vector<glm::vec3>& vectors, AABB boundary)
+void CollisionComponent::RandomizeVector(glm::vec3& vector, AABB boundary)
 {
-    for (auto& vector : vectors)
-    {
-        vector.x = (float(rand()) / RAND_MAX) * (boundary.max.x - boundary.min.x) + boundary.min.x;
-        vector.y = (float(rand()) / RAND_MAX) * (boundary.max.y - boundary.min.y) + boundary.min.y;
-        vector.z = (float(rand()) / RAND_MAX) * (boundary.max.z - boundary.min.z) + boundary.min.z;
-    }
+     vector.x = (float(rand()) / RAND_MAX) * (boundary.max.x - boundary.min.x) + boundary.min.x;
+     vector.y = (float(rand()) / RAND_MAX) * (boundary.max.y - boundary.min.y) + boundary.min.y;
+     vector.z = (float(rand()) / RAND_MAX) * (boundary.max.z - boundary.min.z) + boundary.min.z;
 }
 void CollisionComponent::AssignVertexToCluster(const glm::vec3& vertex, const std::vector<glm::vec3>& centers, std::vector<std::vector<glm::vec3>>& clusters)
 {
-    int currentClosestIndex{ 0 };
+    int currentClosestIndex{ -1 };
     float currentClosestDistance{ FLT_MAX };
 
-    for (int index{ 1 }; index < centers.size(); ++index)
+    for (int index{}; index < centers.size(); ++index)
     {
         float distance{ DistanceSquared(centers[index], vertex) };
         if (distance < currentClosestDistance)

@@ -18,7 +18,7 @@ void VulkanBase::LoadScene()
 	m_Scene->AddMesh(plane);
 
 	// Manny
-	auto manny{ new Mesh("Resources/Manny.obj", "Resources/Manny_BaseColor.png") };
+	auto manny{ new Mesh("Resources/Manny.obj", "Resources/Manny_BaseColor.png", {0.f, 150.f, 0.f}) };
 
 	manny->AddComponent(std::make_shared<CollisionComponent>(manny, false));
 	manny->AddComponent(std::make_shared<MovementComponent>(manny));

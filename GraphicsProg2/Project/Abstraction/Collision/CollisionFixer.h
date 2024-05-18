@@ -29,5 +29,5 @@ private:
 
 	static bool AreIntervalsOverlapping(float a1, float a2, float A1, float A2);
 
-	static std::pair<glm::vec3, glm::vec3> CalculateCollisionDistances(CollisionComponent* col1, CollisionComponent* col2);
+	static std::pair<glm::vec3, glm::vec3> CalculateCollisionDistances(AABB aabb1, AABB aabb2);
 };

@@ -8,12 +8,9 @@ void CollisionFixer::FixCollisions(std::vector<Mesh*> meshes)
 	{
 		for (int j{ i + 1 }; j < meshes.size(); ++j)
 		{
-			int recursionAmount{};
-			bool doContinue{ true };
-			while (doContinue && ++recursionAmount < 4)
+			int maxIterations{ 10 };
+			for(int k{}; k < maxIterations; ++k)
 			{
-				doContinue = false;
-
 				Mesh* mesh1{ meshes[i] };
 				Mesh* mesh2{ meshes[j] };
 
@@ -31,9 +28,10 @@ void CollisionFixer::FixCollisions(std::vector<Mesh*> meshes)
 							collisionInfo.second.second,
 							collisionComp1,
 							collisionComp2);
-
-						// Keep handling the collision until there is no more collision
-						doContinue = true;
+					}
+					else
+					{
+						break;
 					}
 				}
 			}
@@ -50,14 +48,18 @@ void CollisionFixer::HandleCollision(AABB aabb1, AABB aabb2, CollisionComponent*
 		// Swaps mesh1 to be the nonstatic mesh
 		if (col1->HasStaticCollision())
 		{
-			auto temp{ col1 };
+			auto temp1{ col1 };
 			col1 = col2;
-			col2 = temp;
+			col2 = temp1;
+
+			auto temp2{ aabb1 };
+			aabb1 = aabb2;
+			aabb2 = temp2;
 		}
 
 		// Changes mesh1's position to not collide anymore
 
-		std::pair<glm::vec3, glm::vec3> distances{ CalculateCollisionDistances(col1, col2) };
+		std::pair<glm::vec3, glm::vec3> distances{ CalculateCollisionDistances(aabb1, aabb2) };
 		float minDistance{min(min(distances.first.x, distances.first.y), distances.first.z)};
 		if (minDistance == distances.first.x)
 		{
@@ -75,7 +77,7 @@ void CollisionFixer::HandleCollision(AABB aabb1, AABB aabb2, CollisionComponent*
 	else
 	{
 		// Move both meshes halfway
-		std::pair<glm::vec3, glm::vec3> distances{ CalculateCollisionDistances(col1, col2) };
+		std::pair<glm::vec3, glm::vec3> distances{ CalculateCollisionDistances(aabb1, aabb2) };
 		float minDistance{ min(min(distances.first.x, distances.first.y), distances.first.z) };
 		if (minDistance == distances.first.x)
 		{
@@ -142,12 +144,9 @@ bool CollisionFixer::AreIntervalsOverlapping(float a1, float a2, float A1, float
 		a1 < A2;
 }
 
-std::pair<glm::vec3, glm::vec3> CollisionFixer::CalculateCollisionDistances(CollisionComponent* col1, CollisionComponent* col2)
+std::pair<glm::vec3, glm::vec3> CollisionFixer::CalculateCollisionDistances(AABB aabb1, AABB aabb2)
 {
 	std::pair<glm::vec3, glm::vec3> distances{};
-
-	AABB aabb1{ col1->GetAABBs()[0] };
-	AABB aabb2{ col2->GetAABBs()[0] };
 
 	glm::vec3 min1{ aabb1.min };
 	glm::vec3 min2{ aabb2.min };

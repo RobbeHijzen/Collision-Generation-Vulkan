@@ -25,7 +25,8 @@ public:
 	void Render(VkCommandBuffer buffer) const;
 
 	void GameStart();
-	void Update(float deltaTime, GLFWwindow* window);
+	void Update(GLFWwindow* window);
+	void LateUpdate();
 
 	glm::mat4 GetModelMatrix() const { return m_ModelMatrix; }
 

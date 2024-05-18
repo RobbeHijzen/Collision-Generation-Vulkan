@@ -13,6 +13,7 @@
 #include "Abstraction/Shaders/Shader.h"
 #include "Abstraction/Shaders/DerivedShaders/Shader3D.h"
 #include "Abstraction/Scene/Scene.h"
+#include "Abstraction/Time/Time.h"
 
 #include "Abstraction/Collision/CollisionFixer.h"
 
@@ -28,6 +29,7 @@
 #include <algorithm>
 #include <chrono>
 #include <glm/gtc/matrix_transform.hpp>
+#include <thread>
 
 const std::vector<const char*> validationLayers{ "VK_LAYER_KHRONOS_validation" };
 const std::vector<const char*> deviceExtensions{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
@@ -122,27 +124,32 @@ private:
 	}
 	void MainLoop()
 	{
-		static auto startTime = std::chrono::high_resolution_clock::now();
+		// Time initialization
+		Time* time = Time::GetInstance();
 
+		// Game Start
+		for (auto mesh : m_Scene->GetMeshes())
+			mesh->GameStart();
+
+		// LOOP
 		while (!glfwWindowShouldClose(m_Window))
 		{
+			// Time
+			time->Update();
+
+			// Input
 			glfwPollEvents();
 
 			// Update Camera and Meshes
-			m_Camera->Update(m_DeltaTime, m_Window);
-			for (auto mesh : m_Scene->GetMeshes())
-			{
-				mesh->Update(m_DeltaTime, m_Window);
-			}
-			// Collision Fixing
+			m_Camera->Update(m_Window);
+			m_Scene->Update(m_Window);
+			m_Scene->LateUpdate();
+
 			CollisionFixer::FixCollisions(m_Scene->GetMeshes());
+			// Rendering the Meshes
+			Render();
 
-			// Where the magic happens
-			DrawFrame();
-
-			auto currentTime = std::chrono::high_resolution_clock::now();
-			m_DeltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-			startTime = currentTime;
+			//std::cout << "FPS: " << time->GetFps() << "\n";
 		}
 		vkDeviceWaitIdle(m_Device);
 	}
@@ -251,8 +258,6 @@ private:
 	void LoadScene();
 
 	// General variables
-	float m_DeltaTime{};
-
 	Scene* m_Scene;
 	std::unique_ptr<Shader> m_Shader3D;
 
@@ -336,7 +341,7 @@ private:
 
 
 	// Runtime Functions
-	void DrawFrame();
+	void Render();
 	void RecordCommandBuffer(VkCommandBuffer m_CommandBuffer, uint32_t imageIndex);
 	void RecordRenderPass(uint32_t imageIndex);
 	void BindPipelineInfo();

@@ -3,17 +3,18 @@
 #include "Abstraction/Scene/Scene.h"
 #include "Abstraction/Collision/CollisionFixer.h"
 #include "Abstraction/Components/DerivedComponents/CollisionComponent.h"
+#include "Abstraction/Time/Time.h"
 
 #include <algorithm>
 #include <vector>
 
-void MovementComponent::Update(float deltaTime, GLFWwindow* window)
+void MovementComponent::Update(GLFWwindow* window)
 {
 	CalculateIsOnGround();
-	std::cout << "IsOnGround: " << m_IsOnGround << "\n";
+	//std::cout << "IsOnGround: " << m_IsOnGround << "\n";
 
 	HandleKeyboardMovement(window);
-	HandleGravity(deltaTime);
+	HandleGravity();
 
 	HandleMouseMovement(window);
 
@@ -62,11 +63,11 @@ void MovementComponent::HandleKeyboardMovement(GLFWwindow* window)
 	
 }
 
-void MovementComponent::HandleGravity(float deltaTime)
+void MovementComponent::HandleGravity()
 {
 	if (!m_IsOnGround)
 	{
-		m_Velocity -= m_Gravity * deltaTime;
+		m_Velocity.y -= m_Gravity * Time::GetInstance()->GetDeltaTime();
 	}
 }
 
@@ -93,14 +94,14 @@ void MovementComponent::CalculateIsOnGround()
 	glm::vec3 min{ collisionComp->GetMinAABB() };
 	glm::vec3 max{ collisionComp->GetMaxAABB() };
 	
-	min.x += FLT_EPSILON * 6;
-	max.x -= FLT_EPSILON * 6;
+	min.x += FLT_EPSILON * 5;
+	max.x -= FLT_EPSILON * 5;
 	
 	max.y = min.y + FLT_EPSILON;
 	min.y -= FLT_EPSILON * 80;
 
-	min.z += FLT_EPSILON * 6;
-	max.z -= FLT_EPSILON * 6;
+	min.z += FLT_EPSILON * 5;
+	max.z -= FLT_EPSILON * 5;
 
 	for (auto mesh : meshes)
 	{

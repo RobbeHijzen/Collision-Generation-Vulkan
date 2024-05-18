@@ -67,7 +67,7 @@ struct Camera
 	}
 
 
-	void Update(float deltaTime, GLFWwindow* window)
+	void Update(GLFWwindow* window)
 	{
 		CalculateViewMatrix();
 	}

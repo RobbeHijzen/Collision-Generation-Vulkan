@@ -1,6 +1,6 @@
 #include "VulkanBase/VulkanBase.h"
 
-void VulkanBase::DrawFrame()
+void VulkanBase::Render()
 {
 	vkWaitForFences(m_Device, 1, &m_InFlightFence, VK_TRUE, UINT64_MAX);
 	vkResetFences(m_Device, 1, &m_InFlightFence);

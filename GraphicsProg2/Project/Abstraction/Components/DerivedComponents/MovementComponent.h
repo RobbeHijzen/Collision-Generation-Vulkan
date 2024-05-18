@@ -11,7 +11,7 @@ class MovementComponent : public BaseComponent
 public:
 
 	MovementComponent(Mesh* pParent) : BaseComponent(pParent) {}
-	virtual void Update(float deltaTime, GLFWwindow* window) override;
+	virtual void Update(GLFWwindow* window) override;
 
 private:
 
@@ -25,6 +25,9 @@ private:
 
 	int m_LastMouseX = 0;
 
+	void HandleKeyboardMovement(GLFWwindow* window);
+	void HandleMouseMovement(GLFWwindow* window);
+
 	//----------------
 	// Vertical Movement
 	//----------------
@@ -33,10 +36,6 @@ private:
 	float m_JumpStrength{ 1000.f };
 	float m_Gravity{ 981.f };
 
-
-	void HandleKeyboardMovement(GLFWwindow* window);
-	void HandleGravity(float deltaTime);
-	void HandleMouseMovement(GLFWwindow* window);
-
+	void HandleGravity();
 	void CalculateIsOnGround();
 };

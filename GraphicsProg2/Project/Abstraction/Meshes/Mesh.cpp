@@ -1,5 +1,7 @@
 #include "Mesh.h"
 #include "Abstraction/Utils.h"
+#include "Abstraction/Time/Time.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 
 Mesh::Mesh(std::string objPath, std::string diffuseString, glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale)
@@ -38,14 +40,22 @@ void Mesh::GameStart()
     }
 }
 
-void Mesh::Update(float deltaTime, GLFWwindow* window)
+void Mesh::Update(GLFWwindow* window)
 {
     for (auto& component : m_Components)
     {
-        component->Update(deltaTime, window);
+        component->Update(window);
     }
 
-    Translate(m_Velocity * deltaTime);
+    Translate(m_Velocity * Time::GetInstance()->GetDeltaTime());
+}
+
+void Mesh::LateUpdate()
+{
+    for (auto& component : m_Components)
+    {
+        component->LateUpdate();
+    }
 }
 
 void Mesh::Translate(glm::vec3 addedPos)

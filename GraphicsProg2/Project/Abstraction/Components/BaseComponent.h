@@ -16,7 +16,8 @@ public:
 	BaseComponent& operator=(BaseComponent&& other) = delete;
 
 	virtual void GameStart() {};
-	virtual void Update(float deltaTime, GLFWwindow* window) {};
+	virtual void Update(GLFWwindow* window) {};
+	virtual void LateUpdate() {};
 
 	Mesh* GetOwner() const { return m_Owner; }
 

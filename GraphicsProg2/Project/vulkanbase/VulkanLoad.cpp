@@ -30,10 +30,4 @@ void VulkanBase::LoadScene()
 
 	m_Scene->AddMesh(manny);
 
-
-	// Game Start
-	for (auto mesh : m_Scene->GetMeshes())
-	{
-		mesh->GameStart();
-	}
 }

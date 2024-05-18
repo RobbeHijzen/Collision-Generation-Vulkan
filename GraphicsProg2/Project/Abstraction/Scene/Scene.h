@@ -16,6 +16,29 @@ public:
 	Scene(Scene&& other) noexcept = delete;
 	Scene& operator=(Scene&& other) noexcept = delete;
 
+	void GameStart()
+	{
+		for (const auto& mesh : m_Meshes)
+		{
+			mesh->GameStart();
+		}
+	}
+	void Update(GLFWwindow* window)
+	{
+		for (const auto& mesh : m_Meshes)
+		{
+			mesh->Update(window);
+		}
+	}
+	void LateUpdate()
+	{
+		for (const auto& mesh : m_Meshes)
+		{
+			mesh->LateUpdate();
+		}
+	}
+
+
 
 	void AddMesh(Mesh* mesh)
 	{

@@ -60,7 +60,7 @@ set(SOURCES
     "Abstraction/EventSystem/Events.h" 
     "Abstraction/EventSystem/Observer.h" 
     "Abstraction/MathHelpers.h" 
-    "vulkanbase/VulkanLoad.cpp")
+    "vulkanbase/VulkanLoad.cpp" "Abstraction/Time/Time.h" "Abstraction/Time/Time.cpp")
     
 
 # Copies the Resources folder into out

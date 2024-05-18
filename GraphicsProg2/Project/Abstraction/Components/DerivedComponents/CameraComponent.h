@@ -9,7 +9,7 @@ public:
 
 	CameraComponent(Mesh* pParent, Camera* pCamera, float panSpeed = 1.f / 180.f);
 
-	virtual void Update(float deltaTime, GLFWwindow* window) override;
+	virtual void Update(GLFWwindow* window) override;
 	void HandleCameraMovement();
 
 private:
@@ -20,5 +20,5 @@ private:
 	float m_PanSpeed{ 1.f / 180.f };
 	int m_LastMouseY = 0;
 
-	void HandleMouseMovement(float deltaTime, GLFWwindow* window);
+	void HandleMouseMovement(GLFWwindow* window);
 };

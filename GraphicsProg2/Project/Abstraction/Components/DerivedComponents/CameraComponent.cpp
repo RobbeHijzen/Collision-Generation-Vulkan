@@ -11,9 +11,9 @@ CameraComponent::CameraComponent(Mesh* pParent, Camera* pCamera, float panSpeed)
 	pParent->AddObserver(obs);
 }
 
-void CameraComponent::Update(float deltaTime, GLFWwindow* window)
+void CameraComponent::Update(GLFWwindow* window)
 {
-	HandleMouseMovement(deltaTime, window);
+	HandleMouseMovement(window);
 }
 
 void CameraComponent::HandleCameraMovement()
@@ -28,7 +28,7 @@ void CameraComponent::HandleCameraMovement()
 	}
 }
 
-void CameraComponent::HandleMouseMovement(float deltaTime, GLFWwindow* window)
+void CameraComponent::HandleMouseMovement(GLFWwindow* window)
 {
 	// Y Mouse Input
 	double x, y;

@@ -88,19 +88,33 @@ void VulkanBase::RecordRenderPass(uint32_t imageIndex)
 	{
 		UpdateUniformBuffer(imageIndex, mesh->GetMeshIndex(), mesh->GetModelMatrix());
 
-		BindPipelineInfo();
-		BindVertexIndexBuffers(mesh->GetMeshIndex());
+		BindPipelineInfo(&m_GraphicsPipeline);
+		BindVertexIndexBuffers(mesh->GetMeshIndex(), 0);
 		vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_MeshDescriptorSets[mesh->GetMeshIndex()], 0, nullptr);
 
 		mesh->Render(m_CommandBuffer);
+
+		if (m_DrawOutlines)
+		{
+			if (auto col = mesh->GetComponent<CollisionComponent>())
+			{
+				UpdateUniformBuffer(imageIndex, mesh->GetMeshIndex(), mesh->GetModelMatrix());
+
+				BindPipelineInfo(&m_GraphicsPipelineLines);
+				BindVertexIndexBuffers(mesh->GetMeshIndex(), 1);
+				vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_MeshDescriptorSets[mesh->GetMeshIndex()], 0, nullptr);
+
+				col->Render(m_CommandBuffer);
+			}
+		}
 	}
 	
 	vkCmdEndRenderPass(m_CommandBuffer);
 }
 
-void VulkanBase::BindPipelineInfo()
+void VulkanBase::BindPipelineInfo(VkPipeline* pipeline)
 {
-	vkCmdBindPipeline(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
+	vkCmdBindPipeline(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline);
 
 	VkViewport viewport{};
 	viewport.x = 0.0f;
@@ -117,13 +131,13 @@ void VulkanBase::BindPipelineInfo()
 	vkCmdSetScissor(m_CommandBuffer, 0, 1, &scissor);
 
 }
-void VulkanBase::BindVertexIndexBuffers(uint32_t buffersIndex)
+void VulkanBase::BindVertexIndexBuffers(uint32_t meshIndex, uint32_t bufferIndex)
 {
-	VkBuffer vertexBuffers[] = { m_VertexBuffers[buffersIndex]};
+	VkBuffer vertexBuffers[] = { m_VertexBuffers[meshIndex][bufferIndex]};
 	VkDeviceSize offsets[] = { 0 };
 
 	vkCmdBindVertexBuffers(m_CommandBuffer, 0, 1, vertexBuffers, offsets);
-	vkCmdBindIndexBuffer(m_CommandBuffer, m_IndexBuffers[buffersIndex], 0, VK_INDEX_TYPE_UINT32);
+	vkCmdBindIndexBuffer(m_CommandBuffer, m_IndexBuffers[meshIndex][bufferIndex], 0, VK_INDEX_TYPE_UINT32);
 }
 
 void VulkanBase::UpdateUniformBuffer(uint32_t currentImage, uint32_t meshIndex, glm::mat4 meshModelMatrix)

@@ -1,9 +1,5 @@
 #include "vulkanbase/VulkanBase.h"
 
-#include "Abstraction/Components/DerivedComponents/CameraComponent.h"
-#include "Abstraction/Components/DerivedComponents/CollisionComponent.h"
-#include "Abstraction/Components/DerivedComponents/MovementComponent.h"
-
 void VulkanBase::LoadScene()
 {
 	// Gun
@@ -29,5 +25,19 @@ void VulkanBase::LoadScene()
 	manny->AddComponent(std::make_shared<CameraComponent>(manny, m_Camera.get()));
 
 	m_Scene->AddMesh(manny);
+
+}
+
+void VulkanBase::HandleToggleKeyboardPresses(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS && m_CanToggleDrawOutlines)
+	{
+		m_CanToggleDrawOutlines = false;
+		m_DrawOutlines = !m_DrawOutlines;
+	}
+	else if(glfwGetKey(window, GLFW_KEY_E) != GLFW_PRESS)
+	{
+		m_CanToggleDrawOutlines = true;
+	}
 
 }

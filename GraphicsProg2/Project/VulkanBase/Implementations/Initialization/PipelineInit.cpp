@@ -1,6 +1,6 @@
 #include "VulkanBase/VulkanBase.h"
 
-void VulkanBase::CreateGraphicsPipelines()
+void VulkanBase::CreateGraphicsPipeline(VkPipeline* pipeLine, VkPolygonMode polygonMode, VkCullModeFlags cullMode)
 {
 	// ViewportState
 	VkPipelineViewportStateCreateInfo viewportState{};
@@ -13,9 +13,9 @@ void VulkanBase::CreateGraphicsPipelines()
 	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	rasterizer.depthClampEnable = VK_FALSE;
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
-	rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+	rasterizer.polygonMode = polygonMode;
 	rasterizer.lineWidth = 1.0f;
-	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+	rasterizer.cullMode = cullMode;
 	rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	rasterizer.depthBiasEnable = VK_FALSE;
 
@@ -114,12 +114,11 @@ void VulkanBase::CreateGraphicsPipelines()
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS)
+	if (vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, pipeLine) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
-	m_Shader3D->DestroyShaderStages(m_Device);
 }
 
 void VulkanBase::CreateRenderPass()

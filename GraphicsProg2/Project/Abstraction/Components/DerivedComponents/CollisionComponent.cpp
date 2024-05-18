@@ -6,12 +6,20 @@ CollisionComponent::CollisionComponent(Mesh* pParent, bool isStaticMesh)
 {
     Observer* obs{ new Observer(GameEvents::ModelMatrixChanged, [&] { this->CalculateTransformedAABB(); }) };
     pParent->AddObserver(obs);
+
+    CalculateAABB();
+    FillVertices();
 }
 
 void CollisionComponent::GameStart()
 {
-    CalculateAABB();
     CalculateTransformedAABB();
+
+}
+
+void CollisionComponent::Render(VkCommandBuffer buffer) const
+{
+    vkCmdDrawIndexed(buffer, static_cast<uint32_t>(m_Indices.size()), 1, 0, 0, 0);
 }
 
 void CollisionComponent::CalculateAABB()
@@ -90,4 +98,23 @@ glm::vec3 CollisionComponent::MaxVec(const glm::vec3& v1, const glm::vec3& v2)
       std::max(v1.y, v2.y),
       std::max(v1.z, v2.z)
     };
+}
+
+void CollisionComponent::FillVertices()
+{
+    std::vector<glm::vec3> verticesPos{};
+
+    verticesPos.emplace_back(glm::vec3{m_MinAABB.x, m_MinAABB.y, m_MinAABB.z});
+    verticesPos.emplace_back(glm::vec3{m_MinAABB.x, m_MinAABB.y, m_MaxAABB.z});
+    verticesPos.emplace_back(glm::vec3{m_MinAABB.x, m_MaxAABB.y, m_MinAABB.z});
+    verticesPos.emplace_back(glm::vec3{m_MinAABB.x, m_MaxAABB.y, m_MaxAABB.z});
+    verticesPos.emplace_back(glm::vec3{m_MaxAABB.x, m_MinAABB.y, m_MinAABB.z});
+    verticesPos.emplace_back(glm::vec3{m_MaxAABB.x, m_MinAABB.y, m_MaxAABB.z});
+    verticesPos.emplace_back(glm::vec3{m_MaxAABB.x, m_MaxAABB.y, m_MinAABB.z});
+    verticesPos.emplace_back(glm::vec3{m_MaxAABB.x, m_MaxAABB.y, m_MaxAABB.z});
+
+    for (auto& pos : verticesPos)
+    {
+        m_Vertices.emplace_back(Vertex{ pos, {0.f, 0.f}, {0.f, 1.f, 0.f} });
+    }
 }

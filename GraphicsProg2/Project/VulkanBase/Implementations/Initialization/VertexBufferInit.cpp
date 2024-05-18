@@ -12,8 +12,15 @@ void VulkanBase::CreateVertexBuffers()
 
 		CreateVertexBuffer(mesh->GetVertices(), vertexBuffer, vertexBufferMemory);
 		
-		m_VertexBuffers[mesh->GetMeshIndex()] = vertexBuffer;
-		m_VertexBuffersMemory[mesh->GetMeshIndex()] = vertexBufferMemory;
+		m_VertexBuffers[mesh->GetMeshIndex()].emplace_back(vertexBuffer);
+		m_VertexBuffersMemory[mesh->GetMeshIndex()].emplace_back(vertexBufferMemory);
+
+		if (auto col = mesh->GetComponent<CollisionComponent>())
+		{
+			CreateVertexBuffer(col->GetVertices(), vertexBuffer, vertexBufferMemory);
+			m_VertexBuffers[mesh->GetMeshIndex()].emplace_back(vertexBuffer);
+			m_VertexBuffersMemory[mesh->GetMeshIndex()].emplace_back(vertexBufferMemory);
+		}
 	}
 }
 void VulkanBase::CreateIndexBuffers()
@@ -27,8 +34,15 @@ void VulkanBase::CreateIndexBuffers()
 		VkDeviceMemory indexBufferMemory;
 		CreateIndexBuffer(mesh->GetIndices(), indexBuffer, indexBufferMemory);
 
-		m_IndexBuffers[mesh->GetMeshIndex()] = indexBuffer;
-		m_IndexBuffersMemory[mesh->GetMeshIndex()] = indexBufferMemory;
+		m_IndexBuffers[mesh->GetMeshIndex()].emplace_back(indexBuffer);
+		m_IndexBuffersMemory[mesh->GetMeshIndex()].emplace_back(indexBufferMemory);
+
+		if (auto col = mesh->GetComponent<CollisionComponent>())
+		{
+			CreateIndexBuffer(col->GetIndices(), indexBuffer, indexBufferMemory);
+			m_IndexBuffers[mesh->GetMeshIndex()].emplace_back(indexBuffer);
+			m_IndexBuffersMemory[mesh->GetMeshIndex()].emplace_back(indexBufferMemory);
+		}
 	}
 }
 

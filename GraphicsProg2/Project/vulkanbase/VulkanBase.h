@@ -17,6 +17,10 @@
 
 #include "Abstraction/Collision/CollisionFixer.h"
 
+#include "Abstraction/Components/DerivedComponents/CameraComponent.h"
+#include "Abstraction/Components/DerivedComponents/CollisionComponent.h"
+#include "Abstraction/Components/DerivedComponents/MovementComponent.h"
+
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -93,7 +97,10 @@ private:
 		// GraphicsPipeline setup
 		CreateRenderPass();
 		CreateDescriptorSetLayouts();
-		CreateGraphicsPipelines();
+
+		CreateGraphicsPipeline(&m_GraphicsPipeline, VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT);
+		CreateGraphicsPipeline(&m_GraphicsPipelineLines, VK_POLYGON_MODE_LINE, VK_CULL_MODE_NONE);
+		m_Shader3D->DestroyShaderStages(m_Device);
 
 		// Command Buffers setup
 		CreateCommandPool();
@@ -139,6 +146,7 @@ private:
 
 			// Input
 			glfwPollEvents();
+			HandleToggleKeyboardPresses(m_Window);
 
 			// Update Camera and Meshes
 			m_Camera->Update(m_Window);
@@ -189,6 +197,7 @@ private:
 
 		// Pipeline cleanup
 		vkDestroyPipeline(m_Device, m_GraphicsPipeline, nullptr);
+		vkDestroyPipeline(m_Device, m_GraphicsPipelineLines, nullptr);
 		vkDestroyDescriptorSetLayout(m_Device, m_DescriptorSetLayout, nullptr);
 		
 		vkDestroyPipelineLayout(m_Device, m_PipelineLayout, nullptr);
@@ -207,21 +216,33 @@ private:
 		vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
 
 		// Destroy Vertex and Index buffers
-		for (auto& vertexBuffer : m_VertexBuffers)
+		for (auto& vertexBufferArr : m_VertexBuffers)
 		{
-			vkDestroyBuffer(m_Device, vertexBuffer, nullptr);
+			for(auto& vertexBuffer : vertexBufferArr)
+			{
+				vkDestroyBuffer(m_Device, vertexBuffer, nullptr);
+			}
 		}
-		for (auto& vertexBufferMemory : m_VertexBuffersMemory)
+		for (auto& vertexBufferMemoryArr : m_VertexBuffersMemory)
 		{
-			vkFreeMemory(m_Device, vertexBufferMemory, nullptr);
+			for (auto& vertexBufferMemory : vertexBufferMemoryArr)
+			{
+				vkFreeMemory(m_Device, vertexBufferMemory, nullptr);
+			}
 		}
-		for (auto& indexBuffer : m_IndexBuffers)
+		for (auto& indexBufferArr : m_IndexBuffers)
 		{
-			vkDestroyBuffer(m_Device, indexBuffer, nullptr);
+			for (auto& indexBuffer : indexBufferArr)
+			{
+				vkDestroyBuffer(m_Device, indexBuffer, nullptr);
+			}
 		}
-		for (auto& indexBufferMemory : m_IndexBuffersMemory)
+		for (auto& indexBufferMemoryArr : m_IndexBuffersMemory)
 		{
-			vkFreeMemory(m_Device, indexBufferMemory, nullptr);
+			for (auto& indexBufferMemory : indexBufferMemoryArr)
+			{
+				vkFreeMemory(m_Device, indexBufferMemory, nullptr);
+			}
 		}
 
 		// Semaphore and Fence cleanup
@@ -262,6 +283,10 @@ private:
 	std::unique_ptr<Shader> m_Shader3D;
 
 	std::unique_ptr<Camera> m_Camera;
+
+	bool m_DrawOutlines{ true };
+	bool m_CanToggleDrawOutlines{ true };
+	void HandleToggleKeyboardPresses(GLFWwindow* window);
 
 	// Window / Surface setup
 	GLFWwindow* m_Window{};
@@ -325,10 +350,11 @@ private:
 	// GraphicsPipeline setup
 	VkDescriptorSetLayout m_DescriptorSetLayout{};
 	VkPipeline m_GraphicsPipeline{};
+	VkPipeline m_GraphicsPipelineLines{};
 	VkPipelineLayout m_PipelineLayout{};
 	VkRenderPass m_RenderPass{};
 
-	void CreateGraphicsPipelines();
+	void CreateGraphicsPipeline(VkPipeline* pipeLine, VkPolygonMode polygonMode, VkCullModeFlags cullMode);
 	void CreateDescriptorSetLayouts();
 	void CreateRenderPass();
 
@@ -344,8 +370,8 @@ private:
 	void Render();
 	void RecordCommandBuffer(VkCommandBuffer m_CommandBuffer, uint32_t imageIndex);
 	void RecordRenderPass(uint32_t imageIndex);
-	void BindPipelineInfo();
-	void BindVertexIndexBuffers(uint32_t buffersIndex);
+	void BindPipelineInfo(VkPipeline* pipeline);
+	void BindVertexIndexBuffers(uint32_t meshIndex, uint32_t bufferIndex);
 
 	// Semaphores and Fences
 	VkSemaphore m_ImageAvailableSemaphore{};
@@ -355,11 +381,11 @@ private:
 	void CreateSyncObjects();
 
 	// Vertex and Index buffers
-	std::vector<VkBuffer> m_VertexBuffers{};
-	std::vector<VkDeviceMemory> m_VertexBuffersMemory{};
+	std::vector<std::vector<VkBuffer>> m_VertexBuffers{};
+	std::vector<std::vector<VkDeviceMemory>> m_VertexBuffersMemory{};
 
-	std::vector<VkBuffer> m_IndexBuffers{};
-	std::vector<VkDeviceMemory> m_IndexBuffersMemory{};
+	std::vector<std::vector<VkBuffer>> m_IndexBuffers{};
+	std::vector<std::vector<VkDeviceMemory>> m_IndexBuffersMemory{};
 
 	void CreateVertexBuffers();
 	void CreateIndexBuffers();

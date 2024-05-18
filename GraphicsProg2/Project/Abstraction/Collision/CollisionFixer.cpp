@@ -8,109 +8,131 @@ void CollisionFixer::FixCollisions(std::vector<Mesh*> meshes)
 	{
 		for (int j{ i + 1 }; j < meshes.size(); ++j)
 		{
-			Mesh* mesh1{ meshes[i] };
-			Mesh* mesh2{ meshes[j] };
-
-			CollisionComponent* col1{ mesh1->GetComponent<CollisionComponent>().get()};
-			CollisionComponent* col2{ mesh2->GetComponent<CollisionComponent>().get() };
-
-			if (col1 && col2)
+			int recursionAmount{};
+			bool doContinue{ true };
+			while (doContinue && ++recursionAmount < 4)
 			{
-				if (AreColliding(col1, col2))
+				doContinue = false;
+
+				Mesh* mesh1{ meshes[i] };
+				Mesh* mesh2{ meshes[j] };
+
+				CollisionComponent* collisionComp1{ mesh1->GetComponent<CollisionComponent>().get() };
+				CollisionComponent* collisionComp2{ mesh2->GetComponent<CollisionComponent>().get() };
+
+				if (collisionComp1 && collisionComp2)
 				{
-					if (AreBothStaticMeshes(col1, col2)) continue;
-					HandleCollision(col1, col2);
+					CollisionInfo collisionInfo{ AreColliding(collisionComp1, collisionComp2) };
+					if (collisionInfo.first)
+					{
+						if (AreBothStaticMeshes(collisionComp1, collisionComp2)) continue;
+
+						HandleCollision(collisionInfo.second.first,
+							collisionInfo.second.second,
+							collisionComp1,
+							collisionComp2);
+
+						// Keep handling the collision until there is no more collision
+						doContinue = true;
+					}
 				}
 			}
 		}
 	}
 }
 
-void CollisionFixer::HandleCollision(CollisionComponent* mesh1, CollisionComponent* mesh2)
+void CollisionFixer::HandleCollision(AABB aabb1, AABB aabb2, CollisionComponent* col1, CollisionComponent* col2)
 {
-	if (!AreBothNonStaticMeshes(mesh1, mesh2))
+	if (!AreBothNonStaticMeshes(col1, col2))
 	{
 		// Just move the nonstatic mesh
 
 		// Swaps mesh1 to be the nonstatic mesh
-		if (mesh1->HasStaticCollision())
+		if (col1->HasStaticCollision())
 		{
-			auto temp{ mesh1 };
-			mesh1 = mesh2;
-			mesh2 = temp;
+			auto temp{ col1 };
+			col1 = col2;
+			col2 = temp;
 		}
 
 		// Changes mesh1's position to not collide anymore
 
-		std::pair<glm::vec3, glm::vec3> distances{ CalculateCollisionDistances(mesh1, mesh2) };
+		std::pair<glm::vec3, glm::vec3> distances{ CalculateCollisionDistances(col1, col2) };
 		float minDistance{min(min(distances.first.x, distances.first.y), distances.first.z)};
 		if (minDistance == distances.first.x)
 		{
-			mesh1->GetOwner()->Translate({ distances.first.x * distances.second.x, 0.f, 0.f });
+			col1->GetOwner()->Translate({ distances.first.x * distances.second.x, 0.f, 0.f });
 		}
 		else if (minDistance == distances.first.y)
 		{
-			mesh1->GetOwner()->Translate({ 0.f, distances.first.y * distances.second.y, 0.f });
+			col1->GetOwner()->Translate({ 0.f, distances.first.y * distances.second.y, 0.f });
 		}
 		else if (minDistance == distances.first.z)
 		{
-			mesh1->GetOwner()->Translate({ 0.f, 0.f, distances.first.z * distances.second.z });
+			col1->GetOwner()->Translate({ 0.f, 0.f, distances.first.z * distances.second.z });
 		}
 	}
 	else
 	{
 		// Move both meshes halfway
-		std::pair<glm::vec3, glm::vec3> distances{ CalculateCollisionDistances(mesh1, mesh2) };
+		std::pair<glm::vec3, glm::vec3> distances{ CalculateCollisionDistances(col1, col2) };
 		float minDistance{ min(min(distances.first.x, distances.first.y), distances.first.z) };
 		if (minDistance == distances.first.x)
 		{
-			mesh1->GetOwner()->Translate({ distances.first.x * distances.second.x / 2.f, 0.f, 0.f });
-			mesh2->GetOwner()->Translate({ distances.first.x * distances.second.x / -2.f, 0.f, 0.f });
+			col1->GetOwner()->Translate({ distances.first.x * distances.second.x / 2.f, 0.f, 0.f });
+			col2->GetOwner()->Translate({ distances.first.x * distances.second.x / -2.f, 0.f, 0.f });
 		}
 		else if (minDistance == distances.first.y)
 		{
-			mesh1->GetOwner()->Translate({ 0.f, distances.first.y * distances.second.y / 2.f, 0.f });
-			mesh2->GetOwner()->Translate({ 0.f, distances.first.y * distances.second.y / -2.f, 0.f });
+			col1->GetOwner()->Translate({ 0.f, distances.first.y * distances.second.y / 2.f, 0.f });
+			col2->GetOwner()->Translate({ 0.f, distances.first.y * distances.second.y / -2.f, 0.f });
 		}
 		else if (minDistance == distances.first.z)
 		{
-			mesh1->GetOwner()->Translate({ 0.f, 0.f, distances.first.z * distances.second.z / 2.f });
-			mesh2->GetOwner()->Translate({ 0.f, 0.f, distances.first.z * distances.second.z / -2.f });
+			col1->GetOwner()->Translate({ 0.f, 0.f, distances.first.z * distances.second.z / 2.f });
+			col2->GetOwner()->Translate({ 0.f, 0.f, distances.first.z * distances.second.z / -2.f });
 		}
 	}
 }
 
-bool CollisionFixer::AreColliding(CollisionComponent* mesh1, CollisionComponent* mesh2)
+CollisionInfo CollisionFixer::AreColliding(std::vector<AABB> aabbs1, std::vector<AABB> aabbs2)
 {
-	glm::vec3 min1{mesh1->GetMinAABB()};
-	glm::vec3 min2{mesh2->GetMinAABB()};
-	glm::vec3 max1{mesh1->GetMaxAABB()};
-	glm::vec3 max2{mesh2->GetMaxAABB()};
-
-
-	return AreIntervalsOverlapping(min1.x, min2.x, max1.x, max2.x) &&
-		   AreIntervalsOverlapping(min1.y, min2.y, max1.y, max2.y) &&
-		   AreIntervalsOverlapping(min1.z, min2.z, max1.z, max2.z);
+	for (const auto& aabb1 : aabbs1)
+	{
+		for (const auto& aabb2 : aabbs2)
+		{
+			if (AreIntervalsOverlapping(aabb1.min.x, aabb2.min.x, aabb1.max.x, aabb2.max.x) &&
+				AreIntervalsOverlapping(aabb1.min.y, aabb2.min.y, aabb1.max.y, aabb2.max.y) &&
+				AreIntervalsOverlapping(aabb1.min.z, aabb2.min.z, aabb1.max.z, aabb2.max.z)
+				)
+			{
+				return CollisionInfo(true, std::pair<AABB, AABB>(aabb1, aabb2));
+			}
+		}
+	}
+	return CollisionInfo(false, std::pair<AABB, AABB>());
 }
 
-bool CollisionFixer::AreColliding(CollisionComponent* mesh1, glm::vec3 min2, glm::vec3 max2)
+CollisionInfo CollisionFixer::AreColliding(CollisionComponent* col1, CollisionComponent* col2)
 {
-	glm::vec3 min1{ mesh1->GetMinAABB() };
-	glm::vec3 max1{ mesh1->GetMaxAABB() };
-
-	return AreIntervalsOverlapping(min1.x, min2.x, max1.x, max2.x) &&
-		   AreIntervalsOverlapping(min1.y, min2.y, max1.y, max2.y) &&
-		   AreIntervalsOverlapping(min1.z, min2.z, max1.z, max2.z);
+	std::vector<AABB> aabbs1{ col1->GetAABBs() };
+	std::vector<AABB> aabbs2{ col2->GetAABBs() };
+	return AreColliding(aabbs1, aabbs2);
+}
+CollisionInfo CollisionFixer::AreColliding(CollisionComponent* col, std::vector<AABB> aabbs2)
+{
+	std::vector<AABB> aabbs1{ col->GetAABBs() };
+	return AreColliding(aabbs1, aabbs2);
 }
 
-bool CollisionFixer::AreBothStaticMeshes(CollisionComponent* mesh1, CollisionComponent* mesh2)
+bool CollisionFixer::AreBothStaticMeshes(CollisionComponent* col1, CollisionComponent* col2)
 {
-	return mesh1->HasStaticCollision() && mesh2->HasStaticCollision();
+	return col1->HasStaticCollision() && col2->HasStaticCollision();
 }
 
-bool CollisionFixer::AreBothNonStaticMeshes(CollisionComponent* mesh1, CollisionComponent* mesh2)
+bool CollisionFixer::AreBothNonStaticMeshes(CollisionComponent* col1, CollisionComponent* col2)
 {
-	return !mesh1->HasStaticCollision() && !mesh2->HasStaticCollision();
+	return !col1->HasStaticCollision() && !col2->HasStaticCollision();
 }
 
 bool CollisionFixer::AreIntervalsOverlapping(float a1, float a2, float A1, float A2)
@@ -120,14 +142,17 @@ bool CollisionFixer::AreIntervalsOverlapping(float a1, float a2, float A1, float
 		a1 < A2;
 }
 
-std::pair<glm::vec3, glm::vec3> CollisionFixer::CalculateCollisionDistances(CollisionComponent* mesh1, CollisionComponent* mesh2)
+std::pair<glm::vec3, glm::vec3> CollisionFixer::CalculateCollisionDistances(CollisionComponent* col1, CollisionComponent* col2)
 {
 	std::pair<glm::vec3, glm::vec3> distances{};
 
-	glm::vec3 min1{ mesh1->GetMinAABB() };
-	glm::vec3 min2{ mesh2->GetMinAABB() };
-	glm::vec3 max1{ mesh1->GetMaxAABB() };
-	glm::vec3 max2{ mesh2->GetMaxAABB() };
+	AABB aabb1{ col1->GetAABBs()[0] };
+	AABB aabb2{ col2->GetAABBs()[0] };
+
+	glm::vec3 min1{ aabb1.min };
+	glm::vec3 min2{ aabb2.min };
+	glm::vec3 max1{ aabb1.max };
+	glm::vec3 max2{ aabb2.max };
 
 	// X Calculation
 	float val1{ abs(max1.x - min2.x) };

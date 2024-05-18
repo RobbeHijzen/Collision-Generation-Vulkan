@@ -371,7 +371,7 @@ private:
 	void RecordCommandBuffer(VkCommandBuffer m_CommandBuffer, uint32_t imageIndex);
 	void RecordRenderPass(uint32_t imageIndex);
 	void BindPipelineInfo(VkPipeline* pipeline);
-	void BindVertexIndexBuffers(uint32_t meshIndex, uint32_t bufferIndex);
+	void BindVertexIndexBuffers(uint32_t meshIndex, uint32_t vertexBufferIndex, uint32_t indexBufferIndex);
 
 	// Semaphores and Fences
 	VkSemaphore m_ImageAvailableSemaphore{};

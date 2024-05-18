@@ -33,7 +33,7 @@ private:
 	//----------------
 	bool m_IsOnGround{ true };
 
-	float m_JumpStrength{ 1000.f };
+	float m_JumpStrength{ 700.f };
 	float m_Gravity{ 981.f };
 
 	void HandleGravity();

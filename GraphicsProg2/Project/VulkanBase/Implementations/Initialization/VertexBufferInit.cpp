@@ -17,9 +17,13 @@ void VulkanBase::CreateVertexBuffers()
 
 		if (auto col = mesh->GetComponent<CollisionComponent>())
 		{
-			CreateVertexBuffer(col->GetVertices(), vertexBuffer, vertexBufferMemory);
-			m_VertexBuffers[mesh->GetMeshIndex()].emplace_back(vertexBuffer);
-			m_VertexBuffersMemory[mesh->GetMeshIndex()].emplace_back(vertexBufferMemory);
+			auto verticesArr{ col->GetVertices() };
+			for (const auto& vertices : verticesArr)
+			{
+				CreateVertexBuffer(vertices, vertexBuffer, vertexBufferMemory);
+				m_VertexBuffers[mesh->GetMeshIndex()].emplace_back(vertexBuffer);
+				m_VertexBuffersMemory[mesh->GetMeshIndex()].emplace_back(vertexBufferMemory);
+			}
 		}
 	}
 }

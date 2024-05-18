@@ -91,23 +91,24 @@ void MovementComponent::CalculateIsOnGround()
 	auto collisionComp{ GetOwner()->GetComponent<CollisionComponent>() };
 	if (!collisionComp) return;
 
-	glm::vec3 min{ collisionComp->GetMinAABB() };
-	glm::vec3 max{ collisionComp->GetMaxAABB() };
-	
-	min.x += FLT_EPSILON * 5;
-	max.x -= FLT_EPSILON * 5;
-	
-	max.y = min.y + FLT_EPSILON;
-	min.y -= FLT_EPSILON * 80;
+	std::vector<AABB> aabbs{ collisionComp->GetAABBs() };
+	for (auto& aabb : aabbs)
+	{
+		aabb.min.x += FLT_EPSILON * 5;
+		aabb.max.x -= FLT_EPSILON * 5;
 
-	min.z += FLT_EPSILON * 5;
-	max.z -= FLT_EPSILON * 5;
+		aabb.max.y -= FLT_EPSILON * 80;
+		aabb.min.y -= FLT_EPSILON * 80;
+
+		aabb.min.z += FLT_EPSILON * 5;
+		aabb.max.z -= FLT_EPSILON * 5;
+	}
 
 	for (auto mesh : meshes)
 	{
 		if (auto col = mesh->GetComponent<CollisionComponent>())
 		{
-			if (CollisionFixer::AreColliding(col.get(), min, max))
+			if (CollisionFixer::AreColliding(col.get(), aabbs).first)
 			{
 				m_IsOnGround = true;
 				m_Velocity.y = 0.f;

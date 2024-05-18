@@ -28,3 +28,9 @@ struct UniformBufferObject
 	glm::mat4 view;
 	glm::mat4 proj;
 };
+
+struct AABB
+{
+	glm::vec3 min;
+	glm::vec3 max;
+};

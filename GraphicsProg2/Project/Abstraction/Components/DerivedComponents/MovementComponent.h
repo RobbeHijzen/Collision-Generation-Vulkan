@@ -32,6 +32,7 @@ private:
 	// Vertical Movement
 	//----------------
 	bool m_IsOnGround{ true };
+	bool m_CanJump{ true };
 
 	float m_JumpStrength{ 700.f };
 	float m_Gravity{ 981.f };

@@ -47,14 +47,18 @@ void MovementComponent::HandleKeyboardMovement(GLFWwindow* window)
 	{
 		newVelocity += -m_MoveSpeed * right;
 	}
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+
+	bool jumpKeyDown{ glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS };
+	if (jumpKeyDown && m_CanJump)
 	{
+		m_CanJump = false;
 		if (m_IsOnGround)
 		{
 			newVelocity.y += m_JumpStrength;
 			m_IsOnGround = false;
 		}
 	}
+	else if (!jumpKeyDown) m_CanJump = true;
 	
 	m_Velocity.x = newVelocity.x;
 	m_Velocity.y += newVelocity.y;

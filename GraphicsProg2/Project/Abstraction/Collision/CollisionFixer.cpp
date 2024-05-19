@@ -140,8 +140,8 @@ bool CollisionFixer::AreBothNonStaticMeshes(CollisionComponent* col1, CollisionC
 bool CollisionFixer::AreIntervalsOverlapping(float a1, float a2, float A1, float A2)
 {
 	return
-		a2 < A1 &&
-		a1 < A2;
+		a2 <= A1 &&
+		a1 <= A2;
 }
 
 std::pair<glm::vec3, glm::vec3> CollisionFixer::CalculateCollisionDistances(AABB aabb1, AABB aabb2)

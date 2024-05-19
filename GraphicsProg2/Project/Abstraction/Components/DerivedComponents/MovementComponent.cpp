@@ -92,23 +92,49 @@ void MovementComponent::CalculateIsOnGround()
 	if (!collisionComp) return;
 
 	std::vector<AABB> aabbs{ collisionComp->GetAABBs() };
-	for (auto& aabb : aabbs)
+
+	std::vector<AABB> groundAABBs{};
+	std::vector<AABB> feetAABBs{};
+
+	for (int index{}; index < aabbs.size(); ++index)
 	{
-		aabb.min.x += FLT_EPSILON * 5;
-		aabb.max.x -= FLT_EPSILON * 5;
+		AABB aabb{aabbs[index]};
+		AABB groundAABB{};
 
-		aabb.max.y -= FLT_EPSILON * 80;
-		aabb.min.y -= FLT_EPSILON * 80;
+		groundAABB.min.x = aabb.min.x + FLT_EPSILON;
+		groundAABB.max.x = aabb.max.x - FLT_EPSILON;
 
-		aabb.min.z += FLT_EPSILON * 5;
-		aabb.max.z -= FLT_EPSILON * 5;
+		groundAABB.max.y = aabb.max.y - FLT_EPSILON;
+		groundAABB.min.y = aabb.min.y - FLT_EPSILON;
+
+		groundAABB.min.z = aabb.min.z + FLT_EPSILON;
+		groundAABB.max.z = aabb.max.z - FLT_EPSILON;
+
+		groundAABBs.emplace_back(groundAABB);
+	}
+	for (int index{}; index < aabbs.size(); ++index)
+	{
+		AABB aabb{ aabbs[index] };
+		AABB feetAABB{};
+
+		feetAABB.min.x = aabb.min.x + FLT_EPSILON;
+		feetAABB.max.x = aabb.max.x - FLT_EPSILON;
+
+		feetAABB.max.y = aabb.max.y - FLT_EPSILON;
+		feetAABB.min.y = aabb.min.y + 80 * FLT_EPSILON;
+
+		feetAABB.min.z = aabb.min.z + FLT_EPSILON;
+		feetAABB.max.z = aabb.max.z - FLT_EPSILON;
+
+		feetAABBs.emplace_back(feetAABB);
 	}
 
 	for (auto mesh : meshes)
 	{
 		if (auto col = mesh->GetComponent<CollisionComponent>())
 		{
-			if (CollisionFixer::AreColliding(col.get(), aabbs).first)
+			if (CollisionFixer::AreColliding(col.get(), groundAABBs).first
+				&& !(CollisionFixer::AreColliding(col.get(), feetAABBs).first))
 			{
 				m_IsOnGround = true;
 				m_Velocity.y = 0.f;

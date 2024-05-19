@@ -18,9 +18,10 @@ public:
 
 	static bool IsOnGround(CollisionComponent* collisionComp, std::vector<Mesh*> sceneMeshes);
 
-	static CollisionInfo AreColliding(std::vector<AABB> aabbs1, std::vector<AABB> aabbs2);
+	static CollisionInfo AreColliding(std::vector<AABB> aabbs1, std::vector<AABB> aabbs2, int& i, int& j);
 	static CollisionInfo AreColliding(CollisionComponent* col1, CollisionComponent* col2);
-	static CollisionInfo AreColliding(CollisionComponent* col, std::vector<AABB> aabbs2);
+	static CollisionInfo AreColliding(CollisionComponent* col1, CollisionComponent* col2, int& i, int& j);
+	static CollisionInfo AreColliding(CollisionComponent* col, std::vector<AABB> aabbs2 );
 
 private:
 

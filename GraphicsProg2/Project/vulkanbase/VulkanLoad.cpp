@@ -3,9 +3,9 @@
 void VulkanBase::LoadScene()
 {
 	// Gun
-	auto gun{ new Mesh("Resources/xm177.obj", "Resources/xm177_basecolor.png", { 200.f, 50.f, 250.f }, {}) };
-	gun->AddComponent(std::make_shared<CollisionComponent>(gun, false));
-	m_Scene->AddMesh(gun);
+	//auto gun{ new Mesh("Resources/xm177.obj", "Resources/xm177_basecolor.png", { 200.f, 50.f, 250.f }, {}) };
+	//gun->AddComponent(std::make_shared<CollisionComponent>(gun, false));
+	//m_Scene->AddMesh(gun);
 
 	// Vehicle
 	auto vehicle{ new Mesh("Resources/vehicle.obj", "Resources/vehicle_diffuse.png", { -200, 70.23135f, 0 }, { 0, -90, 0 }) };

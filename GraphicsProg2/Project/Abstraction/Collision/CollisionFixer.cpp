@@ -19,20 +19,25 @@ void CollisionFixer::FixCollisions(std::vector<Mesh*> meshes)
 
 				if (collisionComp1 && collisionComp2)
 				{
-					CollisionInfo collisionInfo{ AreColliding(collisionComp1, collisionComp2) };
-					if (collisionInfo.first)
+					if (AreBothStaticMeshes(collisionComp1, collisionComp2)) break;
+
+					int i2{};
+					int j2{};
+
+					CollisionInfo collisionInfo{};
+					collisionInfo = AreColliding(collisionComp1, collisionComp2);
+
+					while (collisionInfo.first)
 					{
-						if (AreBothStaticMeshes(collisionComp1, collisionComp2)) continue;
 
 						HandleCollision(collisionInfo.second.first,
-							collisionInfo.second.second,
-							collisionComp1,
-							collisionComp2);
+										collisionInfo.second.second,
+										collisionComp1,
+										collisionComp2);
+
+						collisionInfo = AreColliding(collisionComp1, collisionComp2, i2, j2);
 					}
-					else
-					{
-						break;
-					}
+					if (!AreColliding(collisionComp1, collisionComp2).first) break;
 				}
 			}
 		}
@@ -152,34 +157,54 @@ void CollisionFixer::HandleCollision(AABB aabb1, AABB aabb2, CollisionComponent*
 	}
 }
 
-CollisionInfo CollisionFixer::AreColliding(std::vector<AABB> aabbs1, std::vector<AABB> aabbs2)
+CollisionInfo CollisionFixer::AreColliding(std::vector<AABB> aabbs1, std::vector<AABB> aabbs2, int& i, int& j)
 {
-	for (const auto& aabb1 : aabbs1)
+
+	for(; i < aabbs1.size(); ++i)
 	{
-		for (const auto& aabb2 : aabbs2)
+		AABB aabb1{aabbs1[i]};
+
+		for (; j < aabbs2.size(); ++j)
 		{
+			AABB aabb2{ aabbs2[j] };
+
 			if (AreIntervalsOverlapping(aabb1.min.x, aabb2.min.x, aabb1.max.x, aabb2.max.x) &&
 				AreIntervalsOverlapping(aabb1.min.y, aabb2.min.y, aabb1.max.y, aabb2.max.y) &&
 				AreIntervalsOverlapping(aabb1.min.z, aabb2.min.z, aabb1.max.z, aabb2.max.z)
 				)
 			{
-				return CollisionInfo(true, std::pair<AABB, AABB>(aabb1, aabb2));
+				++j;
+				return { true, std::pair<AABB, AABB>(aabb1, aabb2) };
 			}
 		}
+		j = 0;
 	}
-	return CollisionInfo(false, std::pair<AABB, AABB>());
+	return CollisionInfo{};
 }
 
 CollisionInfo CollisionFixer::AreColliding(CollisionComponent* col1, CollisionComponent* col2)
 {
 	std::vector<AABB> aabbs1{ col1->GetAABBs() };
 	std::vector<AABB> aabbs2{ col2->GetAABBs() };
-	return AreColliding(aabbs1, aabbs2);
+	int i{};
+	int j{};
+
+	return AreColliding(aabbs1, aabbs2, i, j);
+}
+CollisionInfo CollisionFixer::AreColliding(CollisionComponent* col1, CollisionComponent* col2, int& i, int& j)
+{
+	std::vector<AABB> aabbs1{ col1->GetAABBs() };
+	std::vector<AABB> aabbs2{ col2->GetAABBs() }; 
+	
+	return AreColliding(aabbs1, aabbs2, i, j);
 }
 CollisionInfo CollisionFixer::AreColliding(CollisionComponent* col, std::vector<AABB> aabbs2)
 {
 	std::vector<AABB> aabbs1{ col->GetAABBs() };
-	return AreColliding(aabbs1, aabbs2);
+	int i{};
+	int j{};
+
+	return AreColliding(aabbs1, aabbs2, i, j);
 }
 
 bool CollisionFixer::AreBothStaticMeshes(CollisionComponent* col1, CollisionComponent* col2)

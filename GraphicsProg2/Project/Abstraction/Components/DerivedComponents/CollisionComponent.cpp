@@ -38,7 +38,7 @@ void CollisionComponent::CalculateAABBs()
         encompassingAABB.min = MinVec(vertex.pos, encompassingAABB.min);
         encompassingAABB.max = MaxVec(vertex.pos, encompassingAABB.max);
     }
-    auto clusters{ ClusterVertices(1, 1, encompassingAABB) };
+    auto clusters{ ClusterVertices(2, 5, encompassingAABB) };
     std::erase_if(clusters, [&](std::vector<glm::vec3> v)
         {
             return v.size() == 0;

@@ -16,6 +16,8 @@ public:
 
 	static void FixCollisions(std::vector<Mesh*> meshes);
 
+	static bool IsOnGround(CollisionComponent* collisionComp, std::vector<Mesh*> sceneMeshes);
+
 	static CollisionInfo AreColliding(std::vector<AABB> aabbs1, std::vector<AABB> aabbs2);
 	static CollisionInfo AreColliding(CollisionComponent* col1, CollisionComponent* col2);
 	static CollisionInfo AreColliding(CollisionComponent* col, std::vector<AABB> aabbs2);

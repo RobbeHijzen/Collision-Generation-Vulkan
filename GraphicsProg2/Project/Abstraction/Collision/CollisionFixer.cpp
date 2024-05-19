@@ -39,6 +39,61 @@ void CollisionFixer::FixCollisions(std::vector<Mesh*> meshes)
 	}
 }
 
+bool CollisionFixer::IsOnGround(CollisionComponent* collisionComp, std::vector<Mesh*> sceneMeshes)
+{
+	std::vector<AABB> aabbs{ collisionComp->GetAABBs() };
+
+	std::vector<AABB> groundAABBs{};
+	std::vector<AABB> feetAABBs{};
+
+	for (int index{}; index < aabbs.size(); ++index)
+	{
+		AABB aabb{aabbs[index]};
+		AABB groundAABB{};
+
+		groundAABB.min.x = aabb.min.x + FLT_EPSILON;
+		groundAABB.max.x = aabb.max.x - FLT_EPSILON;
+
+		groundAABB.max.y = aabb.max.y - FLT_EPSILON;
+		groundAABB.min.y = aabb.min.y - FLT_EPSILON;
+
+		groundAABB.min.z = aabb.min.z + FLT_EPSILON;
+		groundAABB.max.z = aabb.max.z - FLT_EPSILON;
+
+		groundAABBs.emplace_back(groundAABB);
+	}
+	for (int index{}; index < aabbs.size(); ++index)
+	{
+		AABB aabb{ aabbs[index] };
+		AABB feetAABB{};
+
+		feetAABB.min.x = aabb.min.x + FLT_EPSILON;
+		feetAABB.max.x = aabb.max.x - FLT_EPSILON;
+
+		feetAABB.max.y = aabb.max.y - FLT_EPSILON;
+		feetAABB.min.y = aabb.min.y + 80 * FLT_EPSILON;
+
+		feetAABB.min.z = aabb.min.z + FLT_EPSILON;
+		feetAABB.max.z = aabb.max.z - FLT_EPSILON;
+
+		feetAABBs.emplace_back(feetAABB);
+	}
+
+	for (auto mesh : sceneMeshes)
+	{
+		if (auto col = mesh->GetComponent<CollisionComponent>())
+		{
+			if (CollisionFixer::AreColliding(col.get(), groundAABBs).first
+				&& !(CollisionFixer::AreColliding(col.get(), feetAABBs).first))
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 void CollisionFixer::HandleCollision(AABB aabb1, AABB aabb2, CollisionComponent* col1, CollisionComponent* col2)
 {
 	if (!AreBothNonStaticMeshes(col1, col2))

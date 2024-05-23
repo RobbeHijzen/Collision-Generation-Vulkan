@@ -223,33 +223,21 @@ private:
 		vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
 
 		// Destroy Vertex and Index buffers
-		for (auto& vertexBufferArr : m_VertexBuffers)
+		for (auto& vertexBuffer : m_VertexBuffers)
 		{
-			for(auto& vertexBuffer : vertexBufferArr)
-			{
-				vkDestroyBuffer(m_Device, vertexBuffer, nullptr);
-			}
+			vkDestroyBuffer(m_Device, vertexBuffer, nullptr);
 		}
-		for (auto& vertexBufferMemoryArr : m_VertexBuffersMemory)
+		for (auto& vertexBufferMemory : m_VertexBuffersMemory)
 		{
-			for (auto& vertexBufferMemory : vertexBufferMemoryArr)
-			{
-				vkFreeMemory(m_Device, vertexBufferMemory, nullptr);
-			}
+			vkFreeMemory(m_Device, vertexBufferMemory, nullptr);
 		}
-		for (auto& indexBufferArr : m_IndexBuffers)
+		for (auto& indexBuffer : m_IndexBuffers)
 		{
-			for (auto& indexBuffer : indexBufferArr)
-			{
-				vkDestroyBuffer(m_Device, indexBuffer, nullptr);
-			}
+			vkDestroyBuffer(m_Device, indexBuffer, nullptr);
 		}
-		for (auto& indexBufferMemoryArr : m_IndexBuffersMemory)
+		for (auto& indexBufferMemory : m_IndexBuffersMemory)
 		{
-			for (auto& indexBufferMemory : indexBufferMemoryArr)
-			{
-				vkFreeMemory(m_Device, indexBufferMemory, nullptr);
-			}
+			vkFreeMemory(m_Device, indexBufferMemory, nullptr);
 		}
 
 		// Semaphore and Fence cleanup
@@ -378,7 +366,7 @@ private:
 	void RecordCommandBuffer(VkCommandBuffer m_CommandBuffer, uint32_t imageIndex);
 	void RecordRenderPass(uint32_t imageIndex);
 	void BindPipelineInfo(VkPipeline* pipeline);
-	void BindVertexIndexBuffers(uint32_t meshIndex, uint32_t vertexBufferIndex, uint32_t indexBufferIndex);
+	void BindVertexIndexBuffers(uint32_t vertexBufferIndex, uint32_t indexBufferIndex);
 
 	// Semaphores and Fences
 	VkSemaphore m_ImageAvailableSemaphore{};
@@ -388,11 +376,11 @@ private:
 	void CreateSyncObjects();
 
 	// Vertex and Index buffers
-	std::vector<std::vector<VkBuffer>> m_VertexBuffers{};
-	std::vector<std::vector<VkDeviceMemory>> m_VertexBuffersMemory{};
+	std::vector<VkBuffer> m_VertexBuffers{};
+	std::vector<VkDeviceMemory> m_VertexBuffersMemory{};
 
-	std::vector<std::vector<VkBuffer>> m_IndexBuffers{};
-	std::vector<std::vector<VkDeviceMemory>> m_IndexBuffersMemory{};
+	std::vector<VkBuffer> m_IndexBuffers{};
+	std::vector<VkDeviceMemory> m_IndexBuffersMemory{};
 
 	void CreateVertexBuffers();
 	void CreateIndexBuffers();

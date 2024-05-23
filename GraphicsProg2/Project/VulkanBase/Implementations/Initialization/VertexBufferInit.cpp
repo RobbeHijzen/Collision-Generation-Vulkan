@@ -5,6 +5,7 @@ void VulkanBase::CreateVertexBuffers()
 	m_VertexBuffers.resize(m_Scene->GetMeshesAmount());
 	m_VertexBuffersMemory.resize(m_Scene->GetMeshesAmount());
 
+	// meshes vertices
 	for (auto& mesh : m_Scene->GetMeshes())
 	{
 		VkBuffer vertexBuffer; 
@@ -12,42 +13,41 @@ void VulkanBase::CreateVertexBuffers()
 
 		CreateVertexBuffer(mesh->GetVertices(), vertexBuffer, vertexBufferMemory);
 		
-		m_VertexBuffers[mesh->GetMeshIndex()].emplace_back(vertexBuffer);
-		m_VertexBuffersMemory[mesh->GetMeshIndex()].emplace_back(vertexBufferMemory);
-
-		if (auto col = mesh->GetComponent<CollisionComponent>())
-		{
-			auto verticesArr{ col->GetVertices() };
-			for (const auto& vertices : verticesArr)
-			{
-				CreateVertexBuffer(vertices, vertexBuffer, vertexBufferMemory);
-				m_VertexBuffers[mesh->GetMeshIndex()].emplace_back(vertexBuffer);
-				m_VertexBuffersMemory[mesh->GetMeshIndex()].emplace_back(vertexBufferMemory);
-			}
-		}
+		m_VertexBuffers[mesh->GetMeshIndex()] = vertexBuffer;
+		m_VertexBuffersMemory[mesh->GetMeshIndex()] = vertexBufferMemory;
 	}
+
+	// Collision Wireframe vertices
+	VkBuffer vertexBuffer;
+	VkDeviceMemory vertexBufferMemory;
+
+	CreateVertexBuffer(CollisionComponent::GetVertices(), vertexBuffer, vertexBufferMemory);
+	m_VertexBuffers.emplace_back(vertexBuffer);
+	m_VertexBuffersMemory.emplace_back(vertexBufferMemory);
 }
 void VulkanBase::CreateIndexBuffers()
 {
 	m_IndexBuffers.resize(m_Scene->GetMeshesAmount());
 	m_IndexBuffersMemory.resize(m_Scene->GetMeshesAmount());
 
+	// meshes indices
 	for (auto& mesh : m_Scene->GetMeshes())
 	{
 		VkBuffer indexBuffer;
 		VkDeviceMemory indexBufferMemory;
 		CreateIndexBuffer(mesh->GetIndices(), indexBuffer, indexBufferMemory);
 
-		m_IndexBuffers[mesh->GetMeshIndex()].emplace_back(indexBuffer);
-		m_IndexBuffersMemory[mesh->GetMeshIndex()].emplace_back(indexBufferMemory);
-
-		if (auto col = mesh->GetComponent<CollisionComponent>())
-		{
-			CreateIndexBuffer(col->GetIndices(), indexBuffer, indexBufferMemory);
-			m_IndexBuffers[mesh->GetMeshIndex()].emplace_back(indexBuffer);
-			m_IndexBuffersMemory[mesh->GetMeshIndex()].emplace_back(indexBufferMemory);
-		}
+		m_IndexBuffers[mesh->GetMeshIndex()] = indexBuffer;
+		m_IndexBuffersMemory[mesh->GetMeshIndex()] = indexBufferMemory;
 	}
+
+	// Collision Wireframe indices
+	VkBuffer indexBuffer;
+	VkDeviceMemory indexBufferMemory;
+
+	CreateIndexBuffer(CollisionComponent::GetIndices(), indexBuffer, indexBufferMemory);
+	m_IndexBuffers.emplace_back(indexBuffer);
+	m_IndexBuffersMemory.emplace_back(indexBufferMemory);
 }
 
 void VulkanBase::CreateVertexBuffer(std::vector<Vertex> vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory)

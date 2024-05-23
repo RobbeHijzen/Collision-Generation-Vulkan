@@ -13,7 +13,6 @@ CollisionComponent::CollisionComponent(Mesh* pParent, bool isStaticMesh)
     pParent->AddObserver(obs);
 
     CalculateAABBs();
-    FillVertices();
     CalculateTransformedAABBs();
 
     m_ModelMatrices.resize(m_AABBs.size());
@@ -212,18 +211,13 @@ glm::vec3 CollisionComponent::MaxVec(const glm::vec3& v1, const glm::vec3& v2)
     };
 }
 
-void CollisionComponent::FillVertices()
-{
-    m_Vertices.resize(m_AABBs.size());
-    for (int index{}; index < m_AABBs.size(); ++index)
-    {
-        m_Vertices[index].emplace_back(glm::vec3{ -0.5f, -0.5f, -0.5f });
-        m_Vertices[index].emplace_back(glm::vec3{ -0.5f, -0.5f, 0.5f });
-        m_Vertices[index].emplace_back(glm::vec3{ -0.5f, 0.5f, -0.5f });
-        m_Vertices[index].emplace_back(glm::vec3{ -0.5f, 0.5f, 0.5f });
-        m_Vertices[index].emplace_back(glm::vec3{ 0.5f, -0.5f, -0.5f });
-        m_Vertices[index].emplace_back(glm::vec3{ 0.5f, -0.5f, 0.5f });
-        m_Vertices[index].emplace_back(glm::vec3{ 0.5f,  0.5f, -0.5f });
-        m_Vertices[index].emplace_back(glm::vec3{ 0.5f,  0.5f, 0.5f });
-    }
-}
+std::vector<Vertex> CollisionComponent::m_Vertices{ glm::vec3{ -0.5f, -0.5f, -0.5f },
+                                                    glm::vec3{ -0.5f, -0.5f,  0.5f },
+                                                    glm::vec3{ -0.5f,  0.5f, -0.5f },
+                                                    glm::vec3{ -0.5f,  0.5f,  0.5f },
+                                                    glm::vec3{  0.5f, -0.5f, -0.5f },
+                                                    glm::vec3{  0.5f, -0.5f,  0.5f },
+                                                    glm::vec3{  0.5f,  0.5f, -0.5f },
+                                                    glm::vec3{  0.5f,  0.5f,  0.5f } };
+
+std::vector<uint32_t> CollisionComponent::m_Indices{ 0, 1, 2,  1, 2, 3,  0, 4, 6,  6, 0, 2,  1, 5, 7,  7, 1, 3,  4, 5, 6,  6, 7, 2 };

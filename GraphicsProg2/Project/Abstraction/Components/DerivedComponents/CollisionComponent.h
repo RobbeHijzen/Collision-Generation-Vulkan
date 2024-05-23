@@ -17,8 +17,8 @@ public:
 	auto GetAABBs() const { return m_TransformedAABBs; }
 	auto GetModelMatrices() const { return m_ModelMatrices; }
 
-	const std::vector<uint32_t>& GetIndices() const { return m_Indices; };
-	const std::vector<std::vector<Vertex>>& GetVertices() const { return m_Vertices; }
+	static const std::vector<uint32_t>& GetIndices() { return m_Indices; };
+	static const std::vector<Vertex>& GetVertices() { return m_Vertices; }
 
 	void Render(VkCommandBuffer buffer) const;
 
@@ -47,9 +47,6 @@ private:
 	glm::vec3 MaxVec(const glm::vec3& v1, const glm::vec3& v2);
 
 
-	std::vector<std::vector<Vertex>> m_Vertices{};
-	std::vector<uint32_t> m_Indices{0, 1, 2,  1, 2, 3,  0, 4, 6,  6, 0, 2,  1, 5, 7,  7, 1, 3,  4, 5, 6,  6, 7, 2};
-
-	void FillVertices();
-
+	static std::vector<Vertex> m_Vertices;
+	static std::vector<uint32_t> m_Indices;
 };

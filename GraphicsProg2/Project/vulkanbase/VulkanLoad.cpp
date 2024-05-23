@@ -8,7 +8,7 @@ void VulkanBase::LoadScene()
 	//m_Scene->AddMesh(gun);
 
 	// Vehicle
-	auto vehicle{ new Mesh("Resources/vehicle.obj", "Resources/vehicle_diffuse.png", { -200, 70.23135f, 0 }, { 0, -90, 0 }) };
+	auto vehicle{ new Mesh("Resources/vehicle.obj", "Resources/vehicle_diffuse.png", { -200, 82.f, 0 }, { 0, -90, 0 }) };
 	vehicle->AddComponent(std::make_shared<CollisionComponent>(vehicle, true));
 	m_Scene->AddMesh(vehicle);
 

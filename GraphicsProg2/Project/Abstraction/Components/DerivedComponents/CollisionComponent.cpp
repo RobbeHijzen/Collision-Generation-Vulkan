@@ -1,4 +1,5 @@
 #include "CollisionComponent.h"
+#include "Abstraction/MathHelpers.h"
 
 #include <numeric>
 
@@ -8,20 +9,44 @@ CollisionComponent::CollisionComponent(Mesh* pParent, bool isStaticMesh)
 {
     Observer* obs{ new Observer(GameEvents::ModelMatrixChanged, [&] { this->CalculateTransformedAABBs(); }) };
     pParent->AddObserver(obs);
+    obs = new Observer(GameEvents::ModelMatrixChanged, [&] { this->UpdateModelMatrix(); });
+    pParent->AddObserver(obs);
 
     CalculateAABBs();
     FillVertices();
+    m_ModelMatrices.resize(m_AABBs.size());
 }
 
 void CollisionComponent::GameStart()
 {
     CalculateTransformedAABBs();
-
+    UpdateModelMatrix();
 }
 
 void CollisionComponent::Render(VkCommandBuffer buffer) const
 {
     vkCmdDrawIndexed(buffer, static_cast<uint32_t>(m_Indices.size()), 1, 0, 0, 0);
+}
+
+void CollisionComponent::UpdateModelMatrix()
+{    
+    for (int index{}; index < m_ModelMatrices.size(); ++index)
+    {
+        glm::vec3 scale{ (m_TransformedAABBs[index].max - m_TransformedAABBs[index].min) / (m_AABBs[index].max - m_AABBs[index].min) };
+        glm::mat4 scaleMat{ glm::scale(glm::mat4{ 1.f }, {scale.x, 1.f, scale.z}) };
+
+        float yaw{GetOwner()->GetWorldRotation().y};
+        glm::vec3 relativePos{};
+        relativePos.x = (m_AABBs[index].min.x + m_AABBs[index].max.x) / 2.f;
+        relativePos.y = (m_AABBs[index].min.y + m_AABBs[index].max.y) / 2.f;
+        relativePos.z = (m_AABBs[index].min.z + m_AABBs[index].max.z) / 2.f;
+
+        //glm::vec3 translation{RotateVectorY(relativePos, yaw)};
+        //glm::mat4 translationMat{ glm::translate(glm::mat4{1.f}, translation + GetOwner()->GetWorldPosition()) };
+        //m_ModelMatrices[index] = translationMat * scaleMat;
+        
+        m_ModelMatrices[index] = GetOwner()->GetTranslationMatrix() * scaleMat;
+    }
 }
 
 void CollisionComponent::CalculateAABBs()
@@ -38,7 +63,7 @@ void CollisionComponent::CalculateAABBs()
         encompassingAABB.min = MinVec(vertex.pos, encompassingAABB.min);
         encompassingAABB.max = MaxVec(vertex.pos, encompassingAABB.max);
     }
-    auto clusters{ ClusterVertices(5, 5, encompassingAABB) };
+    auto clusters{ ClusterVertices(1, 1, encompassingAABB) };
     std::erase_if(clusters, [&](std::vector<glm::vec3> v)
         {
             return v.size() == 0;

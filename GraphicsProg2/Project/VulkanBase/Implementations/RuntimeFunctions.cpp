@@ -101,7 +101,7 @@ void VulkanBase::RecordRenderPass(uint32_t imageIndex)
 				auto verticesArrSize{ col->GetVertices().size()};
 				for (int index{}; index < verticesArrSize; ++index)
 				{
-					UpdateUniformBuffer(imageIndex, mesh->GetMeshIndex(), mesh->GetModelMatrix());
+					UpdateUniformBuffer(imageIndex, mesh->GetMeshIndex(), col->GetModelMatrices()[index]);
 
 					BindPipelineInfo(&m_GraphicsPipelineLines);
 					BindVertexIndexBuffers(mesh->GetMeshIndex(), index + 1, 1);

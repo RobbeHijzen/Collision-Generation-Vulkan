@@ -29,6 +29,7 @@ public:
 	void LateUpdate();
 
 	glm::mat4 GetModelMatrix() const { return m_ModelMatrix; }
+	glm::mat4 GetTranslationMatrix() const { return m_TranslationMatrix; }
 
 	const std::vector<uint32_t>& GetIndices() const { return m_Indices; };
 	const std::vector<Vertex>& GetVertices() const { return m_Vertices; }

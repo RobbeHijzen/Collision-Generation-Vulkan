@@ -2,6 +2,6 @@
 
 enum class GameEvents
 {
-	ModelMatrixChanged
+	ModelMatrixChanged,
 
 };

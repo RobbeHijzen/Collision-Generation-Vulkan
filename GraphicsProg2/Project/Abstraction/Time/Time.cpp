@@ -1,4 +1,5 @@
 #include "Time.h"
+#include <algorithm>
 
 void Time::Update()
 {

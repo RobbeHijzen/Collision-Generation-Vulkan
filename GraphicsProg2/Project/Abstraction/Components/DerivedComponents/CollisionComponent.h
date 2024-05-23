@@ -15,6 +15,7 @@ public:
 	bool HasStaticCollision() const { return m_HasStaticCollision; }
 
 	auto GetAABBs() const { return m_TransformedAABBs; }
+	auto GetModelMatrices() const { return m_ModelMatrices; }
 
 	const std::vector<uint32_t>& GetIndices() const { return m_Indices; };
 	const std::vector<std::vector<Vertex>>& GetVertices() const { return m_Vertices; }
@@ -22,6 +23,11 @@ public:
 	void Render(VkCommandBuffer buffer) const;
 
 private:
+
+	std::vector<glm::mat4> m_ModelMatrices{};
+	void UpdateModelMatrix();
+
+
 	bool m_HasStaticCollision;
 
 	std::vector<AABB> m_AABBs{};

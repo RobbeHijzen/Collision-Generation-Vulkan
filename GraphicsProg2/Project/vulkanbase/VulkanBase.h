@@ -154,6 +154,7 @@ private:
 			m_Scene->LateUpdate();
 
 			CollisionFixer::FixCollisions(m_Scene->GetMeshes());
+
 			// Rendering the Meshes
 			Render();
 

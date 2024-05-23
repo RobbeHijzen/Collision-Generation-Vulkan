@@ -7,7 +7,7 @@
 struct Vertex
 {
 	Vertex() {}
-	Vertex(glm::vec3 p, glm::vec2 tex, glm::vec3 norm)
+	Vertex(glm::vec3 p, glm::vec2 tex = {}, glm::vec3 norm = {0.f, 1.f, 0.f})
 		: pos{ p }, texCoord{ tex }, normal{ norm }
 	{}
 

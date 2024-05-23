@@ -14,6 +14,8 @@ CollisionComponent::CollisionComponent(Mesh* pParent, bool isStaticMesh)
 
     CalculateAABBs();
     FillVertices();
+    CalculateTransformedAABBs();
+
     m_ModelMatrices.resize(m_AABBs.size());
 }
 
@@ -32,20 +34,13 @@ void CollisionComponent::UpdateModelMatrix()
 {    
     for (int index{}; index < m_ModelMatrices.size(); ++index)
     {
-        glm::vec3 scale{ (m_TransformedAABBs[index].max - m_TransformedAABBs[index].min) / (m_AABBs[index].max - m_AABBs[index].min) };
-        glm::mat4 scaleMat{ glm::scale(glm::mat4{ 1.f }, {scale.x, 1.f, scale.z}) };
+        glm::vec3 scale{ m_TransformedAABBs[index].max - m_TransformedAABBs[index].min};
+        glm::mat4 scaleMat{ glm::scale(glm::mat4{ 1.f }, scale) };
 
-        float yaw{GetOwner()->GetWorldRotation().y};
-        glm::vec3 relativePos{};
-        relativePos.x = (m_AABBs[index].min.x + m_AABBs[index].max.x) / 2.f;
-        relativePos.y = (m_AABBs[index].min.y + m_AABBs[index].max.y) / 2.f;
-        relativePos.z = (m_AABBs[index].min.z + m_AABBs[index].max.z) / 2.f;
+        glm::vec3 translation{ (m_TransformedAABBs[index].max + m_TransformedAABBs[index].min) / 2.f };
+        glm::mat4 translationMat{ glm::translate(glm::mat4{1.f}, translation) };
 
-        //glm::vec3 translation{RotateVectorY(relativePos, yaw)};
-        //glm::mat4 translationMat{ glm::translate(glm::mat4{1.f}, translation + GetOwner()->GetWorldPosition()) };
-        //m_ModelMatrices[index] = translationMat * scaleMat;
-        
-        m_ModelMatrices[index] = GetOwner()->GetTranslationMatrix() * scaleMat;
+        m_ModelMatrices[index] = translationMat * scaleMat;
     }
 }
 
@@ -63,7 +58,7 @@ void CollisionComponent::CalculateAABBs()
         encompassingAABB.min = MinVec(vertex.pos, encompassingAABB.min);
         encompassingAABB.max = MaxVec(vertex.pos, encompassingAABB.max);
     }
-    auto clusters{ ClusterVertices(1, 1, encompassingAABB) };
+    auto clusters{ ClusterVertices(5, 5, encompassingAABB) };
     std::erase_if(clusters, [&](std::vector<glm::vec3> v)
         {
             return v.size() == 0;
@@ -222,20 +217,13 @@ void CollisionComponent::FillVertices()
     m_Vertices.resize(m_AABBs.size());
     for (int index{}; index < m_AABBs.size(); ++index)
     {
-        std::vector<glm::vec3> verticesPos{};
-
-        verticesPos.emplace_back(glm::vec3{ m_AABBs[index].min.x, m_AABBs[index].min.y, m_AABBs[index].min.z });
-        verticesPos.emplace_back(glm::vec3{ m_AABBs[index].min.x, m_AABBs[index].min.y, m_AABBs[index].max.z });
-        verticesPos.emplace_back(glm::vec3{ m_AABBs[index].min.x, m_AABBs[index].max.y, m_AABBs[index].min.z });
-        verticesPos.emplace_back(glm::vec3{ m_AABBs[index].min.x, m_AABBs[index].max.y, m_AABBs[index].max.z });
-        verticesPos.emplace_back(glm::vec3{ m_AABBs[index].max.x, m_AABBs[index].min.y, m_AABBs[index].min.z });
-        verticesPos.emplace_back(glm::vec3{ m_AABBs[index].max.x, m_AABBs[index].min.y, m_AABBs[index].max.z });
-        verticesPos.emplace_back(glm::vec3{ m_AABBs[index].max.x, m_AABBs[index].max.y, m_AABBs[index].min.z });
-        verticesPos.emplace_back(glm::vec3{ m_AABBs[index].max.x, m_AABBs[index].max.y, m_AABBs[index].max.z });
-
-        for (auto& pos : verticesPos)
-        {
-            m_Vertices[index].emplace_back(Vertex{pos, {0.f, 0.f}, {0.f, 1.f, 0.f}});
-        }
+        m_Vertices[index].emplace_back(glm::vec3{ -0.5f, -0.5f, -0.5f });
+        m_Vertices[index].emplace_back(glm::vec3{ -0.5f, -0.5f, 0.5f });
+        m_Vertices[index].emplace_back(glm::vec3{ -0.5f, 0.5f, -0.5f });
+        m_Vertices[index].emplace_back(glm::vec3{ -0.5f, 0.5f, 0.5f });
+        m_Vertices[index].emplace_back(glm::vec3{ 0.5f, -0.5f, -0.5f });
+        m_Vertices[index].emplace_back(glm::vec3{ 0.5f, -0.5f, 0.5f });
+        m_Vertices[index].emplace_back(glm::vec3{ 0.5f,  0.5f, -0.5f });
+        m_Vertices[index].emplace_back(glm::vec3{ 0.5f,  0.5f, 0.5f });
     }
 }

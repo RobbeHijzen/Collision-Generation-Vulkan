@@ -33,7 +33,6 @@ private:
 	std::vector<AABB> m_AABBs{};
 	std::vector<AABB> m_TransformedAABBs{};
 
-
 	void CalculateAABBs();
 	void CalculateTransformedAABBs();
 

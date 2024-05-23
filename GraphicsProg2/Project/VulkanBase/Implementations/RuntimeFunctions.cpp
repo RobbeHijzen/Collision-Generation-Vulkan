@@ -86,11 +86,11 @@ void VulkanBase::RecordRenderPass(uint32_t imageIndex)
 
 	for (auto mesh : m_Scene->GetMeshes())
 	{
-		UpdateUniformBuffer(imageIndex, mesh->GetMeshIndex(), mesh->GetModelMatrix());
+		UpdateUniformBuffer(mesh->GetMeshIndex(), 0, mesh->GetModelMatrix());
 
 		BindPipelineInfo(&m_GraphicsPipeline);
 		BindVertexIndexBuffers(mesh->GetMeshIndex(), 0, 0);
-		vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_MeshDescriptorSets[mesh->GetMeshIndex()], 0, nullptr);
+		vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_MeshDescriptorSets[mesh->GetMeshIndex()][0], 0, nullptr);
 
 		mesh->Render(m_CommandBuffer);
 
@@ -101,11 +101,11 @@ void VulkanBase::RecordRenderPass(uint32_t imageIndex)
 				auto verticesArrSize{ col->GetVertices().size()};
 				for (int index{}; index < verticesArrSize; ++index)
 				{
-					UpdateUniformBuffer(imageIndex, mesh->GetMeshIndex(), col->GetModelMatrices()[index]);
+					UpdateUniformBuffer(mesh->GetMeshIndex(), index + 1, col->GetModelMatrices()[index]);
 
 					BindPipelineInfo(&m_GraphicsPipelineLines);
 					BindVertexIndexBuffers(mesh->GetMeshIndex(), index + 1, 1);
-					vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_MeshDescriptorSets[mesh->GetMeshIndex()], 0, nullptr);
+					vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_MeshDescriptorSets[mesh->GetMeshIndex()][index + 1], 0, nullptr);
 
 					col->Render(m_CommandBuffer);
 				}
@@ -144,13 +144,13 @@ void VulkanBase::BindVertexIndexBuffers(uint32_t meshIndex, uint32_t vertexBuffe
 	vkCmdBindIndexBuffer(m_CommandBuffer, m_IndexBuffers[meshIndex][indexBufferIndex], 0, VK_INDEX_TYPE_UINT32);
 }
 
-void VulkanBase::UpdateUniformBuffer(uint32_t currentImage, uint32_t meshIndex, glm::mat4 meshModelMatrix)
+void VulkanBase::UpdateUniformBuffer(uint32_t meshIndex, uint32_t drawIndex, glm::mat4 meshModelMatrix)
 {
 	UniformBufferObject ubo{};
 	ubo.model = meshModelMatrix;
 	ubo.view = m_Camera->viewMatrix;
 	ubo.proj = m_Camera->projectionMatrix;
 
-	memcpy(m_UniformBuffersMapped[meshIndex], &ubo, sizeof(ubo));
+	memcpy(m_UniformBuffersMapped[meshIndex][drawIndex], &ubo, sizeof(ubo));
 }
 

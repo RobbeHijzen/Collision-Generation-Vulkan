@@ -11,7 +11,7 @@ void VulkanBase::LoadScene()
 	auto vehicle{ new Mesh("Resources/vehicle.obj", "Resources/vehicle_diffuse.png", { -200, 82.f, 0 }, { 0, -90, 0 }) };
 	vehicle->AddComponent(std::make_shared<CollisionComponent>(vehicle, true));
 	m_Scene->AddMesh(vehicle);
-
+	
 	// Plane
 	auto plane{ new Mesh("Resources/Plane.obj", "Resources/Plane_BaseColor.png") };
 	plane->AddComponent(std::make_shared<CollisionComponent>(plane, true));

@@ -23,27 +23,64 @@ void VulkanBase::CreateUnfiformBuffers()
 
 	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
-	for (size_t i = 0; i < m_Scene->GetMeshesAmount(); ++i)
+	for (auto mesh : m_Scene->GetMeshes())
 	{
-		CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_UniformBuffers[i], m_UniformBuffersMemory[i]);
-		vkMapMemory(m_Device, m_UniformBuffersMemory[i], 0, bufferSize, 0, &m_UniformBuffersMapped[i]);
+		m_UniformBuffersMapped[mesh->GetMeshIndex()].emplace_back();
+		m_UniformBuffers[mesh->GetMeshIndex()].emplace_back();
+		m_UniformBuffersMemory[mesh->GetMeshIndex()].emplace_back();
+
+		CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_UniformBuffers[mesh->GetMeshIndex()][0], m_UniformBuffersMemory[mesh->GetMeshIndex()][0]);
+		vkMapMemory(m_Device, m_UniformBuffersMemory[mesh->GetMeshIndex()][0], 0, bufferSize, 0, &m_UniformBuffersMapped[mesh->GetMeshIndex()][0]);
+	
+		if (auto col = mesh->GetComponent<CollisionComponent>())
+		{
+			auto AABBsize{ col->GetAABBs().size()};
+			for (int index{1}; index <= AABBsize; ++index)
+			{
+				m_UniformBuffersMapped[mesh->GetMeshIndex()].emplace_back();
+				m_UniformBuffers[mesh->GetMeshIndex()].emplace_back();
+				m_UniformBuffersMemory[mesh->GetMeshIndex()].emplace_back();
+
+				CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_UniformBuffers[mesh->GetMeshIndex()][index], m_UniformBuffersMemory[mesh->GetMeshIndex()][index]);
+				vkMapMemory(m_Device, m_UniformBuffersMemory[mesh->GetMeshIndex()][index], 0, bufferSize, 0, &m_UniformBuffersMapped[mesh->GetMeshIndex()][index]);
+			}
+		}
 	}
+}
+
+static uint32_t GetDrawCount(Scene* scene)
+{
+	uint32_t drawCount{};
+	for (auto mesh : scene->GetMeshes())
+	{
+		++drawCount;
+		if (auto col = mesh->GetComponent<CollisionComponent>())
+		{
+			for (int index{}; index < col->GetAABBs().size(); ++index)
+			{
+				++drawCount;
+			}
+		}
+	}
+	return drawCount;
 }
 
 void VulkanBase::CreateDescriptorPool()
 {
+	uint32_t drawCount{ GetDrawCount(m_Scene) };
+
 	std::array<VkDescriptorPoolSize, 2> poolSizes{};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = static_cast<uint32_t>(m_Scene->GetMeshesAmount());
+	poolSizes[0].descriptorCount = drawCount;
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[1].descriptorCount = static_cast<uint32_t>(m_Scene->GetMeshesAmount());
+	poolSizes[1].descriptorCount = drawCount;
 
 
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = static_cast<uint32_t>(m_Scene->GetMeshesAmount());
+	poolInfo.maxSets = drawCount;
 
 	if (vkCreateDescriptorPool(m_Device, &poolInfo, nullptr, &m_DescriptorPool) != VK_SUCCESS)
 	{
@@ -57,18 +94,42 @@ void VulkanBase::CreateDescriptorSets()
 	
 	for (const auto& mesh : m_Scene->GetMeshes())
 	{
+		m_MeshDescriptorSets[mesh->GetMeshIndex()].emplace_back();
+
 		VkDescriptorSetAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = m_DescriptorPool;
 		allocInfo.descriptorSetCount = 1;
 		allocInfo.pSetLayouts = &m_DescriptorSetLayout;
 
-		if (vkAllocateDescriptorSets(m_Device, &allocInfo, &m_MeshDescriptorSets[mesh->GetMeshIndex()]) != VK_SUCCESS)
+		if (vkAllocateDescriptorSets(m_Device, &allocInfo, &m_MeshDescriptorSets[mesh->GetMeshIndex()][0]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to allocate descriptor sets!");
 		}
 
-		m_Shader3D->SetupDescriptorSet(this, mesh);
+		m_Shader3D->SetupDescriptorSet(this, mesh, 0);
+
+		if (auto col = mesh->GetComponent<CollisionComponent>())
+		{
+			auto AABBsize{ col->GetAABBs().size() };
+			for (int index{1}; index <= AABBsize; ++index)
+			{
+				m_MeshDescriptorSets[mesh->GetMeshIndex()].emplace_back();
+
+				VkDescriptorSetAllocateInfo allocInfo{};
+				allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+				allocInfo.descriptorPool = m_DescriptorPool;
+				allocInfo.descriptorSetCount = 1;
+				allocInfo.pSetLayouts = &m_DescriptorSetLayout;
+				
+				if (vkAllocateDescriptorSets(m_Device, &allocInfo, &m_MeshDescriptorSets[mesh->GetMeshIndex()][index]) != VK_SUCCESS)
+				{
+					throw std::runtime_error("failed to allocate descriptor sets!");
+				}
+
+				m_Shader3D->SetupDescriptorSet(this, mesh, index);
+			}
+		}
 	}
 }
 

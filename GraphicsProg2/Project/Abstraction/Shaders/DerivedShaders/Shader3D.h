@@ -31,7 +31,7 @@ public:
 	virtual VkShaderModule CreateShaderModule(const VkDevice& m_Device, const std::vector<char>& code) override;
 	virtual std::vector<VkDescriptorSetLayoutBinding> CreateDescriptorSetLayoutBindings() override;
 
-	virtual void SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh) override;
+	virtual void SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh, int drawIndex) override;
 
 private:
 

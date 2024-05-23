@@ -46,7 +46,7 @@ public:
 	virtual VkShaderModule CreateShaderModule(const VkDevice& m_Device, const std::vector<char>& code) = 0;
 	virtual std::vector<VkDescriptorSetLayoutBinding> CreateDescriptorSetLayoutBindings() = 0;
 
-	virtual void SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh) = 0;
+	virtual void SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh, int drawIndex) = 0;
 
 
 protected:

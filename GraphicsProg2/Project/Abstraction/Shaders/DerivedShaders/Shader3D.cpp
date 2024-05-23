@@ -88,10 +88,10 @@ std::vector<VkDescriptorSetLayoutBinding> Shader3D::CreateDescriptorSetLayoutBin
 	return { uboLayoutBinding, samplerLayoutBinding };
 }
 
-void Shader3D::SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh)
+void Shader3D::SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh, int drawIndex)
 {
 	VkDescriptorBufferInfo bufferInfo{};
-	bufferInfo.buffer = vulkanBase->GetUniformBuffers()[mesh->GetMeshIndex()];
+	bufferInfo.buffer = vulkanBase->GetUniformBuffers()[mesh->GetMeshIndex()][drawIndex];
 	bufferInfo.offset = 0;
 	bufferInfo.range = sizeof(UniformBufferObject);
 
@@ -104,7 +104,7 @@ void Shader3D::SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh)
 	std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
 	descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrites[0].dstSet = vulkanBase->GetMeshDescriptorSets()[mesh->GetMeshIndex()];
+	descriptorWrites[0].dstSet = vulkanBase->GetMeshDescriptorSets()[mesh->GetMeshIndex()][drawIndex];
 	descriptorWrites[0].dstBinding = 0;
 	descriptorWrites[0].dstArrayElement = 0;
 	descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -112,7 +112,7 @@ void Shader3D::SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh)
 	descriptorWrites[0].pBufferInfo = &bufferInfo;
 
 	descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrites[1].dstSet = vulkanBase->GetMeshDescriptorSets()[mesh->GetMeshIndex()];
+	descriptorWrites[1].dstSet = vulkanBase->GetMeshDescriptorSets()[mesh->GetMeshIndex()][drawIndex];
 	descriptorWrites[1].dstBinding = 1;
 	descriptorWrites[1].dstArrayElement = 0;
 	descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -120,6 +120,5 @@ void Shader3D::SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh)
 	descriptorWrites[1].pImageInfo = &imageInfo;
 
 	vkUpdateDescriptorSets(vulkanBase->GetDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-
 }
 

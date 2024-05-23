@@ -205,13 +205,19 @@ private:
 		vkDestroyRenderPass(m_Device, m_RenderPass, nullptr);
 
 		// Uniform buffer cleanup
-		for (auto& uniformBuffer : m_UniformBuffers)
+		for (auto& uniformBuffers : m_UniformBuffers)
 		{
-			vkDestroyBuffer(m_Device, uniformBuffer, nullptr);
+			for (auto& uniformBuffer : uniformBuffers)
+			{
+				vkDestroyBuffer(m_Device, uniformBuffer, nullptr);
+			}
 		}
-		for (auto& uniformBufferMemory : m_UniformBuffersMemory)
+		for (auto& uniformBufferMemories : m_UniformBuffersMemory)
 		{
-			vkFreeMemory(m_Device, uniformBufferMemory, nullptr);
+			for (auto& uniformBufferMemory : uniformBufferMemories)
+			{
+				vkFreeMemory(m_Device, uniformBufferMemory, nullptr);
+			}
 		}
 
 		vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
@@ -398,15 +404,15 @@ private:
 	// Uniform buffer
 	VkDescriptorPool m_DescriptorPool{};
 
-	std::vector<VkBuffer> m_UniformBuffers{};
-	std::vector<VkDeviceMemory> m_UniformBuffersMemory{};
-	std::vector<void*> m_UniformBuffersMapped{};
-	std::vector<VkDescriptorSet> m_MeshDescriptorSets{};
+	std::vector<std::vector<VkBuffer>> m_UniformBuffers{};
+	std::vector<std::vector<VkDeviceMemory>> m_UniformBuffersMemory{};
+	std::vector<std::vector<void*>> m_UniformBuffersMapped{};
+	std::vector<std::vector<VkDescriptorSet>> m_MeshDescriptorSets{};
 
 	void CreateDescriptorSets();
 	void CreateUnfiformBuffers();
 
-	void UpdateUniformBuffer(uint32_t currentImage, uint32_t meshIndex, glm::mat4 meshModelMatrix);
+	void UpdateUniformBuffer(uint32_t meshIndex, uint32_t drawIndex, glm::mat4 meshModelMatrix);
 	void CreateDescriptorPool();
 
 	// Texture

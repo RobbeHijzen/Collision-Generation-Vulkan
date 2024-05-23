@@ -48,35 +48,20 @@ void CollisionComponent::CalculateAABBs()
     auto vertices{GetOwner()->GetVertices()};
     if (vertices.size() == 0) return;
 
-    AABB encompassingAABB{};
-
-    encompassingAABB.min = vertices[0].pos;
-    encompassingAABB.max = vertices[0].pos;
-    for (const auto& vertex : vertices)
-    {
-        encompassingAABB.min = MinVec(vertex.pos, encompassingAABB.min);
-        encompassingAABB.max = MaxVec(vertex.pos, encompassingAABB.max);
-    }
+    AABB encompassingAABB{ GetAABBFromVertices(vertices)};
+    
+    // Create Clusters
     auto clusters{ ClusterVertices(5, 5, encompassingAABB) };
     std::erase_if(clusters, [&](std::vector<glm::vec3> v)
         {
             return v.size() == 0;
         });
 
+    // Place clusters inside AABBs
     m_AABBs.resize(clusters.size());
-
     for (int index{}; index < clusters.size(); ++index)
     {
-        AABB aabb{};
-        aabb.min = clusters[index][0];
-        aabb.max = clusters[index][0];
-        for (const auto& point : clusters[index])
-        {
-            aabb.min = MinVec(point, aabb.min);
-            aabb.max = MaxVec(point, aabb.max);
-        }
-
-        m_AABBs[index] = aabb;
+        m_AABBs[index] = GetAABBFromVertices(clusters[index]);
     }
 }
 
@@ -209,6 +194,28 @@ glm::vec3 CollisionComponent::MaxVec(const glm::vec3& v1, const glm::vec3& v2)
       std::max(v1.y, v2.y),
       std::max(v1.z, v2.z)
     };
+}
+
+AABB CollisionComponent::GetAABBFromVertices(const std::vector<glm::vec3> vertices)
+{
+    AABB aabb{};
+
+    aabb.min = vertices[0];
+    aabb.max = vertices[0];
+    for (const auto& vertex : vertices)
+    {
+        aabb.min = MinVec(vertex, aabb.min);
+        aabb.max = MaxVec(vertex, aabb.max);
+    }
+    return aabb;
+}
+AABB CollisionComponent::GetAABBFromVertices(const std::vector<Vertex> vertices)
+{
+    std::vector<glm::vec3> points{};
+    for (const auto& vertex : vertices)
+        points.emplace_back(vertex.pos);
+
+    return GetAABBFromVertices(points);
 }
 
 std::vector<Vertex> CollisionComponent::m_Vertices{ glm::vec3{ -0.5f, -0.5f, -0.5f },

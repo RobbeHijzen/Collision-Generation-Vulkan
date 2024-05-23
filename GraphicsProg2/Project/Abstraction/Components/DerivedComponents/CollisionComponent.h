@@ -46,6 +46,8 @@ private:
 	glm::vec3 MinVec(const glm::vec3& v1, const glm::vec3& v2);
 	glm::vec3 MaxVec(const glm::vec3& v1, const glm::vec3& v2);
 
+	AABB GetAABBFromVertices(const std::vector<glm::vec3> vertices);
+	AABB GetAABBFromVertices(const std::vector<Vertex> vertices);
 
 	static std::vector<Vertex> m_Vertices;
 	static std::vector<uint32_t> m_Indices;

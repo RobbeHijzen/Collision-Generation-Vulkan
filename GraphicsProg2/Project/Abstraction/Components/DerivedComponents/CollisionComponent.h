@@ -9,7 +9,7 @@ class CollisionComponent : public BaseComponent
 {
 public:
 
-	CollisionComponent(Mesh* pParent, bool isStaticMesh);
+	CollisionComponent(Mesh* pParent, bool isStaticMesh, int numAABBs);
 	virtual void GameStart() override;
 
 	bool HasStaticCollision() const { return m_HasStaticCollision; }
@@ -51,4 +51,6 @@ private:
 
 	static std::vector<Vertex> m_Vertices;
 	static std::vector<uint32_t> m_Indices;
+
+	int m_NumAABBs{};
 };

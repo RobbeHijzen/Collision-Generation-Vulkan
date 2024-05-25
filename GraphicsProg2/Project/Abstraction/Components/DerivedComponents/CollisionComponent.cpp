@@ -3,9 +3,10 @@
 
 #include <numeric>
 
-CollisionComponent::CollisionComponent(Mesh* pParent, bool isStaticMesh)
+CollisionComponent::CollisionComponent(Mesh* pParent, bool isStaticMesh, int numAABBs)
     : BaseComponent(pParent)
     , m_HasStaticCollision{ isStaticMesh }
+    , m_NumAABBs{numAABBs}
 {
     Observer* obs{ new Observer(GameEvents::ModelMatrixChanged, [&] { this->CalculateTransformedAABBs(); }) };
     pParent->AddObserver(obs);
@@ -51,7 +52,7 @@ void CollisionComponent::CalculateAABBs()
     AABB encompassingAABB{ GetAABBFromVertices(vertices)};
     
     // Create Clusters
-    auto clusters{ ClusterVertices(5, 5, encompassingAABB) };
+    auto clusters{ ClusterVertices(m_NumAABBs, 25, encompassingAABB) };
     std::erase_if(clusters, [&](std::vector<glm::vec3> v)
         {
             return v.size() == 0;

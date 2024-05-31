@@ -3,6 +3,7 @@
 #include "Abstraction/AABBCalculator.h"
 
 #include <numeric>
+#include <fstream>
 
 CollisionComponent::CollisionComponent(Mesh* pParent, bool isStaticMesh, int numAABBs)
     : BaseComponent(pParent)
@@ -13,7 +14,7 @@ CollisionComponent::CollisionComponent(Mesh* pParent, bool isStaticMesh, int num
     obs = new Observer(GameEvents::ModelMatrixChanged, [&] { this->UpdateModelMatrix(); });
     pParent->AddObserver(obs);
 
-    m_AABBs = AABBCalculator::CalculateAABBs(GetOwner()->GetVertices(), numAABBs);
+    LoadAABBs(numAABBs);
     CalculateTransformedAABBs();
 
     m_ModelMatrices.resize(m_AABBs.size());
@@ -41,6 +42,49 @@ void CollisionComponent::UpdateModelMatrix()
         glm::mat4 translationMat{ glm::translate(glm::mat4{1.f}, translation) };
 
         m_ModelMatrices[index] = translationMat * scaleMat;
+    }
+}
+
+void CollisionComponent::LoadAABBs(int numAABBs)
+{
+    if (std::ifstream input{ "Resources/AABBInfo.txt", std::ios::binary }; input.is_open())
+    {
+        while (!input.eof())
+        {
+            int loadIndex{ -1 };
+            int aabbLoadCount{};
+
+            input.read((char*)&loadIndex, sizeof(int));
+            input.read((char*)&aabbLoadCount, sizeof(int));
+
+            if (loadIndex == GetOwner()->GetLoadIndex())
+            {
+                m_AABBs.resize(aabbLoadCount);
+                input.read((char*)&m_AABBs[0], sizeof(AABB) * aabbLoadCount);
+
+                return;
+            }
+            else
+            {
+                const int size{ static_cast<int>(sizeof(AABB)) * aabbLoadCount };
+                char* arr{ new char[size] };
+                input.read(arr, size);
+                delete[] arr;
+            }
+        }
+    }
+
+    if (std::ofstream output{ "Resources/AABBInfo.txt", std::ios::app | std::ios::binary }; output.is_open())
+    {
+        m_AABBs = AABBCalculator::CalculateAABBs(GetOwner()->GetVertices(), numAABBs);
+        
+        int aabbsCount{ static_cast<int>(m_AABBs.size()) };
+        int loadIndex{ GetOwner()->GetLoadIndex() };
+        
+        output.write((const char*)&loadIndex, sizeof(int));
+        output.write((const char*)&aabbsCount, sizeof(int));
+        
+        output.write((const char*)&m_AABBs[0], sizeof(AABB) * aabbsCount);
     }
 }
 

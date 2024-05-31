@@ -16,7 +16,7 @@
 class Mesh final
 {
 public:
-	Mesh(std::string objPath, 
+	Mesh(int loadIndex, bool calculateNormals, std::string objPath, 
 			  std::string diffuseString, 
 			  glm::vec3 translation = glm::vec3{0.f, 0.f, 0.f},
 			  glm::vec3 rotation = glm::vec3{0.f, 0.f, 0.f},
@@ -35,6 +35,7 @@ public:
 	const std::vector<Vertex>& GetVertices() const { return m_Vertices; }
 
 	uint32_t GetMeshIndex() const { return m_MeshIndex.value(); }
+	int GetLoadIndex() const { return m_LoadIndex; }
 	std::string GetDiffuseString() const { return m_DiffuseString; }
 
 	void SetMeshIndex(uint32_t index) { m_MeshIndex = index; }
@@ -86,9 +87,11 @@ public:
 	void SetVelocity(glm::vec3 inputVelocity) { m_Velocity = inputVelocity; }
 
 private:
+	int m_LoadIndex{ -1 };
 
 	std::vector<uint32_t> m_Indices{};
 	std::vector<Vertex> m_Vertices{};
+	void LoadOBJ(std::string objPath, bool calculateNormals);
 
 	std::optional<uint32_t> m_MeshIndex{};
 	std::string m_DiffuseString{};

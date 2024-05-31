@@ -158,7 +158,7 @@ private:
 			// Rendering the Meshes
 			Render();
 
-			//std::cout << "FPS: " << time->GetFps() << "\n";
+			std::cout << "FPS: " << time->GetFps() << "\n";
 		}
 		vkDeviceWaitIdle(m_Device);
 	}

@@ -4,11 +4,11 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-Mesh::Mesh(std::string objPath, std::string diffuseString, glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale)
-    : m_DiffuseString{diffuseString}
+Mesh::Mesh(int loadIndex, bool calculateNormals, std::string objPath, std::string diffuseString, glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale)
+    : m_LoadIndex{loadIndex}
+    , m_DiffuseString{diffuseString}
 {
-    bool succeeded = ParseOBJ(objPath, m_Vertices, m_Indices);
-    assert(succeeded);
+    LoadOBJ(objPath, calculateNormals);
 
 
     m_WorldPos = translation;
@@ -25,6 +25,64 @@ Mesh::Mesh(std::string objPath, std::string diffuseString, glm::vec3 translation
     AddObserver(new Observer(GameEvents::ModelMatrixChanged, [&] { this->CalculateWorldMatrix(); }));
     
     NotifyObservers(GameEvents::ModelMatrixChanged);
+}
+
+void Mesh::LoadOBJ(std::string objPath, bool calculateNormals)
+{
+    if (std::ifstream input{ "Resources/VertexInfo.txt", std::ios::binary }; input.is_open())
+    {
+        while (!input.eof())
+        {
+            int loadIndex{ -1 };
+            int vertexLoadCount{};
+            int indexLoadCount{};
+
+            input.read((char*)&loadIndex, sizeof(int));
+            input.read((char*)&vertexLoadCount, sizeof(int));
+            input.read((char*)&indexLoadCount, sizeof(int));
+
+            if (loadIndex == m_LoadIndex)
+            {
+                m_Vertices.resize(vertexLoadCount);
+                input.read((char*)&m_Vertices[0], sizeof(Vertex) * vertexLoadCount);
+
+                m_Indices.resize(indexLoadCount);
+                input.read((char*)&m_Indices[0], sizeof(uint32_t) * indexLoadCount);
+
+                return;
+            }
+            else
+            {
+                // Vertex skipping
+                const int sizeV{ static_cast<int>(sizeof(Vertex)) * vertexLoadCount };
+                char* arrV{ new char[sizeV] };
+                input.read(arrV, sizeV);
+                delete[] arrV;
+
+                // index skipping
+                const int sizeI{ static_cast<int>(sizeof(uint32_t)) * indexLoadCount };
+                char* arrI{ new char[sizeI] };
+                input.read(arrI, sizeI);
+                delete[] arrI;
+            }
+        }
+    }
+
+    if (std::ofstream output{ "Resources/VertexInfo.txt", std::ios::app | std::ios::binary }; output.is_open())
+    {
+        bool succeeded = ParseOBJ(objPath, m_Vertices, m_Indices, calculateNormals);
+        assert(succeeded);
+
+        int vertexLoadCount{ static_cast<int>(m_Vertices.size()) };
+        int indexLoadCount{ static_cast<int>(m_Indices.size()) };
+
+        output.write((const char*)&m_LoadIndex, sizeof(int));
+        output.write((const char*)&vertexLoadCount, sizeof(int));
+        output.write((const char*)&indexLoadCount, sizeof(int));
+
+        output.write((const char*)&m_Vertices[0], sizeof(Vertex) * vertexLoadCount);
+        output.write((const char*)&m_Indices[0], sizeof(uint32_t) * indexLoadCount);
+    }
 }
 
 void Mesh::Render(VkCommandBuffer buffer) const
@@ -84,7 +142,7 @@ void Mesh::Scale(glm::vec3 addedScale)
     NotifyObservers(GameEvents::ModelMatrixChanged);
 }
 
-void Mesh::CalculateWorldMatrix() 
+void Mesh::CalculateWorldMatrix()
 {
     m_ModelMatrix = m_TranslationMatrix * m_RotationMatrix * m_ScaleMatrix;
 }

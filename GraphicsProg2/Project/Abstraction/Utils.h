@@ -6,7 +6,7 @@
 #include "VertexInfo.h"
 
 
-static bool ParseOBJ(const std::string& filename, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices, bool flipAxisAndWinding = true)
+static bool ParseOBJ(const std::string& filename, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices, bool calculateNormals = false, bool flipAxisAndWinding = true)
 {
 	std::ifstream file(filename);
 	if (!file)
@@ -152,6 +152,28 @@ static bool ParseOBJ(const std::string& filename, std::vector<Vertex>& vertices,
 	//	}
 	//
 	//}
+
+	if (calculateNormals)
+	{
+		for (int i{}; i < indices.size(); i += 6)
+		{
+			uint32_t i1{indices[i]};
+			uint32_t i2{indices[i + 1]};
+			uint32_t i3{indices[i + 2]};
+
+			glm::vec3 norm = glm::cross(vertices[i2].pos - vertices[i1].pos, vertices[i3].pos - vertices[i1].pos);
+		
+			vertices[i1].normal += norm;
+			vertices[i2].normal += norm;
+			vertices[i3].normal += norm;
+		}
+
+		for (auto& vertex : vertices)
+		{
+			vertex.normal = glm::normalize(vertex.normal);
+		}
+	}
+
 
 	return true;
 }

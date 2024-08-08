@@ -49,7 +49,7 @@ bool CollisionFixer::IsOnGround(CollisionComponent* collisionComp, std::vector<M
 	std::vector<AABB> aabbs{ collisionComp->GetAABBs() };
 
 	std::vector<AABB> groundAABBs{};
-	std::vector<AABB> feetAABBs{};
+	std::vector<AABB> legsAABBs{};
 
 	for (int index{}; index < aabbs.size(); ++index)
 	{
@@ -59,8 +59,8 @@ bool CollisionFixer::IsOnGround(CollisionComponent* collisionComp, std::vector<M
 		groundAABB.min.x = aabb.min.x + FLT_EPSILON;
 		groundAABB.max.x = aabb.max.x - FLT_EPSILON;
 
-		groundAABB.max.y = aabb.max.y - FLT_EPSILON;
 		groundAABB.min.y = aabb.min.y - FLT_EPSILON;
+		groundAABB.max.y = aabb.max.y - FLT_EPSILON;
 
 		groundAABB.min.z = aabb.min.z + FLT_EPSILON;
 		groundAABB.max.z = aabb.max.z - FLT_EPSILON;
@@ -70,26 +70,27 @@ bool CollisionFixer::IsOnGround(CollisionComponent* collisionComp, std::vector<M
 	for (int index{}; index < aabbs.size(); ++index)
 	{
 		AABB aabb{ aabbs[index] };
-		AABB feetAABB{};
+		AABB legsAABB{};
 
-		feetAABB.min.x = aabb.min.x + FLT_EPSILON;
-		feetAABB.max.x = aabb.max.x - FLT_EPSILON;
+		legsAABB.min.x = aabb.min.x + FLT_EPSILON;
+		legsAABB.max.x = aabb.max.x - FLT_EPSILON;
 
-		feetAABB.max.y = aabb.max.y - FLT_EPSILON;
-		feetAABB.min.y = aabb.min.y + 80 * FLT_EPSILON;
+		legsAABB.min.y = aabb.min.y + 8000 * FLT_EPSILON;
+		legsAABB.max.y = aabb.max.y - FLT_EPSILON;
 
-		feetAABB.min.z = aabb.min.z + FLT_EPSILON;
-		feetAABB.max.z = aabb.max.z - FLT_EPSILON;
+		legsAABB.min.z = aabb.min.z + FLT_EPSILON;
+		legsAABB.max.z = aabb.max.z - FLT_EPSILON;
 
-		feetAABBs.emplace_back(feetAABB);
+		legsAABBs.emplace_back(legsAABB);
 	}
 
 	for (auto mesh : sceneMeshes)
 	{
 		if (auto col = mesh->GetComponent<CollisionComponent>())
 		{
-			if (CollisionFixer::AreColliding(col.get(), groundAABBs).first
-				&& !(CollisionFixer::AreColliding(col.get(), feetAABBs).first))
+			bool areFeetOnGround{ CollisionFixer::AreColliding(col.get(), groundAABBs).first };
+			bool isBodyTouchingSomething{ CollisionFixer::AreColliding(col.get(), legsAABBs).first };
+			if (areFeetOnGround && !isBodyTouchingSomething)
 			{
 				return true;
 			}

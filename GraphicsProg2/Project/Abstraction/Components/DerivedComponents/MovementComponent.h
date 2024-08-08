@@ -36,6 +36,7 @@ private:
 
 	float m_JumpStrength{ 700.f };
 	float m_Gravity{ 981.f };
+	//float m_Gravity{ 0.f };
 
 	void HandleGravity();
 	void CalculateIsOnGround();

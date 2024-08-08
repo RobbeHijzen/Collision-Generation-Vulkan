@@ -47,4 +47,13 @@ struct Vertex
 		
 		return attributeDescriptions;
 	}
+
+	bool operator==(Vertex other)
+	{
+		return pos == other.pos;
+	}
+	bool operator<(Vertex other)
+	{
+		return pos.length() < other.pos.length();
+	}
 };

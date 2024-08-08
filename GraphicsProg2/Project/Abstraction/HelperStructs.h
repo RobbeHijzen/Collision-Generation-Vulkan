@@ -33,4 +33,9 @@ struct AABB
 {
 	glm::vec3 min;
 	glm::vec3 max;
+
+	bool operator==(const AABB& other) const
+	{
+		return min == other.min && max == other.max;
+	}
 };

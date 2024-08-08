@@ -98,14 +98,18 @@ void VulkanBase::RecordRenderPass(uint32_t imageIndex)
 		{
 			if (auto col = mesh->GetComponent<CollisionComponent>())
 			{
+				uint32_t meshIndex{ mesh->GetMeshIndex() };
+				auto modelMatrices{ col->GetModelMatrices() };
+				uint32_t meshAmount{ static_cast<uint32_t>(m_Scene->GetMeshesAmount()) };
+
 				auto AABBsize{ col->GetAABBs().size()};
 				for (int index{}; index < AABBsize; ++index)
 				{
-					UpdateUniformBuffer(mesh->GetMeshIndex(), index + 1, col->GetModelMatrices()[index]);
+					UpdateUniformBuffer(meshIndex, index + 1, modelMatrices[index]);
 
 					BindPipelineInfo(&m_GraphicsPipelineLines);
-					BindVertexIndexBuffers(uint32_t(m_Scene->GetMeshesAmount()), uint32_t(m_Scene->GetMeshesAmount()));
-					vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_MeshDescriptorSets[mesh->GetMeshIndex()][index + 1], 0, nullptr);
+					BindVertexIndexBuffers(meshAmount, meshAmount);
+					vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_MeshDescriptorSets[meshIndex][index + 1], 0, nullptr);
 
 					col->Render(m_CommandBuffer);
 				}

@@ -133,10 +133,17 @@ private:
 	{
 		// Time initialization
 		Time* time = Time::GetInstance();
-
 		// Game Start
 		for (auto mesh : m_Scene->GetMeshes())
 			mesh->GameStart();
+
+		// Print keybinds to the console
+		for (int index{}; index < 30; ++index) std::cout << "\n";
+		std::cout << "---- Keyboard Bindings ----\n\n";
+		std::cout << "WASD: \tmove\n";
+		std::cout << "Space: \tjump\n\n";
+		std::cout << "E: \ttoggle Hitbox outlines (watch out for frame rate)\n";
+		for (int index{}; index < 15; ++index) std::cout << "\n";
 
 		// LOOP
 		while (!glfwWindowShouldClose(m_Window))
@@ -158,7 +165,7 @@ private:
 			// Rendering the Meshes
 			Render();
 
-			std::cout << "FPS: " << time->GetFps() << "\n";
+			//std::cout << "FPS: " << time->GetFps() << "\n";
 		}
 		vkDeviceWaitIdle(m_Device);
 	}

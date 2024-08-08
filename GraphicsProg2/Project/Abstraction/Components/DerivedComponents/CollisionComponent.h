@@ -9,7 +9,7 @@ class CollisionComponent : public BaseComponent
 {
 public:
 
-	CollisionComponent(Mesh* pParent, bool isStaticMesh, int numAABBs);
+	CollisionComponent(Mesh* pParent, bool isStaticMesh, int aabbDepth);
 	virtual void GameStart() override;
 
 	bool HasStaticCollision() const { return m_HasStaticCollision; }
@@ -32,7 +32,7 @@ private:
 	std::vector<AABB> m_AABBs{};
 	std::vector<AABB> m_TransformedAABBs{};
 
-	void LoadAABBs(int numAABBs);
+	void LoadAABBs(int aabbDepth);
 	void CalculateTransformedAABBs();
 
 	static std::vector<Vertex> m_Vertices;

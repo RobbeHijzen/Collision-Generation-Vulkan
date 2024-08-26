@@ -6,14 +6,17 @@
 #include <string>
 #include <optional>
 
-#include "Abstraction/VertexInfo.h"
-#include "Abstraction/Camera.h"
-#include "Abstraction/EventSystem/Events.h"
-#include "Abstraction/EventSystem/Observer.h"
+#include "VulkanBase/Scene/Object.h"
+#include "VulkanBase/HelperStructs/IRenderable.h"
 
-#include "Abstraction/Components/BaseComponent.h"
+#include "VulkanBase/HelperStructs/VertexInfo.h"
+#include "PhysicsGame/Camera.h"
+#include "Vulkanbase/EventSystem/Events.h"
+#include "Vulkanbase/EventSystem/Observer.h"
 
-class Mesh final
+#include "Vulkanbase/Helperstructs/BaseComponent.h"
+
+class Mesh final : public Object, public IRenderable
 {
 public:
 	Mesh(int loadIndex, bool calculateNormals, std::string objPath, 
@@ -22,65 +25,28 @@ public:
 			  glm::vec3 rotation = glm::vec3{0.f, 0.f, 0.f},
 			  glm::vec3 scale = glm::vec3{1.f, 1.f, 1.f});
 
-	void Render(VkCommandBuffer buffer) const;
 
-	void GameStart();
-	void Update(GLFWwindow* window);
-	void LateUpdate();
+	void Render(VkCommandBuffer buffer) const override;
+	void Update(GLFWwindow* window) override;
 
-	glm::mat4 GetModelMatrix() const { return m_ModelMatrix; }
-	glm::mat4 GetTranslationMatrix() const { return m_TranslationMatrix; }
+	glm::mat4 GetModelMatrix() const override { return m_ModelMatrix; }
 
-	const std::vector<uint32_t>& GetIndices() const { return m_Indices; };
-	const std::vector<Vertex>& GetVertices() const { return m_Vertices; }
+	const std::vector<uint32_t>& GetIndices() const override { return m_Indices; };
+	const std::vector<Vertex>& GetVertices() const override { return m_Vertices; }
 
-	uint32_t GetMeshIndex() const { return m_MeshIndex.value(); }
+	uint32_t GetRenderID() const override { return m_RenderID.value(); }
+	void SetRenderID(uint32_t index) override { m_RenderID = index; }
+	PipelinesEnum GetPipelineID() const override { return m_PipelineID; }
+
+	std::string GetDiffuseString() const override { return m_DiffuseString; }
+
 	int GetLoadIndex() const { return m_LoadIndex; }
-	std::string GetDiffuseString() const { return m_DiffuseString; }
 
-	void SetMeshIndex(uint32_t index) { m_MeshIndex = index; }
 
 	void Rotate(glm::vec3 addedRot);
 	void Scale(glm::vec3 addedScale);
 
-	bool AddComponent(std::shared_ptr<BaseComponent> component)
-	{
-		if (component.get())
-		{
-			m_Components.emplace_back(component);
-			return true;
-		}
-		return false;
-	}
 	
-	template<typename T>
-	std::shared_ptr<T> GetComponent()
-	{
-		for (auto& component : m_Components)
-		{
-			if (auto castedComponent = std::dynamic_pointer_cast<T>(component))
-			{
-				return castedComponent;
-			}
-		}
-		return nullptr;
-	}
-
-	void AddObserver(Observer* observer)
-	{
-		m_Observers.emplace_back(observer);
-	}
-	void NotifyObservers(GameEvents event)
-	{
-		for (auto& observer : m_Observers)
-		{
-			if (observer->event == event)
-			{
-				observer->function();
-			}
-		}
-	}
-
 	glm::vec3 GetWorldPosition() const { return m_WorldPos; }
 	glm::vec3 GetWorldRotation() const { return m_WorldRot; }
 
@@ -93,8 +59,9 @@ private:
 	std::vector<Vertex> m_Vertices{};
 	void LoadOBJ(std::string objPath, bool calculateNormals);
 
-	std::optional<uint32_t> m_MeshIndex{};
+	std::optional<uint32_t> m_RenderID{};
 	std::string m_DiffuseString{};
+	PipelinesEnum m_PipelineID{ PipelinesEnum::regular };
 
 	//----------
 	// Transformation Handling

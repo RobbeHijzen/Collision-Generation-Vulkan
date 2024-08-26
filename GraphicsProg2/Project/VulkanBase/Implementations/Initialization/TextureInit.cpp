@@ -5,14 +5,14 @@
 
 void VulkanBase::CreateTextureImages()
 {
-    m_TextureImages.resize(m_Scene->GetMeshesAmount());
-    m_TextureImagesMemory.resize(m_Scene->GetMeshesAmount());
-
-    for (const auto& mesh : m_Scene->GetMeshes())
+    m_TextureImages.resize(m_Scene->GetRenderablesAmount());
+    m_TextureImagesMemory.resize(m_Scene->GetRenderablesAmount());
+    
+    for (const auto& renderable : m_Scene->GetRenderables())
     {
         // Loads the texture from resources
         int texWidth, texHeight, texChannels;
-        stbi_uc* pixels = stbi_load(mesh->GetDiffuseString().c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+        stbi_uc* pixels = stbi_load(renderable->GetDiffuseString().c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
         VkDeviceSize imageSize = texWidth * texHeight * 4;
         
         if (!pixels)
@@ -36,12 +36,12 @@ void VulkanBase::CreateTextureImages()
         stbi_image_free(pixels);
         
         CreateImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-                    m_TextureImages[mesh->GetMeshIndex()], m_TextureImagesMemory[mesh->GetMeshIndex()]);
+                    m_TextureImages[renderable->GetRenderID()], m_TextureImagesMemory[renderable->GetRenderID()]);
         
         
-        TransitionImageLayout(m_TextureImages[mesh->GetMeshIndex()], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        CopyBufferToImage(stagingBuffer, m_TextureImages[mesh->GetMeshIndex()], static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-        TransitionImageLayout(m_TextureImages[mesh->GetMeshIndex()], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        TransitionImageLayout(m_TextureImages[renderable->GetRenderID()], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        CopyBufferToImage(stagingBuffer, m_TextureImages[renderable->GetRenderID()], static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+        TransitionImageLayout(m_TextureImages[renderable->GetRenderID()], VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         
         vkDestroyBuffer(m_Device, stagingBuffer, nullptr);
         vkFreeMemory(m_Device, stagingBufferMemory, nullptr);

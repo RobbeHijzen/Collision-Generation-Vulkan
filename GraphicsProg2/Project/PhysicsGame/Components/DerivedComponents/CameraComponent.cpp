@@ -1,6 +1,6 @@
 #include "CameraComponent.h"
-#include "Abstraction/MathHelpers.h"
-#include "Abstraction/Meshes/Mesh.h"
+#include "PhysicsGame/MathHelpers.h"
+#include "PhysicsGame/Meshes/Mesh.h"
 
 CameraComponent::CameraComponent(Mesh* pParent, Camera* pCamera, float panSpeed)
 	: BaseComponent(pParent)

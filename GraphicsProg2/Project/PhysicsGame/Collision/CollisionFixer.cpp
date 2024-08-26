@@ -1,8 +1,8 @@
 #include "CollisionFixer.h"
-#include "Abstraction/Meshes/Mesh.h"
-#include "Abstraction/Components/DerivedComponents/CollisionComponent.h"
+#include "PhysicsGame/Meshes/Mesh.h"
+#include "PhysicsGame/Components/DerivedComponents/CollisionComponent.h"
 
-void CollisionFixer::FixCollisions(std::vector<Mesh*> meshes)
+void CollisionFixer::FixCollisions(std::vector<Object*> meshes)
 {
 	for (int i{}; i < meshes.size(); ++i)
 	{
@@ -11,8 +11,8 @@ void CollisionFixer::FixCollisions(std::vector<Mesh*> meshes)
 			int maxIterations{ 10 };
 			for(int k{}; k < maxIterations; ++k)
 			{
-				Mesh* mesh1{ meshes[i] };
-				Mesh* mesh2{ meshes[j] };
+				Object* mesh1{ meshes[i] };
+				Object* mesh2{ meshes[j] };
 
 				CollisionComponent* collisionComp1{ mesh1->GetComponent<CollisionComponent>().get() };
 				CollisionComponent* collisionComp2{ mesh2->GetComponent<CollisionComponent>().get() };
@@ -44,7 +44,7 @@ void CollisionFixer::FixCollisions(std::vector<Mesh*> meshes)
 	}
 }
 
-bool CollisionFixer::IsOnGround(CollisionComponent* collisionComp, std::vector<Mesh*> sceneMeshes)
+bool CollisionFixer::IsOnGround(CollisionComponent* collisionComp, std::vector<Object*> sceneMeshes)
 {
 	std::vector<AABB> aabbs{ collisionComp->GetAABBs() };
 
@@ -121,7 +121,7 @@ void CollisionFixer::HandleCollision(AABB aabb1, AABB aabb2, CollisionComponent*
 		// Changes mesh1's position to not collide anymore
 
 		std::pair<glm::vec3, glm::vec3> distances{ CalculateCollisionDistances(aabb1, aabb2) };
-		float minDistance{min(min(distances.first.x, distances.first.y), distances.first.z)};
+		float minDistance{std::min(std::min(distances.first.x, distances.first.y), distances.first.z)};
 		if (minDistance == distances.first.x)
 		{
 			col1->GetOwner()->Translate({ distances.first.x * distances.second.x, 0.f, 0.f });
@@ -139,7 +139,7 @@ void CollisionFixer::HandleCollision(AABB aabb1, AABB aabb2, CollisionComponent*
 	{
 		// Move both meshes halfway
 		std::pair<glm::vec3, glm::vec3> distances{ CalculateCollisionDistances(aabb1, aabb2) };
-		float minDistance{ min(min(distances.first.x, distances.first.y), distances.first.z) };
+		float minDistance{ std::min(std::min(distances.first.x, distances.first.y), distances.first.z) };
 		if (minDistance == distances.first.x)
 		{
 			col1->GetOwner()->Translate({ distances.first.x * distances.second.x / 2.f, 0.f, 0.f });

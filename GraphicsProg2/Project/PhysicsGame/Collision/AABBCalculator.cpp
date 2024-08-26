@@ -238,7 +238,7 @@ std::vector<AABBCalculator::Triangle> AABBCalculator::GetTriangleFromAABB(const 
 std::vector<std::pair<std::vector<AABBCalculator::Triangle>, int>> AABBCalculator::GetTrianglesFromAABBIndices(std::vector<AABB> allAABBs, int firstIndex, int secondIndex)
 {
     std::vector<std::pair<std::vector<AABBCalculator::Triangle>, int>> triangles{};
-    int cubeLength{ static_cast<int>(cbrtf(allAABBs.size())) };
+    int cubeLength{ static_cast<int>(cbrtf(static_cast<float>(allAABBs.size()))) };
 
     CoordinateIndices firstAABBCoords{ GetCoordinatedFromIndex(firstIndex, cubeLength)};
     CoordinateIndices secondAABBCoords{ GetCoordinatedFromIndex(secondIndex, cubeLength)};

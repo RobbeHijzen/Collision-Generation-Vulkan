@@ -3,8 +3,9 @@
 #include <glm/glm.hpp>
 #include <functional>
 
-#include "Abstraction/Meshes/Mesh.h"
-#include "Abstraction/HelperStructs.h"
+#include "PhysicsGame/Meshes/Mesh.h"
+#include "VulkanBase/Scene/Object.h"
+#include "VulkanBase/HelperStructs/HelperStructs.h"
 
 using CollisionInfo = std::pair<bool, std::pair<AABB, AABB>>;
 
@@ -14,9 +15,9 @@ class CollisionFixer
 {
 public:
 
-	static void FixCollisions(std::vector<Mesh*> meshes);
+	static void FixCollisions(std::vector<Object*> meshes);
 
-	static bool IsOnGround(CollisionComponent* collisionComp, std::vector<Mesh*> sceneMeshes);
+	static bool IsOnGround(CollisionComponent* collisionComp, std::vector<Object*> sceneMeshes);
 
 	static CollisionInfo AreColliding(std::vector<AABB> aabbs1, std::vector<AABB> aabbs2, int& i, int& j);
 	static CollisionInfo AreColliding(CollisionComponent* col1, CollisionComponent* col2);

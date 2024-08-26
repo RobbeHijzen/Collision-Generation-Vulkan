@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Abstraction/Components/BaseComponent.h"
+#include "Vulkanbase/Helperstructs/BaseComponent.h"
 
 struct Camera;
 class CameraComponent : public BaseComponent

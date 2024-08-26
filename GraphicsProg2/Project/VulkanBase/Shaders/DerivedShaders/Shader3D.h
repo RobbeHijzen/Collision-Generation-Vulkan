@@ -6,7 +6,7 @@
 #include <array>
 #include "VulkanUtil/VulkanUtil.h"
 #include "glm/glm.hpp"
-#include "Abstraction/Meshes/Mesh.h"
+#include "PhysicsGame/Meshes/Mesh.h"
 
 #include "../Shader.h"
 class VulkanBase;
@@ -31,7 +31,7 @@ public:
 	virtual VkShaderModule CreateShaderModule(const VkDevice& m_Device, const std::vector<char>& code) override;
 	virtual std::vector<VkDescriptorSetLayoutBinding> CreateDescriptorSetLayoutBindings() override;
 
-	virtual void SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh, int drawIndex) override;
+	virtual void SetupDescriptorSet(VulkanBase* vulkanBase, IRenderable* renderable, uint32_t instanceID) override;
 
 private:
 

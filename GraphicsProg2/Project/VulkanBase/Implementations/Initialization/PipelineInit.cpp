@@ -1,6 +1,6 @@
 #include "VulkanBase/VulkanBase.h"
 
-void VulkanBase::CreateGraphicsPipeline(VkPipeline* pipeLine, VkPolygonMode polygonMode, VkCullModeFlags cullMode)
+void VulkanBase::CreateGraphicsPipeline(int pipelineIndex, VkPolygonMode polygonMode, VkCullModeFlags cullMode)
 {
 	// ViewportState
 	VkPipelineViewportStateCreateInfo viewportState{};
@@ -114,7 +114,7 @@ void VulkanBase::CreateGraphicsPipeline(VkPipeline* pipeLine, VkPolygonMode poly
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, pipeLine) != VK_SUCCESS)
+	if (vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipelines[pipelineIndex]) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}

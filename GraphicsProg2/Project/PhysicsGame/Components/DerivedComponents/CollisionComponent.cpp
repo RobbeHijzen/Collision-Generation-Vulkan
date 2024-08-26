@@ -1,6 +1,6 @@
 #include "CollisionComponent.h"
-#include "Abstraction/MathHelpers.h"
-#include "Abstraction/AABBCalculator.h"
+#include "PhysicsGame/MathHelpers.h"
+#include "PhysicsGame/Collision/AABBCalculator.h"
 
 #include <numeric>
 #include <fstream>
@@ -77,7 +77,7 @@ void CollisionComponent::LoadAABBs(int aabbDepth)
     if (std::ofstream output{ "Resources/AABBInfo.txt", std::ios::app | std::ios::binary }; output.is_open())
     {
         m_AABBs = AABBCalculator::CalculateAABBs(GetOwner()->GetVertices(), GetOwner()->GetIndices(), aabbDepth);
-
+    
         int aabbsCount{ static_cast<int>(m_AABBs.size()) };
         int loadIndex{ GetOwner()->GetLoadIndex() };
         

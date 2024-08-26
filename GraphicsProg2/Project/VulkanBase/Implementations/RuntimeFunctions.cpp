@@ -8,7 +8,6 @@ void VulkanBase::Render()
 	uint32_t imageIndex;
 	vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
-
 	vkResetCommandBuffer(m_CommandBuffer, 0);
 	RecordCommandBuffer(m_CommandBuffer, imageIndex);
 
@@ -84,35 +83,34 @@ void VulkanBase::RecordRenderPass(uint32_t imageIndex)
 
 	vkCmdBeginRenderPass(m_CommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	for (auto mesh : m_Scene->GetMeshes())
+	for (auto renderable : m_Scene->GetRenderables())
 	{
-		UpdateUniformBuffer(mesh->GetMeshIndex(), 0, mesh->GetModelMatrix());
+		if (renderable->IsHidden()) continue;
 
-		BindPipelineInfo(&m_GraphicsPipeline);
-		BindVertexIndexBuffers(mesh->GetMeshIndex(), mesh->GetMeshIndex());
-		vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_MeshDescriptorSets[mesh->GetMeshIndex()][0], 0, nullptr);
-
-		mesh->Render(m_CommandBuffer);
-
-		if (m_DrawOutlines)
+		if (!renderable->IsInstanceable())
 		{
-			if (auto col = mesh->GetComponent<CollisionComponent>())
+			UpdateUniformBuffer(renderable->GetRenderID(), 0, renderable->GetModelMatrix());
+
+			BindPipelineInfo(&m_GraphicsPipelines[int(renderable->GetPipelineID())]);
+			BindVertexIndexBuffers(renderable->GetRenderID(), renderable->GetRenderID());
+			vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_MeshDescriptorSets[renderable->GetRenderID()][0], 0, nullptr);
+
+			renderable->Render(m_CommandBuffer);
+		}
+		else
+		{
+			int instanceID{};
+			for (const auto& modelMatrix : renderable->GetModelMatrices())
 			{
-				uint32_t meshIndex{ mesh->GetMeshIndex() };
-				auto modelMatrices{ col->GetModelMatrices() };
-				uint32_t meshAmount{ static_cast<uint32_t>(m_Scene->GetMeshesAmount()) };
+				UpdateUniformBuffer(renderable->GetRenderID(), instanceID, modelMatrix);
 
-				auto AABBsize{ col->GetAABBs().size()};
-				for (int index{}; index < AABBsize; ++index)
-				{
-					UpdateUniformBuffer(meshIndex, index + 1, modelMatrices[index]);
+				BindPipelineInfo(&m_GraphicsPipelines[int(renderable->GetPipelineID())]);
+				BindVertexIndexBuffers(renderable->GetRenderID(), renderable->GetRenderID());
+				vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_MeshDescriptorSets[renderable->GetRenderID()][instanceID], 0, nullptr);
 
-					BindPipelineInfo(&m_GraphicsPipelineLines);
-					BindVertexIndexBuffers(meshAmount, meshAmount);
-					vkCmdBindDescriptorSets(m_CommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_MeshDescriptorSets[meshIndex][index + 1], 0, nullptr);
+				renderable->Render(m_CommandBuffer);
 
-					col->Render(m_CommandBuffer);
-				}
+				++instanceID;
 			}
 		}
 	}
@@ -148,13 +146,13 @@ void VulkanBase::BindVertexIndexBuffers(uint32_t vertexBufferIndex, uint32_t ind
 	vkCmdBindIndexBuffer(m_CommandBuffer, m_IndexBuffers[indexBufferIndex], 0, VK_INDEX_TYPE_UINT32);
 }
 
-void VulkanBase::UpdateUniformBuffer(uint32_t meshIndex, uint32_t drawIndex, glm::mat4 meshModelMatrix)
+void VulkanBase::UpdateUniformBuffer(uint32_t meshIndex, uint32_t instanceID, glm::mat4 meshModelMatrix)
 {
 	UniformBufferObject ubo{};
 	ubo.model = meshModelMatrix;
 	ubo.view = m_Camera->viewMatrix;
 	ubo.proj = m_Camera->projectionMatrix;
 
-	memcpy(m_UniformBuffersMapped[meshIndex][drawIndex], &ubo, sizeof(ubo));
+	memcpy(m_UniformBuffersMapped[meshIndex][instanceID], &ubo, sizeof(ubo));
 }
 

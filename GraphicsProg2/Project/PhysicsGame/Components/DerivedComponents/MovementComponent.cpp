@@ -1,9 +1,9 @@
 #include "MovementComponent.h"
-#include "Abstraction/MathHelpers.h"
-#include "Abstraction/Scene/Scene.h"
-#include "Abstraction/Collision/CollisionFixer.h"
-#include "Abstraction/Components/DerivedComponents/CollisionComponent.h"
-#include "Abstraction/Time/Time.h"
+#include "PhysicsGame/MathHelpers.h"
+#include "Vulkanbase/Scene/Scene.h"
+#include "PhysicsGame/Collision/CollisionFixer.h"
+#include "PhysicsGame/Components/DerivedComponents/CollisionComponent.h"
+#include "Vulkanbase/Time/Time.h"
 
 #include <algorithm>
 #include <vector>
@@ -89,7 +89,7 @@ void MovementComponent::HandleMouseMovement(GLFWwindow* window)
 
 void MovementComponent::CalculateIsOnGround()
 {
-	auto meshes{ Scene::GetInstance()->GetMeshes() };
+	auto meshes{ Scene::GetInstance()->GetObjects() };
 	std::erase(meshes, GetOwner());
 
 	auto collisionComp{ GetOwner()->GetComponent<CollisionComponent>() };

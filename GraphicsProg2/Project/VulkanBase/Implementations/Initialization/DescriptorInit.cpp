@@ -17,32 +17,38 @@ void VulkanBase::CreateDescriptorSetLayouts()
 
 void VulkanBase::CreateUnfiformBuffers()
 {
-	m_UniformBuffersMapped.resize(m_Scene->GetMeshesAmount());
-	m_UniformBuffers.resize(m_Scene->GetMeshesAmount());
-	m_UniformBuffersMemory.resize(m_Scene->GetMeshesAmount());
+	m_UniformBuffersMapped.resize(m_Scene->GetRenderablesAmount());
+	m_UniformBuffers.resize(m_Scene->GetRenderablesAmount());
+	m_UniformBuffersMemory.resize(m_Scene->GetRenderablesAmount());
 
 	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
-	for (auto mesh : m_Scene->GetMeshes())
+	for (auto renderable : m_Scene->GetRenderables())
 	{
-		m_UniformBuffersMapped[mesh->GetMeshIndex()].emplace_back();
-		m_UniformBuffers[mesh->GetMeshIndex()].emplace_back();
-		m_UniformBuffersMemory[mesh->GetMeshIndex()].emplace_back();
-
-		CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_UniformBuffers[mesh->GetMeshIndex()][0], m_UniformBuffersMemory[mesh->GetMeshIndex()][0]);
-		vkMapMemory(m_Device, m_UniformBuffersMemory[mesh->GetMeshIndex()][0], 0, bufferSize, 0, &m_UniformBuffersMapped[mesh->GetMeshIndex()][0]);
-	
-		if (auto col = mesh->GetComponent<CollisionComponent>())
+		if (!renderable->IsInstanceable())
 		{
-			auto AABBsize{ col->GetAABBs().size()};
-			for (int index{1}; index <= AABBsize; ++index)
-			{
-				m_UniformBuffersMapped[mesh->GetMeshIndex()].emplace_back();
-				m_UniformBuffers[mesh->GetMeshIndex()].emplace_back();
-				m_UniformBuffersMemory[mesh->GetMeshIndex()].emplace_back();
+			m_UniformBuffersMapped[renderable->GetRenderID()].resize(1);
+			m_UniformBuffers[renderable->GetRenderID()].resize(1);
+			m_UniformBuffersMemory[renderable->GetRenderID()].resize(1);
 
-				CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_UniformBuffers[mesh->GetMeshIndex()][index], m_UniformBuffersMemory[mesh->GetMeshIndex()][index]);
-				vkMapMemory(m_Device, m_UniformBuffersMemory[mesh->GetMeshIndex()][index], 0, bufferSize, 0, &m_UniformBuffersMapped[mesh->GetMeshIndex()][index]);
+			CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_UniformBuffers[renderable->GetRenderID()][0], m_UniformBuffersMemory[renderable->GetRenderID()][0]);
+			vkMapMemory(m_Device, m_UniformBuffersMemory[renderable->GetRenderID()][0], 0, bufferSize, 0, &m_UniformBuffersMapped[renderable->GetRenderID()][0]);
+		}
+		else
+		{
+			auto modelMatrices{ renderable->GetModelMatrices() };
+
+			m_UniformBuffersMapped[renderable->GetRenderID()].resize(modelMatrices.size());
+			m_UniformBuffers[renderable->GetRenderID()].resize(modelMatrices.size());
+			m_UniformBuffersMemory[renderable->GetRenderID()].resize(modelMatrices.size());
+
+			int instanceID{};
+			for (const auto& modelMatrix : modelMatrices)
+			{
+				CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_UniformBuffers[renderable->GetRenderID()][instanceID], m_UniformBuffersMemory[renderable->GetRenderID()][instanceID]);
+				vkMapMemory(m_Device, m_UniformBuffersMemory[renderable->GetRenderID()][instanceID], 0, bufferSize, 0, &m_UniformBuffersMapped[renderable->GetRenderID()][instanceID]);
+
+				++instanceID;
 			}
 		}
 	}
@@ -51,7 +57,7 @@ void VulkanBase::CreateUnfiformBuffers()
 static uint32_t GetDrawCount(Scene* scene)
 {
 	uint32_t drawCount{};
-	for (auto mesh : scene->GetMeshes())
+	for (auto mesh : scene->GetObjects())
 	{
 		++drawCount;
 		if (auto col = mesh->GetComponent<CollisionComponent>())
@@ -90,44 +96,49 @@ void VulkanBase::CreateDescriptorPool()
 
 void VulkanBase::CreateDescriptorSets()
 {
-	m_MeshDescriptorSets.resize(m_Scene->GetMeshesAmount());
+	m_MeshDescriptorSets.resize(m_Scene->GetRenderablesAmount());
 	
-	for (const auto& mesh : m_Scene->GetMeshes())
+	for (const auto& renderable : m_Scene->GetRenderables())
 	{
-		m_MeshDescriptorSets[mesh->GetMeshIndex()].emplace_back();
-
-		VkDescriptorSetAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = m_DescriptorPool;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &m_DescriptorSetLayout;
-
-		if (vkAllocateDescriptorSets(m_Device, &allocInfo, &m_MeshDescriptorSets[mesh->GetMeshIndex()][0]) != VK_SUCCESS)
+		if (!renderable->IsInstanceable())
 		{
-			throw std::runtime_error("failed to allocate descriptor sets!");
-		}
+			m_MeshDescriptorSets[renderable->GetRenderID()].resize(1);
 
-		m_Shader3D->SetupDescriptorSet(this, mesh, 0);
+			VkDescriptorSetAllocateInfo allocInfo{};
+			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			allocInfo.descriptorPool = m_DescriptorPool;
+			allocInfo.descriptorSetCount = 1;
+			allocInfo.pSetLayouts = &m_DescriptorSetLayout;
 
-		if (auto col = mesh->GetComponent<CollisionComponent>())
-		{
-			auto AABBsize{ col->GetAABBs().size() };
-			for (int index{1}; index <= AABBsize; ++index)
+			if (vkAllocateDescriptorSets(m_Device, &allocInfo, &m_MeshDescriptorSets[renderable->GetRenderID()][0]) != VK_SUCCESS)
 			{
-				m_MeshDescriptorSets[mesh->GetMeshIndex()].emplace_back();
+				throw std::runtime_error("failed to allocate descriptor sets!");
+			}
 
+			m_Shader3D->SetupDescriptorSet(this, renderable, 0);
+		}
+		else
+		{
+			auto modelMatrices{ renderable->GetModelMatrices() };
+			m_MeshDescriptorSets[renderable->GetRenderID()].resize(modelMatrices.size());
+
+			int instanceID{};
+			for (const auto& modelMatrix : modelMatrices)
+			{				
 				VkDescriptorSetAllocateInfo allocInfo{};
 				allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 				allocInfo.descriptorPool = m_DescriptorPool;
 				allocInfo.descriptorSetCount = 1;
 				allocInfo.pSetLayouts = &m_DescriptorSetLayout;
 				
-				if (vkAllocateDescriptorSets(m_Device, &allocInfo, &m_MeshDescriptorSets[mesh->GetMeshIndex()][index]) != VK_SUCCESS)
+				if (vkAllocateDescriptorSets(m_Device, &allocInfo, &m_MeshDescriptorSets[renderable->GetRenderID()][instanceID]) != VK_SUCCESS)
 				{
 					throw std::runtime_error("failed to allocate descriptor sets!");
 				}
+				
+				m_Shader3D->SetupDescriptorSet(this, renderable, instanceID);
 
-				m_Shader3D->SetupDescriptorSet(this, mesh, index);
+				++instanceID;
 			}
 		}
 	}

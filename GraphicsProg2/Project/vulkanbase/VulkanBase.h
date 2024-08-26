@@ -5,21 +5,21 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
+#include "PhysicsGame/Collision/CollisionFixer.h"
+#include "PhysicsGame/Components/DerivedComponents/CameraComponent.h"
+#include "PhysicsGame/Components/DerivedComponents/CollisionComponent.h"
+#include "PhysicsGame/Components/DerivedComponents/MovementComponent.h"
+#include "PhysicsGame/Camera.h"
 
 #include "VulkanUtil/VulkanUtil.h"
-#include "Abstraction/HelperStructs.h"
-#include "Abstraction/Camera.h"
-#include "Abstraction/VertexInfo.h"
-#include "Abstraction/Shaders/Shader.h"
-#include "Abstraction/Shaders/DerivedShaders/Shader3D.h"
-#include "Abstraction/Scene/Scene.h"
-#include "Abstraction/Time/Time.h"
+#include "VulkanBase/HelperStructs/VertexInfo.h"
+#include "VulkanBase/Shaders/Shader.h"
+#include "VulkanBase/Shaders/DerivedShaders/Shader3D.h"
+#include "VulkanBase/Scene/Scene.h"
+#include "Vulkanbase/Time/Time.h"
+#include "Vulkanbase/HelperStructs/HelperStructs.h"
 
-#include "Abstraction/Collision/CollisionFixer.h"
-
-#include "Abstraction/Components/DerivedComponents/CameraComponent.h"
-#include "Abstraction/Components/DerivedComponents/CollisionComponent.h"
-#include "Abstraction/Components/DerivedComponents/MovementComponent.h"
+#include "VulkanBase/HelperStructs/PipelinesEnum.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -98,10 +98,11 @@ private:
 		CreateRenderPass();
 		CreateDescriptorSetLayouts();
 
-		CreateGraphicsPipeline(&m_GraphicsPipeline, VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT);
-		CreateGraphicsPipeline(&m_GraphicsPipelineLines, VK_POLYGON_MODE_LINE, VK_CULL_MODE_NONE);
+		m_GraphicsPipelines.resize(static_cast<int>(PipelinesEnum::numValues));
+		CreateGraphicsPipeline((int)PipelinesEnum::regular, VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT);
+		CreateGraphicsPipeline((int)PipelinesEnum::linesOnly, VK_POLYGON_MODE_LINE, VK_CULL_MODE_NONE);
 		m_Shader3D->DestroyShaderStages(m_Device);
-
+		
 		// Command Buffers setup
 		CreateCommandPool();
 		CreateCommandBuffer();
@@ -134,15 +135,14 @@ private:
 		// Time initialization
 		Time* time = Time::GetInstance();
 		// Game Start
-		for (auto mesh : m_Scene->GetMeshes())
-			mesh->GameStart();
+		for (auto object : m_Scene->GetObjects())
+			object->GameStart();
 
 		// Print keybinds to the console
 		for (int index{}; index < 30; ++index) std::cout << "\n";
 		std::cout << "---- Keyboard Bindings ----\n\n";
 		std::cout << "WASD: \tmove\n";
 		std::cout << "Space: \tjump\n\n";
-		std::cout << "E: \ttoggle Hitbox outlines (watch out for frame rate)\n";
 		for (int index{}; index < 15; ++index) std::cout << "\n";
 
 		// LOOP
@@ -160,7 +160,7 @@ private:
 			m_Scene->Update(m_Window);
 			m_Scene->LateUpdate();
 
-			CollisionFixer::FixCollisions(m_Scene->GetMeshes());
+			CollisionFixer::FixCollisions(m_Scene->GetObjects());
 
 			// Rendering the Meshes
 			Render();
@@ -204,8 +204,10 @@ private:
 		vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
 
 		// Pipeline cleanup
-		vkDestroyPipeline(m_Device, m_GraphicsPipeline, nullptr);
-		vkDestroyPipeline(m_Device, m_GraphicsPipelineLines, nullptr);
+		for (auto& pipeline : m_GraphicsPipelines)
+		{
+			vkDestroyPipeline(m_Device, pipeline, nullptr);
+		}
 		vkDestroyDescriptorSetLayout(m_Device, m_DescriptorSetLayout, nullptr);
 		
 		vkDestroyPipelineLayout(m_Device, m_PipelineLayout, nullptr);
@@ -269,7 +271,7 @@ private:
 	}
 	
 
-	void InitializeAbstractions()
+	virtual void InitializeAbstractions()
 	{
 		m_Scene = Scene::GetInstance();
 
@@ -351,12 +353,11 @@ private:
 
 	// GraphicsPipeline setup
 	VkDescriptorSetLayout m_DescriptorSetLayout{};
-	VkPipeline m_GraphicsPipeline{};
-	VkPipeline m_GraphicsPipelineLines{};
+	std::vector<VkPipeline> m_GraphicsPipelines{};
 	VkPipelineLayout m_PipelineLayout{};
 	VkRenderPass m_RenderPass{};
 
-	void CreateGraphicsPipeline(VkPipeline* pipeLine, VkPolygonMode polygonMode, VkCullModeFlags cullMode);
+	void CreateGraphicsPipeline(int pipelineIndex, VkPolygonMode polygonMode, VkCullModeFlags cullMode);
 	void CreateDescriptorSetLayouts();
 	void CreateRenderPass();
 
@@ -407,7 +408,7 @@ private:
 	void CreateDescriptorSets();
 	void CreateUnfiformBuffers();
 
-	void UpdateUniformBuffer(uint32_t meshIndex, uint32_t drawIndex, glm::mat4 meshModelMatrix);
+	void UpdateUniformBuffer(uint32_t meshIndex, uint32_t instanceID, glm::mat4 meshModelMatrix);
 	void CreateDescriptorPool();
 
 	// Texture

@@ -88,23 +88,23 @@ std::vector<VkDescriptorSetLayoutBinding> Shader3D::CreateDescriptorSetLayoutBin
 	return { uboLayoutBinding, samplerLayoutBinding };
 }
 
-void Shader3D::SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh, int drawIndex)
+void Shader3D::SetupDescriptorSet(VulkanBase* vulkanBase, IRenderable* renderable, uint32_t instanceID)
 {
 	VkDescriptorBufferInfo bufferInfo{};
-	bufferInfo.buffer = vulkanBase->GetUniformBuffers()[mesh->GetMeshIndex()][drawIndex];
+	bufferInfo.buffer = vulkanBase->GetUniformBuffers()[renderable->GetRenderID()][instanceID];
 	bufferInfo.offset = 0;
 	bufferInfo.range = sizeof(UniformBufferObject);
 
 	VkDescriptorImageInfo imageInfo{};
 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	imageInfo.imageView = vulkanBase->GetTextureImageViews()[mesh->GetMeshIndex()];
+	imageInfo.imageView = vulkanBase->GetTextureImageViews()[renderable->GetRenderID()];
 	imageInfo.sampler = vulkanBase->GetTextureSampler();
 
 
 	std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
 	descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrites[0].dstSet = vulkanBase->GetMeshDescriptorSets()[mesh->GetMeshIndex()][drawIndex];
+	descriptorWrites[0].dstSet = vulkanBase->GetMeshDescriptorSets()[renderable->GetRenderID()][instanceID];
 	descriptorWrites[0].dstBinding = 0;
 	descriptorWrites[0].dstArrayElement = 0;
 	descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -112,7 +112,7 @@ void Shader3D::SetupDescriptorSet(VulkanBase* vulkanBase, Mesh* mesh, int drawIn
 	descriptorWrites[0].pBufferInfo = &bufferInfo;
 
 	descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorWrites[1].dstSet = vulkanBase->GetMeshDescriptorSets()[mesh->GetMeshIndex()][drawIndex];
+	descriptorWrites[1].dstSet = vulkanBase->GetMeshDescriptorSets()[renderable->GetRenderID()][instanceID];
 	descriptorWrites[1].dstBinding = 1;
 	descriptorWrites[1].dstArrayElement = 0;
 	descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;

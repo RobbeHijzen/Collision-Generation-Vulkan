@@ -3,7 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <glm/glm.hpp>
-#include "VertexInfo.h"
+#include "Vulkanbase/HelperStructs/VertexInfo.h"
 
 
 static bool ParseOBJ(const std::string& filename, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices, bool calculateNormals = false, bool flipAxisAndWinding = true)

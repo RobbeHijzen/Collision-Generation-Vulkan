@@ -1,7 +1,7 @@
 #pragma once
 
-#include "HelperStructs.h"
-#include "VertexInfo.h"
+#include "VulkanBase/HelperStructs/HelperStructs.h"
+#include "Vulkanbase/HelperStructs/VertexInfo.h"
 #include <vector>
 #include <set>
 

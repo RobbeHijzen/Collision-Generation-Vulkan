@@ -1,6 +1,6 @@
 #include "Mesh.h"
-#include "Abstraction/Utils.h"
-#include "Abstraction/Time/Time.h"
+#include "PhysicsGame/Utils.h"
+#include "Vulkanbase/Time/Time.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -90,30 +90,11 @@ void Mesh::Render(VkCommandBuffer buffer) const
     vkCmdDrawIndexed(buffer, static_cast<uint32_t>(m_Indices.size()), 1, 0, 0, 0);
 }
 
-void Mesh::GameStart()
-{
-    for (auto& component : m_Components)
-    {
-        component->GameStart();
-    }
-}
-
 void Mesh::Update(GLFWwindow* window)
 {
-    for (auto& component : m_Components)
-    {
-        component->Update(window);
-    }
+    Object::Update(window);
 
     Translate(m_Velocity * Time::GetInstance()->GetDeltaTime());
-}
-
-void Mesh::LateUpdate()
-{
-    for (auto& component : m_Components)
-    {
-        component->LateUpdate();
-    }
 }
 
 void Mesh::Translate(glm::vec3 addedPos)

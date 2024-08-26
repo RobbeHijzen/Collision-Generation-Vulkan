@@ -2,8 +2,8 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
-#include "Abstraction/Components/BaseComponent.h"
-#include "Abstraction/Meshes/Mesh.h"
+#include "Vulkanbase/Helperstructs/BaseComponent.h"
+#include "PhysicsGame/Meshes/Mesh.h"
 
 
 class MovementComponent : public BaseComponent

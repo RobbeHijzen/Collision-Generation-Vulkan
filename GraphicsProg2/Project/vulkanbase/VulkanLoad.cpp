@@ -3,22 +3,17 @@
 void VulkanBase::LoadScene()
 {
 	// Plane
-	auto plane{ new Mesh(0, false, "Resources/objs/Plane.obj", "Resources/texs/Plane_BaseColor.png") };
+	auto plane{ new Mesh("Resources/objs/Plane.obj", "Resources/texs/Plane_BaseColor.png") };
 	plane->AddComponent(std::make_shared<CollisionComponent>(plane, true, 0));
 	m_Scene->AddObject(plane);
 
 	// Vehicle
-	auto vehicle{ new Mesh(1, false, "Resources/objs/vehicle.obj", "Resources/texs/vehicle_diffuse.png", { -200, 82.f, 0 }, { 0, -90, 0 }) };
+	auto vehicle{ new Mesh("Resources/objs/vehicle.obj", "Resources/texs/vehicle_diffuse.png", { -200, 82.f, 0 }, { 0, -90, 0 }) };
 	vehicle->AddComponent(std::make_shared<CollisionComponent>(vehicle, true, 4));
 	m_Scene->AddObject(vehicle);
 
-	// Weapon
-	auto weapon{ new Mesh(2, false, "Resources/objs/xm177.obj", "Resources/texs/xm177_BaseColor.png", { 0.f, 30.f, -50.f }, { 0, -90, 0 }, {2.f, 2.f, 2.f}) };
-	weapon->AddComponent(std::make_shared<CollisionComponent>(weapon, false, 1));
-	m_Scene->AddObject(weapon);
-	
 	// Manny
-	auto manny{ new Mesh(3, false, "Resources/objs/Manny.obj", "Resources/texs/Manny_BaseColor.png", {0.f, 150.f, 0.f}) };
+	auto manny{ new Mesh("Resources/objs/Manny.obj", "Resources/texs/Manny_BaseColor.png", {0.f, 150.f, 0.f}) };
 
 	manny->AddComponent(std::make_shared<CollisionComponent>(manny, false, 0));
 	manny->AddComponent(std::make_shared<MovementComponent>(manny));

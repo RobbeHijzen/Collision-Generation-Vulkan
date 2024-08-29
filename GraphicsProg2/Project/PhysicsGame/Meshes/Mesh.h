@@ -19,11 +19,11 @@
 class Mesh final : public Object, public IRenderable
 {
 public:
-	Mesh(int loadIndex, bool calculateNormals, std::string objPath, 
-			  std::string diffuseString, 
-			  glm::vec3 translation = glm::vec3{0.f, 0.f, 0.f},
-			  glm::vec3 rotation = glm::vec3{0.f, 0.f, 0.f},
-			  glm::vec3 scale = glm::vec3{1.f, 1.f, 1.f});
+	Mesh(std::string objPath, 
+		 std::string diffuseString, 
+		 glm::vec3 translation = glm::vec3{0.f, 0.f, 0.f},
+		 glm::vec3 rotation = glm::vec3{0.f, 0.f, 0.f},
+		 glm::vec3 scale = glm::vec3{1.f, 1.f, 1.f});
 
 
 	void Render(VkCommandBuffer buffer) const override;
@@ -40,9 +40,6 @@ public:
 
 	std::string GetDiffuseString() const override { return m_DiffuseString; }
 
-	int GetLoadIndex() const { return m_LoadIndex; }
-
-
 	void Rotate(glm::vec3 addedRot);
 	void Scale(glm::vec3 addedScale);
 
@@ -53,11 +50,9 @@ public:
 	void SetVelocity(glm::vec3 inputVelocity) { m_Velocity = inputVelocity; }
 
 private:
-	int m_LoadIndex{ -1 };
 
 	std::vector<uint32_t> m_Indices{};
 	std::vector<Vertex> m_Vertices{};
-	void LoadOBJ(std::string objPath, bool calculateNormals);
 
 	std::optional<uint32_t> m_RenderID{};
 	std::string m_DiffuseString{};

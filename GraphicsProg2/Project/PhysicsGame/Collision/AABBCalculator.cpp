@@ -2,6 +2,7 @@
 #include <numeric>
 #include <algorithm>
 #include <ranges>
+#include <execution>
 
 std::vector<AABB> AABBCalculator::CalculateAABBs(const std::vector<Vertex>& meshVertices, const std::vector<uint32_t>& meshIndices, int aabbDepth)
 {
@@ -50,6 +51,7 @@ std::vector<AABB> AABBCalculator::GetPartitionedAABBs(const AABB& encompassingAA
     else
     {
         std::vector<AABB> returningAABBs{};
+
         for (const auto& smallerAABB : smallerAABBs)
         {
             for (const auto& finalAABB : GetPartitionedAABBs(smallerAABB, depthRemaining - 1))
@@ -57,6 +59,7 @@ std::vector<AABB> AABBCalculator::GetPartitionedAABBs(const AABB& encompassingAA
                 returningAABBs.emplace_back(finalAABB);
             }
         }
+
         return returningAABBs;
     }
 
@@ -151,10 +154,10 @@ void AABBCalculator::RemoveAABBsWithoutVertices(std::vector<std::pair<AABB, std:
 
 void AABBCalculator::RemakeAABBsBasedOnVertices(std::vector<std::pair<AABB, std::vector<Vertex>>>& aabbs)
 {
-    for (auto& aabb : aabbs)
-    {
-        aabb.first = GetAABBFromVertices(aabb.second);
-    }
+    std::for_each(std::execution::par, aabbs.begin(), aabbs.end(), [&](AABBInfo& aabb)
+        {
+            aabb.first = GetAABBFromVertices(aabb.second);
+        });
 }
 
 bool AABBCalculator::DoesAABBHaveVertex(const std::vector<Vertex>& vertices, const AABB& aabb)
@@ -241,6 +244,8 @@ std::vector<std::pair<std::vector<AABBCalculator::Triangle>, int>> AABBCalculato
     int cubeLength{ static_cast<int>(cbrtf(static_cast<float>(allAABBs.size()))) };
 
     CoordinateIndices firstAABBCoords{ GetCoordinatedFromIndex(firstIndex, cubeLength)};
+
+
     CoordinateIndices secondAABBCoords{ GetCoordinatedFromIndex(secondIndex, cubeLength)};
 
     CoordinateIndices minCoords{ std::min(firstAABBCoords.x, secondAABBCoords.x),
@@ -318,7 +323,6 @@ std::vector<int> AABBCalculator::GetIndicesFromMinMaxCoordinates(CoordinateIndic
 
     return indices;
 }
-
 
 void AABBCalculator::GetSmallerAABBs(std::vector<AABB>& smallerAABBs, const AABB& e)
 {

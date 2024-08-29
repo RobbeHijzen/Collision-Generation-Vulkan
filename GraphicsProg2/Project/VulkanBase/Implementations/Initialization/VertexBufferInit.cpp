@@ -16,14 +16,6 @@ void VulkanBase::CreateVertexBuffers()
 		m_VertexBuffers[renderable->GetRenderID()] = vertexBuffer;
 		m_VertexBuffersMemory[renderable->GetRenderID()] = vertexBufferMemory;
 	}
-
-	//// Collision Wireframe vertices
-	//VkBuffer vertexBuffer;
-	//VkDeviceMemory vertexBufferMemory;
-	//
-	//CreateVertexBuffer(CollisionComponent::GetVertices(), vertexBuffer, vertexBufferMemory);
-	//m_VertexBuffers.emplace_back(vertexBuffer);
-	//m_VertexBuffersMemory.emplace_back(vertexBufferMemory);
 }
 void VulkanBase::CreateIndexBuffers()
 {
@@ -40,14 +32,6 @@ void VulkanBase::CreateIndexBuffers()
 		m_IndexBuffers[renderable->GetRenderID()] = indexBuffer;
 		m_IndexBuffersMemory[renderable->GetRenderID()] = indexBufferMemory;
 	}
-
-	//// Collision Wireframe indices
-	//VkBuffer indexBuffer;
-	//VkDeviceMemory indexBufferMemory;
-	//
-	//CreateIndexBuffer(CollisionComponent::GetIndices(), indexBuffer, indexBufferMemory);
-	//m_IndexBuffers.emplace_back(indexBuffer);
-	//m_IndexBuffersMemory.emplace_back(indexBufferMemory);
 }
 
 void VulkanBase::CreateVertexBuffer(std::vector<Vertex> vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory)

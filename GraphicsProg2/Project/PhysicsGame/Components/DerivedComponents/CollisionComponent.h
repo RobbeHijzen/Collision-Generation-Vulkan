@@ -46,7 +46,6 @@ private:
 	std::vector<AABB> m_AABBs{};
 	std::vector<AABB> m_TransformedAABBs{};
 
-	void LoadAABBs(int aabbDepth);
 	void CalculateTransformedAABBs();
 
 	static std::vector<Vertex> m_Vertices;
